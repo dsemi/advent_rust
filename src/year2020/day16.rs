@@ -1,21 +1,10 @@
-use regex::Regex;
 use std::collections::HashSet;
 
 fn parse_rules(s: &str) -> (Vec<(String, i64, i64, i64, i64)>, Vec<i64>, Vec<Vec<i64>>) {
     let parts: Vec<&str> = s.split("\n\n").collect();
-    let re = Regex::new(r"(.+): (\d+)-(\d+) or (\d+)-(\d+)").unwrap();
     let rules: Vec<(String, i64, i64, i64, i64)> = parts[0]
         .lines()
-        .map(|line| {
-            let cap = re.captures(line).unwrap();
-            (
-                cap[1].to_string(),
-                cap[2].parse().unwrap(),
-                cap[3].parse().unwrap(),
-                cap[4].parse().unwrap(),
-                cap[5].parse().unwrap(),
-            )
-        })
+        .map(|line| scan_fmt!(line, "{[^:]}: {}-{} or {}-{}", String, i64, i64, i64, i64).unwrap())
         .collect();
     let yours: Vec<i64> = parts[1]
         .lines()

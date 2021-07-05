@@ -47,7 +47,6 @@ pub fn part1(input: &str) -> usize {
     constellations(parse_points(input)).len()
 }
 
-#[allow(dead_code)]
 pub fn part2(_input: &str) -> String {
     "".to_string()
 }

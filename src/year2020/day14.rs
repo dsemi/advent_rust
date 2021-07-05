@@ -1,8 +1,6 @@
-use regex::Regex;
 use std::collections::HashMap;
 
 fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
-    let re = Regex::new(r"mem\[(\d+)\] = (\d+)").unwrap();
     let mut mask = Vec::new();
     let mut res = Vec::new();
     for line in s.lines() {
@@ -16,12 +14,8 @@ fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
                 .map(|(i, x)| (35 - i as u64, x))
                 .collect();
         } else {
-            let cap = re.captures(line).unwrap();
-            res.push((
-                mask.clone(),
-                cap[1].parse().unwrap(),
-                cap[2].parse().unwrap(),
-            ));
+            let (r, v) = scan_fmt!(line, "mem[{}] = {}", u64, u64).unwrap();
+            res.push((mask.clone(), r, v));
         }
     }
     res
@@ -56,7 +50,7 @@ fn set_vals(m: &mut HashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
         'X' => {
             set_vals(m, &xs[1..], r | (1 << i), v);
             set_vals(m, &xs[1..], r & !(1 << i), v);
-        },
+        }
         _ => panic!("Invalid bit: {}", c),
     }
 }

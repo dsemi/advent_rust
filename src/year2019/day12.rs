@@ -1,5 +1,4 @@
 use gcd::Gcd;
-use regex::Regex;
 
 #[derive(Clone, Eq, PartialEq)]
 struct Moon {
@@ -8,12 +7,12 @@ struct Moon {
 }
 
 fn parse_moons(input: &str) -> Vec<Moon> {
-    let re = Regex::new(r"<x=(-?\d+), y=(-?\d+), z=(-?\d+)>").unwrap();
-    re.captures_iter(input)
-        .map(|cap| {
-            let ps = (1..=3).map(|x| cap[x].parse().unwrap()).collect();
+    input
+        .lines()
+        .map(|line| {
+            let (x, y, z) = scan_fmt!(line, "<x={}, y={}, z={}>", i64, i64, i64).unwrap();
             Moon {
-                pos: ps,
+                pos: vec![x, y, z],
                 vel: vec![0, 0, 0],
             }
         })

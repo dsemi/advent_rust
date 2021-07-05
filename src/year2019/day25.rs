@@ -32,7 +32,6 @@ pub fn part1(input: &str) -> String {
     Regex::new(r"\d+").unwrap().find_iter(&s).last().unwrap().as_str().to_string()
 }
 
-#[allow(dead_code)]
 pub fn part2(_input: &str) -> String {
     "".to_string()
 }

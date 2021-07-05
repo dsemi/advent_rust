@@ -1,40 +1,26 @@
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::collections::HashSet;
 
 const W: usize = 50;
 const H: usize = 6;
 
 fn process_instr(grid: &mut HashSet<(usize, usize)>, line: &str) {
-    lazy_static! {
-        static ref RE_RECT: Regex = Regex::new(r"rect (\d+)x(\d+)").unwrap();
-        static ref RE_ROW: Regex = Regex::new(r"rotate row y=(\d+) by (\d+)").unwrap();
-        static ref RE_COL: Regex = Regex::new(r"rotate column x=(\d+) by (\d+)").unwrap();
-    }
-    if let Some(cap) = RE_RECT.captures(line) {
-        let a: usize = cap[1].parse().unwrap();
-        let b: usize = cap[2].parse().unwrap();
+    if let Ok((a, b)) = scan_fmt!(line, "rect {}x{}", usize, usize) {
         for c in 0..a {
             for r in 0..b {
                 grid.insert((r, c));
             }
         }
-    } else if let Some(cap) = RE_ROW.captures(line) {
-        let a: usize = cap[1].parse().unwrap();
-        let b: usize = cap[2].parse().unwrap();
+    } else if let Ok((a, b)) = scan_fmt!(line, "rotate row y={} by {}", usize, usize) {
         *grid = grid
             .iter()
             .map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c }))
             .collect();
-    } else if let Some(cap) = RE_COL.captures(line) {
-        let a: usize = cap[1].parse().unwrap();
-        let b: usize = cap[2].parse().unwrap();
+    } else {
+        let (a, b) = scan_fmt!(line, "rotate column x={} by {}", usize, usize).unwrap();
         *grid = grid
             .iter()
             .map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c))
             .collect();
-    } else {
-        panic!("Inavlid instr: {}", line);
     }
 }
 

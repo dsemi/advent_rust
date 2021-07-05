@@ -1,5 +1,3 @@
-use regex::Regex;
-
 struct Claim {
     num: usize,
     x0: usize,
@@ -9,18 +7,25 @@ struct Claim {
 }
 
 fn parse_claims(input: &str) -> Vec<Claim> {
-    let re = Regex::new(r"#(\d+) @ (\d+),(\d+): (\d+)x(\d+)").unwrap();
     input
         .lines()
         .map(|line| {
-            let cap = re.captures(line).unwrap();
-            let ns: Vec<usize> = (1..6).map(|x| cap[x].parse().unwrap()).collect();
+            let (n, x, y, w, h) = scan_fmt!(
+                line,
+                "#{} @ {},{}: {}x{}",
+                usize,
+                usize,
+                usize,
+                usize,
+                usize
+            )
+            .unwrap();
             Claim {
-                num: ns[0],
-                x0: ns[1],
-                y0: ns[2],
-                x1: ns[1] + ns[3],
-                y1: ns[2] + ns[4],
+                num: n,
+                x0: x,
+                y0: y,
+                x1: x + w,
+                y1: y + h,
             }
         })
         .collect()

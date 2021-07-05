@@ -71,7 +71,6 @@ pub fn part1(_input: &str) -> i64 {
     process(12794428)
 }
 
-#[allow(dead_code)]
 pub fn part2(_input: &str) -> String {
     "".to_string()
 }
