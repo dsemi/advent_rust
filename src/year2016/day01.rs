@@ -1,14 +1,40 @@
-// fn walk(input: &str) -> impl Iterator<Item = char> {
-//     input.split(", ").flat_map(|x| {
-//         vec![x[0]; x[]].into_iter()
-//     })
-// }
+use std::collections::HashSet;
+use std::iter;
 
-pub fn part1(input: &str) -> String {
-    input.to_string()
+use crate::utils::Coord;
+
+fn path<'a>(input: &'a str) -> impl Iterator<Item = Coord<i32>> + 'a {
+    input
+        .split(", ")
+        .flat_map(|x| {
+            let df = match x.chars().next().unwrap() {
+                'R' => Coord::new(0, -1),
+                'L' => Coord::new(0, 1),
+                _ => panic!("Invalid dir {}", x),
+            };
+            let n: usize = x[1..].parse().unwrap();
+            iter::once(df).chain(iter::repeat(Coord::new(1, 0)).take(n - 1))
+        })
+        .scan((Coord::new(0, 0), Coord::new(0, 1)), |state, x| {
+            (*state).1 *= x;
+            (*state).0 += state.1;
+            Some(*state)
+        })
+        .map(|x| x.0)
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String {
-    "".to_string()
+pub fn part1(input: &str) -> i32 {
+    let pos = path(input).last().unwrap();
+    pos.x.abs() + pos.y.abs()
+}
+
+pub fn part2(input: &str) -> i32 {
+    let mut s = HashSet::new();
+    for pos in path(input) {
+        if s.contains(&pos) {
+            return pos.x.abs() + pos.y.abs();
+        }
+        s.insert(pos);
+    }
+    -1
 }

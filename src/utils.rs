@@ -1,70 +1,138 @@
-use num_complex::Complex;
+use itertools::Itertools;
+use num::Num;
+use num_traits::cast::FromPrimitive;
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::collections::VecDeque;
+use std::hash::Hash;
+use std::iter::Sum;
+use std::ops::{Add, AddAssign, BitAnd, Mul, MulAssign, Neg, Sub, SubAssign};
 
-pub struct Scanl<I, St, F> {
-    iter: I,
-    f: F,
-    state: St,
-}
-impl<I, St, F> Scanl<I, St, F> {
-    pub(super) fn new(iter: I, state: St, f: F) -> Scanl<I, St, F> {
-        Scanl { iter, state, f }
-    }
-}
-
-impl<I, S, F> Iterator for Scanl<I, S, F>
+pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where
-    I: Iterator,
-    S: Copy,
-    F: Fn(S, I::Item) -> S,
+    T: Clone,
+    T: Eq,
+    T: Hash,
+    F: Fn(&T) -> I,
+    I: IntoIterator<Item = T, IntoIter = I2>,
+    I2: Iterator<Item = T>,
 {
-    type Item = S;
+    bfs_on(|x| x.clone(), start, neighbs)
+}
 
-    #[inline]
-    fn next(&mut self) -> Option<S> {
-        let res = self.state;
-        let a = self.iter.next()?;
-        self.state = (self.f)(self.state, a);
-        Some(res)
+pub fn bfs_on<T, F, G, H, I, I2>(h: G, start: T, neighbs: F) -> Bfs<T, F, G, H>
+where
+    H: Eq,
+    H: Hash,
+    G: Fn(&T) -> H,
+    F: Fn(&T) -> I,
+    I: IntoIterator<Item = T, IntoIter = I2>,
+    I2: Iterator<Item = T>,
+{
+    let x = h(&start);
+    Bfs {
+        frontier: vec![(0, start)].into_iter().collect(),
+        visited: vec![x].into_iter().collect(),
+        hash: h,
+        neighbs: neighbs,
     }
 }
 
-pub trait ScanlExt: Iterator {
-    fn scanl<S, F>(self, initial_state: S, f: F) -> Scanl<Self, S, F>
-    where
-        Self: Sized,
-        F: Fn(S, Self::Item) -> S,
-    {
-        Scanl::new(self, initial_state, f)
+pub struct Bfs<T, F, G, H> {
+    pub frontier: VecDeque<(usize, T)>,
+    pub visited: HashSet<H>,
+    pub hash: G,
+    pub neighbs: F,
+}
+
+impl<T, F, G, H, I, I2> Iterator for Bfs<T, F, G, H>
+where
+    H: Eq,
+    H: Hash,
+    G: Fn(&T) -> H,
+    F: Fn(&T) -> I,
+    I: IntoIterator<Item = T, IntoIter = I2>,
+    I2: Iterator<Item = T>,
+{
+    type Item = (usize, T);
+
+    fn next(&mut self) -> Option<(usize, T)> {
+        let (d, item) = self.frontier.pop_front()?;
+        for neighb in (self.neighbs)(&item) {
+            let hsh = (self.hash)(&neighb);
+            if !self.visited.contains(&hsh) {
+                self.visited.insert(hsh);
+                self.frontier.push_back((d + 1, neighb));
+            }
+        }
+        Some((d, item))
     }
 }
 
-impl<I: Iterator> ScanlExt for I {}
-
-pub trait Scanl1Ext: Iterator {
-    fn scanl1<F>(mut self: Self, f: F) -> Scanl<Self, Self::Item, F>
-    where
-        Self: Sized,
-        F: Fn(Self::Item, Self::Item) -> Self::Item,
-    {
-        let initial_state = self.next().unwrap();
-        Scanl::new(self, initial_state, f)
+pub fn a_star<T, F, I, I2, F2, F3, F4>(
+    neighbors: F,
+    dist: F2,
+    heur: F3,
+    goal: F4,
+    start: T,
+) -> Option<Vec<T>>
+where
+    T: Copy,
+    T: Eq,
+    T: Hash,
+    T: Ord,
+    F: Fn(&T) -> I,
+    I: IntoIterator<Item = T, IntoIter = I2>,
+    I2: Iterator<Item = T>,
+    F2: Fn(&T, &T) -> usize,
+    F3: Fn(&T) -> usize,
+    F4: Fn(&T) -> bool,
+{
+    let mut visited: HashSet<T> = vec![start].into_iter().collect();
+    let mut queue: BinaryHeap<(Reverse<usize>, T)> = BinaryHeap::new();
+    queue.push((Reverse(0), start));
+    let mut came_from: HashMap<T, T> = HashMap::new();
+    let mut g_score: HashMap<T, usize> = vec![(start, 0)].into_iter().collect();
+    let mut f_score: HashMap<T, usize> = vec![(start, heur(&start))].into_iter().collect();
+    while let Some((_, st)) = queue.pop() {
+        if goal(&st) {
+            let mut result = vec![st];
+            let mut curr = st;
+            while let Some(v) = came_from.get(&curr) {
+                result.push(*v);
+                curr = *v;
+            }
+            result.reverse();
+            return Some(result);
+        }
+        visited.remove(&st);
+        for st2 in neighbors(&st) {
+            let tent_g_score = g_score
+                .get(&st)
+                .unwrap_or(&usize::MAX)
+                .checked_add(dist(&st, &st2))
+                .unwrap();
+            if tent_g_score < *g_score.get(&st2).unwrap_or(&usize::MAX) {
+                came_from.insert(st2, st);
+                g_score.insert(st2, tent_g_score);
+                f_score.insert(st2, tent_g_score + heur(&st2));
+                if visited.insert(st2) {
+                    queue.push((Reverse(f_score[&st2]), st2));
+                }
+            }
+        }
     }
+    None
 }
 
-impl<I: Iterator> Scanl1Ext for I {}
-
-
-// self.scan(initial_state, |acc: &mut St, x: I::Item| {
-// *acc = f(*acc, x);
-// Some(*acc)
-// })
-
-pub fn unit_dir(c: char) -> Complex<i64> {
+pub fn unit_dir(c: char) -> Coord<i64> {
     match c {
-        '<' => Complex::new(-1, 0),
-        '>' => Complex::new(1, 0),
-        'v' => Complex::new(0, -1),
-        '^' => Complex::new(0, 1),
+        '<' => Coord::new(-1, 0),
+        '>' => Coord::new(1, 0),
+        'v' => Coord::new(0, -1),
+        '^' => Coord::new(0, 1),
         _ => panic!("Unknown direction"),
     }
 }
@@ -75,4 +143,294 @@ macro_rules! hashmap {
          $( map.insert($key, $val); )*
          map
     }}
+}
+
+pub fn transpose<T: Copy>(inp: &Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let cols = inp.iter().map(|x| x.len()).max().unwrap();
+    let mut out = vec![vec![]; cols];
+    for i in 0..cols {
+        for j in 0..inp.len() {
+            if i < inp[j].len() {
+                out[i].push(inp[j][i]);
+            }
+        }
+    }
+    out
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Coord<T> {
+    pub x: T,
+    pub y: T,
+}
+
+impl<T> Coord<T>
+where
+    T: Copy,
+    T: Num,
+    T: BitAnd<Output = T>,
+    T: FromPrimitive,
+{
+    pub fn new(x: T, y: T) -> Self {
+        Self { x: x, y: y }
+    }
+
+    pub fn scale(&self, n: T) -> Self {
+        Self {
+            x: self.x * n,
+            y: self.y * n,
+        }
+    }
+
+    pub fn pow(self, n: T) -> Self {
+        if n == FromPrimitive::from_u8(0).unwrap() {
+            Self {
+                x: FromPrimitive::from_u8(1).unwrap(),
+                y: FromPrimitive::from_u8(0).unwrap(),
+            }
+        } else if n & FromPrimitive::from_u8(1).unwrap() != FromPrimitive::from_u8(0).unwrap() {
+            self * self.pow(n - FromPrimitive::from_u8(1).unwrap())
+        } else {
+            (self * self).pow(n / FromPrimitive::from_u8(2).unwrap())
+        }
+    }
+}
+
+impl<T: Add<Output = T>> Add for Coord<T> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl<'a, 'b, T> Add<&'b Coord<T>> for &'a Coord<T>
+where
+    T: Copy,
+    T: Add<Output = T>,
+{
+    type Output = Coord<T>;
+
+    fn add(self, other: &'b Coord<T>) -> Coord<T> {
+        Coord {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl<T> AddAssign for Coord<T>
+where
+    T: Copy,
+    T: Num,
+{
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+
+impl<T: Num> Sub for Coord<T> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl<'a, 'b, T> Sub<&'b Coord<T>> for &'a Coord<T>
+where
+    T: Copy,
+    T: Sub<Output = T>,
+{
+    type Output = Coord<T>;
+
+    fn sub(self, other: &'b Coord<T>) -> Coord<T> {
+        Coord {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl<T> SubAssign for Coord<T>
+where
+    T: Copy,
+    T: Num,
+{
+    fn sub_assign(&mut self, other: Self) {
+        *self = *self - other;
+    }
+}
+
+impl<T> Mul for Coord<T>
+where
+    T: Copy,
+    T: Num,
+{
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Self {
+            x: self.x * other.x - self.y * other.y,
+            y: self.x * other.y + self.y * other.x,
+        }
+    }
+}
+
+impl<T> MulAssign for Coord<T>
+where
+    T: Copy,
+    T: Num,
+{
+    fn mul_assign(&mut self, other: Self) {
+        *self = *self * other;
+    }
+}
+
+impl<T> Sum for Coord<T>
+where
+    T: Copy,
+    T: Num,
+    T: BitAnd<Output = T>,
+    T: FromPrimitive,
+{
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        iter.fold(
+            Coord::new(
+                FromPrimitive::from_u8(0).unwrap(),
+                FromPrimitive::from_u8(0).unwrap(),
+            ),
+            |a, b| a + b,
+        )
+    }
+}
+
+pub fn adjacents(coord: Coord<i64>) -> impl Iterator<Item = Coord<i64>> {
+    (-1..2)
+        .cartesian_product(-1..2)
+        .filter_map(move |(x, y)| (x != 0 || y != 0).then(|| Coord::new(coord.x + x, coord.y + y)))
+}
+
+pub fn dist(a: &Coord<i32>, b: &Coord<i32>) -> i32 {
+    let c = a - b;
+    c.x.abs() + c.y.abs()
+}
+
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Coord3<T> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+}
+
+impl<T> Coord3<T>
+where
+    T: Copy,
+    T: Num,
+{
+    pub fn new(x: T, y: T, z: T) -> Self {
+        Self { x: x, y: y, z: z }
+    }
+
+    pub fn scale(&self, n: T) -> Self {
+        Self {
+            x: self.x * n,
+            y: self.y * n,
+            z: self.z * n,
+        }
+    }
+
+    pub fn div(&self, n: T) -> Self {
+        Self {
+            x: self.x / n,
+            y: self.y / n,
+            z: self.z / n,
+        }
+    }
+}
+
+impl<T: Add<Output = T>> Add for Coord3<T> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+}
+
+impl<T> AddAssign for Coord3<T>
+where
+    T: Copy,
+    T: Num,
+{
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+
+impl<T: Num> Sub for Coord3<T> {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+        }
+    }
+}
+
+impl<T: Neg<Output = T>> Neg for Coord3<T> {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
+fn mul_inv(mut a: i64, b0: i64) -> i64 {
+    let mut b = b0;
+    let (mut x0, mut x1) = (0, 1);
+    if b == 1 {
+        return 1;
+    }
+    while a > 1 {
+        let q = a.div_euclid(b);
+        let r = a.rem_euclid(b);
+        a = b;
+        b = r;
+        let old_x0 = x0;
+        x0 = x1 - q * x0;
+        x1 = old_x0;
+    }
+    if x1 < 0 {
+        x1 += b0;
+    }
+    x1
+}
+
+pub fn chinese_remainder(an: Vec<(i64, i64)>) -> i64 {
+    let mut sum = 0;
+    let prod = an.iter().map(|x| x.1).fold(1, |a, b| a * b);
+    for (a_i, n_i) in &an {
+        let p = prod / n_i;
+        sum += a_i * mul_inv(p, *n_i) * p;
+    }
+    sum.rem_euclid(prod)
 }

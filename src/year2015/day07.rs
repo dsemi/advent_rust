@@ -8,11 +8,11 @@ type Network<'a> = HashMap<&'a str, Node<'a>>;
 fn val<'a>(graph: &Network<'a>, cache: &mut HashMap<&'a str, u16>, signal: &'a str) -> u16 {
     signal.parse().ok().unwrap_or_else(|| {
         if !cache.contains_key(&signal) {
-            let Node(f, a, b) = graph.get(&signal).unwrap();
+            let Node(f, a, b) = graph[&signal];
             let v = f(val(graph, cache, a), val(graph, cache, b));
             cache.insert(signal, v);
         }
-        *cache.get(&signal).unwrap()
+        cache[&signal]
     })
 }
 

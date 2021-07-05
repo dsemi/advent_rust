@@ -1,9 +1,33 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+use crate::utils::*;
+
+fn neighbors(n: i32, pos: Coord<i32>) -> Vec<Coord<i32>> {
+    vec![
+        pos + Coord::new(1, 0),
+        pos + Coord::new(-1, 0),
+        pos + Coord::new(0, 1),
+        pos + Coord::new(0, -1),
+    ]
+    .into_iter()
+    .filter_map(|p| {
+        let x = p.x;
+        let y = p.y;
+        (x >= 0 && y >= 0 && (x * x + 3 * x + 2 * x * y + y + y * y + n).count_ones() % 2 == 0).then(|| p)
+    })
+    .collect()
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+pub fn part1(input: &str) -> Option<usize> {
+    let target = Coord::new(31, 39);
+    let n = input.parse().unwrap();
+    bfs(Coord::new(1, 1), move |p| neighbors(n, *p))
+        .filter(|x| x.1 == target)
+        .map(|x| x.0)
+        .next()
+}
+
+pub fn part2(input: &str) -> usize {
+    let n = input.parse().unwrap();
+    bfs(Coord::new(1, 1), |p| neighbors(n, *p))
+        .take_while(|x| x.0 <= 50)
+        .count()
 }

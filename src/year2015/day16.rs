@@ -26,7 +26,7 @@ fn solve<'a>(input: &str, tape: HashMap<&'a str, fn(i32) -> bool>) -> Option<usi
             re.captures_iter(line).all(|cap| {
                 let key = &cap[1];
                 let val = cap[2].parse().unwrap();
-                tape.get(key).unwrap_or_else(|| TAPE.get(key).unwrap())(val)
+                tape.get(key).unwrap_or_else(|| &TAPE[key])(val)
             })
         })
         .map(|x| x + 1)

@@ -1,5 +1,7 @@
 use regex::Regex;
 
+use crate::utils::*;
+
 fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
     let re = Regex::new(r"-?\d+").unwrap();
     input.lines()
@@ -27,23 +29,15 @@ pub fn part1(input: &str) -> Option<i32> {
     dists_at_each_second(input).into_iter().map(|x| *x.last().unwrap()).max()
 }
 
-fn transpose<T: Copy>(inp: Vec<Vec<T>>) -> Vec<Vec<T>> {
-    let mut out = Vec::new();
-    for i in 0..inp[0].len() {
-        out.push(inp.iter().map(|v| v[i]).collect());
-    }
-    out
-}
-
 pub fn part2(input: &str) -> Option<i32> {
-    let v = transpose(dists_at_each_second(input))
+    let v = transpose(&dists_at_each_second(input))
         .into_iter()
         .map(|v| {
             let m = *v.iter().max().unwrap();
             v.into_iter().map(move |x| if x == m {1} else {0}).collect()
         })
         .collect();
-    transpose(v).into_iter()
+    transpose(&v).into_iter()
         .map(|x| x.iter().sum())
         .max()
 }

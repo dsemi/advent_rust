@@ -1,9 +1,20 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+use counter::Counter;
+
+use crate::utils::*;
+
+pub fn part1(input: &str) -> String {
+    transpose(&input.lines().map(|x| x.chars().collect()).collect())
+        .into_iter()
+        .map(|row| row.into_iter().collect::<Counter<_>>().most_common()[0].0)
+        .collect()
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+pub fn part2(input: &str) -> String {
+    transpose(&input.lines().map(|x| x.chars().collect()).collect())
+        .into_iter()
+        .map(|row| {
+            let c = row.into_iter().collect::<Counter<_>>();
+            c.most_common()[c.len() - 1].0
+        })
+        .collect()
 }

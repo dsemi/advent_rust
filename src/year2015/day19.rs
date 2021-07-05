@@ -47,7 +47,7 @@ pub fn part2(input: &str) -> i32 {
     let mut count = 0;
     while mol != "e" {
         mol = re
-            .replace(&mol, |caps: &Captures| reps.get(&caps[0]).unwrap())
+            .replace(&mol, |caps: &Captures| &reps[&caps[0]])
             .into();
         count += 1;
     }

@@ -16,19 +16,28 @@ unsafe fn increment(s: &mut str) {
     }
 }
 
-lazy_static! {
-    static ref INCREASING_TRIPLETS: Vec<String> = ('a'..='z')
-        .collect::<Vec<char>>()
-        .windows(3)
-        .map(|x| x.iter().collect())
-        .collect();
-    static ref LETTER_PAIRS: Vec<String> = ('a'..='z').map(|c| [c, c].iter().collect()).collect();
-}
-
 fn is_valid(s: &str) -> bool {
-    INCREASING_TRIPLETS.iter().any(|t| s.contains(t))
-        // && !"iol".chars().any(|c| s.contains(c))
-        && LETTER_PAIRS.iter().filter(|&p| s.contains(p)).count() >= 2
+    let mut result = false;
+    let b = s.as_bytes();
+    for i in 0..b.len()-2 {
+        if b[i] + 2 == b[i+1] + 1 && b[i+1] + 1 == b[i+2] {
+            result = true;
+            break;
+        }
+    }
+    if !result {
+        return false
+    }
+    let mut cnt = 0;
+    let mut i = 0;
+    while i < b.len() - 1 {
+        if b[i] == b[i+1] {
+            cnt += 1;
+            i += 1;
+        }
+        i += 1;
+    }
+    return cnt >= 2
 }
 
 unsafe fn next_valid_pw(s: &mut str) {

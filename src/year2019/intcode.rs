@@ -1,7 +1,8 @@
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::convert::TryInto;
 
-pub fn parse_instrs(input: &str) -> HashMap<i64, i64> {
+fn parse_instrs(input: &str) -> HashMap<i64, i64> {
     input
         .split(",")
         .enumerate()
@@ -10,16 +11,13 @@ pub fn parse_instrs(input: &str) -> HashMap<i64, i64> {
 }
 
 #[derive(Clone)]
-struct Program {
+pub struct Program {
     idx: i64,
     rel_base: i64,
-    mem: HashMap<i64, i64>,
-}
-
-enum Action {
-    Input,
-    Output(i64),
-    Halt(HashMap<i64, i64>),
+    pub mem: HashMap<i64, i64>,
+    pub done: bool,
+    pub input: VecDeque<i64>,
+    pub output: VecDeque<i64>,
 }
 
 enum Instr {
@@ -33,6 +31,17 @@ enum Instr {
     Eql(i64, i64, i64),
     Arb(i64),
     Hlt,
+}
+
+pub fn new(input: &str) -> Program {
+    Program {
+        idx: 0,
+        rel_base: 0,
+        mem: parse_instrs(input),
+        done: false,
+        input: VecDeque::new(),
+        output: VecDeque::new(),
+    }
 }
 
 impl Program {
@@ -49,25 +58,6 @@ impl Program {
             2 => self.val(self.idx + i) + self.rel_base,
             _ => panic!("Unknown mode"),
         }
-    }
-
-    #[allow(dead_code)]
-    fn arg2(&self, i: i64, mode: i64) -> i64 {
-        match mode {
-            0 => self.val(self.idx + i),
-            1 => self.idx + i,
-            2 => self.val(self.idx + i) + self.rel_base,
-            _ => panic!("Unknown mode"),
-        }
-    }
-
-    fn input(&mut self, v: i64) {
-        self.mem.insert(self.arg(1), v);
-        self.idx += 2;
-    }
-
-    fn output(&mut self) {
-        self.idx += 2;
     }
 
     fn parse_instr(&mut self) -> Instr {
@@ -87,7 +77,12 @@ impl Program {
         }
     }
 
-    fn run(&mut self) -> Action {
+    pub fn recv(&mut self, n: usize) -> Option<Vec<i64>> {
+        (self.output.len() >= n).then(|| (0..n).map(|_| self.output.pop_front().unwrap()).collect())
+    }
+
+    pub fn run(&mut self) {
+        assert!(!self.done);
         loop {
             match self.parse_instr() {
                 Instr::Add(a, b, c) => {
@@ -98,11 +93,16 @@ impl Program {
                     self.mem.insert(c, self.val(a) * self.val(b));
                     self.idx += 4;
                 }
-                Instr::Sav(_a) => {
-                    return Action::Input;
+                Instr::Sav(a) => {
+                    if self.input.is_empty() {
+                        break;
+                    }
+                    self.mem.insert(a, self.input.pop_front().unwrap());
+                    self.idx += 2;
                 }
                 Instr::Out(a) => {
-                    return Action::Output(self.val(a));
+                    self.output.push_back(self.val(a));
+                    self.idx += 2;
                 }
                 Instr::Jit(a, b) => {
                     if self.val(a) != 0 {
@@ -130,44 +130,28 @@ impl Program {
                     self.rel_base += self.val(a);
                     self.idx += 2;
                 }
-                Instr::Hlt => return Action::Halt(self.mem.clone()),
+                Instr::Hlt => {
+                    self.done = true;
+                    break;
+                }
             }
         }
     }
 }
 
-pub fn run_no_io(a: i64, b: i64, mut mem: HashMap<i64, i64>) -> i64 {
-    mem.insert(1, a);
-    mem.insert(2, b);
-    let mut prog = Program {
-        idx: 0,
-        rel_base: 0,
-        mem: mem,
-    };
-    match prog.run() {
-        Action::Halt(mem) => *mem.get(&0).unwrap(),
-        _ => panic!("No IO"),
-    }
+pub fn run_no_io(a: i64, b: i64, mut prog: Program) -> i64 {
+    prog.mem.insert(1, a);
+    prog.mem.insert(2, b);
+    prog.run();
+    assert!(prog.done);
+    prog.mem[&0]
 }
 
-pub fn run_with_input(inp: Vec<i64>, mem: HashMap<i64, i64>) -> Vec<i64> {
-    let mut out = Vec::new();
-    let mut prog = Program {
-        idx: 0,
-        rel_base: 0,
-        mem: mem,
-    };
-    loop {
-        match prog.run() {
-            Action::Input => {
-                prog.input(inp[0]);
-            }
-            Action::Output(v) => {
-                out.push(v);
-                prog.output();
-            }
-            Action::Halt(_) => break,
-        }
+pub fn run_with_input(inp: Vec<i64>, mut prog: Program) -> Vec<i64> {
+    for v in inp.into_iter() {
+        prog.input.push_back(v);
     }
-    out
+    prog.run();
+    assert!(prog.done);
+    prog.output.iter().copied().collect()
 }

@@ -1,25 +1,21 @@
-use itertools::iterate;
+use std::num::ParseIntError;
 
-fn fuel(mass: i64) -> i64 {
-    mass / 3 - 2
+pub fn part1(input: &str) -> Result<i64, ParseIntError> {
+    let mut total = 0;
+    for line in input.lines() {
+        total += line.parse::<i64>()? / 3 - 2;
+    }
+    Ok(total)
 }
 
-fn sum_module_fuels(f: fn(i64) -> i64, input: &str) -> i64 {
-    input.lines().map(|line| f(line.parse().unwrap())).sum()
-}
-
-pub fn part1(input: &str) -> i64 {
-    sum_module_fuels(fuel, input)
-}
-
-pub fn part2(input: &str) -> i64 {
-    sum_module_fuels(
-        |x| {
-            iterate(x, |&v| fuel(v))
-                .skip(1)
-                .take_while(|&v| v > 0)
-                .sum()
-        },
-        input,
-    )
+pub fn part2(input: &str) -> Result<i64, ParseIntError> {
+    let mut total = 0;
+    for line in input.lines() {
+        let mut fuel = line.parse::<i64>()? / 3 - 2;
+        while fuel > 0 {
+            total += fuel;
+            fuel = fuel / 3 - 2;
+        }
+    }
+    Ok(total)
 }

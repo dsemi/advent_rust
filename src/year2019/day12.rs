@@ -1,9 +1,78 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+use gcd::Gcd;
+use regex::Regex;
+
+#[derive(Clone, Eq, PartialEq)]
+struct Moon {
+    pos: Vec<i64>,
+    vel: Vec<i64>,
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+fn parse_moons(input: &str) -> Vec<Moon> {
+    let re = Regex::new(r"<x=(-?\d+), y=(-?\d+), z=(-?\d+)>").unwrap();
+    re.captures_iter(input)
+        .map(|cap| {
+            let ps = (1..=3).map(|x| cap[x].parse().unwrap()).collect();
+            Moon {
+                pos: ps,
+                vel: vec![0, 0, 0],
+            }
+        })
+        .collect()
+}
+
+fn step(moons: &mut Vec<Moon>) {
+    for i in 0..moons.len() {
+        for j in 0..moons.len() {
+            for x in 0..moons[i].vel.len() {
+                moons[i].vel[x] += moons[j].pos[x].cmp(&moons[i].pos[x]) as i64;
+            }
+        }
+    }
+    for moon in moons.iter_mut() {
+        for x in 0..moon.pos.len() {
+            moon.pos[x] += moon.vel[x];
+        }
+    }
+}
+
+pub fn part1(input: &str) -> i64 {
+    let mut m = parse_moons(input);
+    for _ in 0..1000 {
+        step(&mut m);
+    }
+    m.into_iter()
+        .map(|v| {
+            v.pos.into_iter().map(|x| x.abs()).sum::<i64>()
+                * v.vel.into_iter().map(|x| x.abs()).sum::<i64>()
+        })
+        .sum()
+}
+
+fn find_cycle(moons: Vec<Moon>) -> u64 {
+    let mut ms = moons.clone();
+    let mut i = 1;
+    loop {
+        step(&mut ms);
+        if ms == moons {
+            return i;
+        }
+        i += 1;
+    }
+}
+
+pub fn part2(input: &str) -> Option<u64> {
+    let moons = parse_moons(input);
+    (0..=2)
+        .map(|n| {
+            find_cycle(
+                moons
+                    .iter()
+                    .map(|m| Moon {
+                        pos: vec![m.pos[n]],
+                        vel: vec![m.vel[n]],
+                    })
+                    .collect(),
+            )
+        })
+        .reduce(|a, b| a * b / a.gcd(b))
 }

@@ -8,7 +8,7 @@ fn run_commands(
     toggle: fn(i32) -> i32,
 ) -> i32 {
     let re = Regex::new(r"(turn on|turn off|toggle) (\d+),(\d+) through (\d+),(\d+)").unwrap();
-    let mut grid = [0; 1000000];
+    let mut grid = vec![0; 1000000];
     for line in input.lines() {
         let cap = re.captures(line).unwrap();
         let (cmdstr, x0, y0, x1, y1) = (&cap[1], &cap[2], &cap[3], &cap[4], &cap[5]);

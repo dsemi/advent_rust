@@ -1,9 +1,13 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+pub fn part1(input: &str) -> u32 {
+    let s = input.as_bytes();
+    (0..s.len())
+        .filter_map(|i| (s[i] == s[(i + 1) % s.len()]).then(|| (s[i] - '0' as u8) as u32))
+        .sum()
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+pub fn part2(input: &str) -> u32 {
+    let s = input.as_bytes();
+    (0..s.len())
+        .filter_map(|i| (s[i] == s[(i + s.len() / 2) % s.len()]).then(|| (s[i] - '0' as u8) as u32))
+        .sum()
 }

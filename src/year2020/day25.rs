@@ -1,0 +1,29 @@
+use std::collections::HashMap;
+use mod_exp::mod_exp;
+
+pub fn part1(input: &str) -> Option<i64> {
+    let parts: Vec<i64> = input.lines().map(|x| x.parse().unwrap()).collect();
+    let (card, door) = (parts[0], parts[1]);
+    let md = 20201227;
+    let m = (md as f64).sqrt().ceil() as i64;
+    let mut tbl = HashMap::new();
+    let mut n = 1;
+    for i in 0..m {
+        tbl.insert(n, i);
+        n = n * 7 % md;
+    }
+    let factor = mod_exp(7, md - m - 1, md);
+    n = door;
+    for i in 0..m {
+        match tbl.get(&n) {
+            Some(v) => return Some(mod_exp(card, i * m + v, md)),
+            None => (),
+        }
+        n = n * factor % md;
+    }
+    None
+}
+
+pub fn part2(_input: &str) -> String {
+    "".to_string()
+}

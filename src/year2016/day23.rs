@@ -1,9 +1,15 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+use crate::year2016::assembunny;
+
+pub fn part1(input: &str) -> i64 {
+    let mut sim = assembunny::parse_instrs(input);
+    sim.regs[0] = 7;
+    sim.run();
+    sim.regs[0]
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+pub fn part2(input: &str) -> i64 {
+    let mut sim = assembunny::parse_instrs(input);
+    sim.regs[0] = 12;
+    sim.run();
+    sim.regs[0]
 }

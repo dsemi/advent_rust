@@ -1,19 +1,9 @@
-use std::cmp::max;
-use Id::*;
-
-#[derive(Clone, PartialEq)]
-enum Id {
-    MagicMissile,
-    Drain,
-    Shield,
-    Poison,
-    Recharge,
-}
+use std::cmp::{max, min};
 
 struct Spell {
-    id: Id,
     cost: i32,
-    func: fn(&mut Game),
+    effect: fn(&mut Game),
+    active: fn(&Game) -> bool,
 }
 
 #[derive(Clone)]
@@ -21,105 +11,68 @@ struct Game {
     player_health: i32,
     player_mana: i32,
     player_armor: i32,
+    spent_mana: i32,
     boss_health: i32,
     boss_damage: i32,
-    player_turn: bool,
-    hard: bool,
-    effects: Vec<(Id, Vec<fn(&mut Game)>)>,
+    shield_turns: i32,
+    poison_turns: i32,
+    recharge_turns: i32,
 }
 
 lazy_static! {
     static ref SPELLS: Vec<Spell> = vec![
-        Spell {
-            id: MagicMissile,
+        Spell { // MagicMissile
             cost: 53,
-            func: |state| state.boss_health -= 4,
+            effect: |state| state.boss_health -= 4,
+            active: |_| false,
         },
-        Spell {
-            id: Drain,
+        Spell { // Drain
             cost: 73,
-            func: |state| {
+            effect: |state| {
                 state.player_health += 2;
                 state.boss_health -= 2;
             },
+            active: |_| false,
         },
-        Spell {
-            id: Shield,
+        Spell { // Shield
             cost: 113,
-            func: |state| {
-                state.effects.push((
-                    Shield,
-                    vec![
-                        |state| state.player_armor += 7,
-                        |_| {},
-                        |_| {},
-                        |_| {},
-                        |_| {},
-                        |state| state.player_armor -= 7,
-                    ],
-                ));
+            effect: |state| {
+                state.player_armor += 7;
+                state.shield_turns = 6;
             },
+            active: |state| state.shield_turns > 0,
         },
-        Spell {
-            id: Poison,
+        Spell { // Poison
             cost: 173,
-            func: |state| {
-                state.effects.push((
-                    Poison,
-                    vec![
-                        |state| state.boss_health -= 3,
-                        |state| state.boss_health -= 3,
-                        |state| state.boss_health -= 3,
-                        |state| state.boss_health -= 3,
-                        |state| state.boss_health -= 3,
-                        |state| state.boss_health -= 3,
-                    ],
-                ));
-            },
+            effect: |state| state.poison_turns = 6,
+            active: |state| state.poison_turns > 0,
         },
-        Spell {
-            id: Recharge,
+        Spell { // Recharge
             cost: 229,
-            func: |state| {
-                state.effects.push((
-                    Recharge,
-                    vec![
-                        |state| state.player_mana += 101,
-                        |state| state.player_mana += 101,
-                        |state| state.player_mana += 101,
-                        |state| state.player_mana += 101,
-                        |state| state.player_mana += 101,
-                    ],
-                ));
-            },
+            effect: |state| state.recharge_turns = 5,
+            active: |state| state.recharge_turns > 0,
         },
     ];
 }
 
-fn game_over(state: &Game) -> bool {
-    state.boss_health <= 0 || state.player_health <= 0
-}
-
 fn apply_effects(state: &mut Game) {
-    for i in 0..state.effects.len() {
-        let f = state.effects[i].1.remove(0);
-        f(state);
+    if state.shield_turns > 0 {
+        if state.shield_turns == 1 {
+            state.player_armor -= 7;
+        }
+        state.shield_turns -= 1;
     }
-    state.effects.retain(|elem| !elem.1.is_empty());
-}
-
-fn begin_turn(state: &mut Game) {
-    if state.hard && state.player_turn {
-        state.player_health -= 1;
+    if state.poison_turns > 0 {
+        state.boss_health -= 3;
+        state.poison_turns -= 1;
     }
-    apply_effects(state);
+    if state.recharge_turns > 0 {
+        state.player_mana += 101;
+        state.recharge_turns -= 1;
+    }
 }
 
-fn boss_attack(state: &mut Game) {
-    state.player_health -= max(1, state.boss_damage - state.player_armor);
-}
-
-fn parse_boss(input: &str, hard: bool) -> Game {
+fn parse_boss(input: &str) -> Game {
     let v: Vec<i32> = input
         .lines()
         .map(|x| x.split(": ").last().unwrap().parse().unwrap())
@@ -128,51 +81,59 @@ fn parse_boss(input: &str, hard: bool) -> Game {
         player_health: 50,
         player_mana: 500,
         player_armor: 0,
+        spent_mana: 0,
         boss_health: v[0],
         boss_damage: v[1],
-        player_turn: true,
-        hard: hard,
-        effects: Vec::new(),
+        shield_turns: 0,
+        poison_turns: 0,
+        recharge_turns: 0,
     }
 }
 
-fn go(mana: i32, mut state: Game, mctw: &mut Option<i32>) {
-    begin_turn(&mut state);
-    if game_over(&state) {
-        if state.boss_health <= 0 {
-            mctw.replace(mana);
+fn min_cost_to_win(s: Game, hard: bool) -> Option<i32> {
+    let mut states = vec![s];
+    let mut result = None;
+    while !states.is_empty() {
+        let mut state = states.pop().unwrap();
+        if hard {
+            state.player_health -= 1;
+            if state.player_health <= 0 {
+                continue;
+            }
         }
-    } else if !state.player_turn {
-        boss_attack(&mut state);
-        state.player_turn = !state.player_turn;
-        go(mana, state, mctw);
-    } else {
+        apply_effects(&mut state);
+        if state.boss_health <= 0 {
+            result = Some(result.map_or(state.spent_mana, |v| min(v, state.spent_mana)));
+            continue;
+        }
         for spell in SPELLS.iter() {
             if state.player_mana >= spell.cost
-                && (mctw.is_none() || mana + spell.cost < mctw.unwrap())
-                && !state.effects.iter().any(|x| x.0 == spell.id)
+                && (result.is_none() || state.spent_mana + spell.cost < result.unwrap())
+                && !(spell.active)(&state)
             {
-                let mut state2 = state.clone();
-                let f = spell.func;
-                f(&mut state2);
-                state2.player_mana -= spell.cost;
-                state2.player_turn = !state2.player_turn;
-                go(mana + spell.cost, state2, mctw);
+                let mut new_state = state.clone();
+                new_state.player_mana -= spell.cost;
+                new_state.spent_mana += spell.cost;
+                (spell.effect)(&mut new_state);
+                apply_effects(&mut new_state);
+                if new_state.boss_health <= 0 {
+                    result = Some(new_state.spent_mana);
+                    continue;
+                }
+                new_state.player_health -= max(1, new_state.boss_damage - new_state.player_armor);
+                if new_state.player_health > 0 {
+                    states.push(new_state);
+                }
             }
         }
     }
-}
-
-fn min_cost_to_win(state: Game) -> Option<i32> {
-    let mut o = None;
-    go(0, state, &mut o);
-    o
+    result
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    min_cost_to_win(parse_boss(input, false))
+    min_cost_to_win(parse_boss(input), false)
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    min_cost_to_win(parse_boss(input, true))
+    min_cost_to_win(parse_boss(input), true)
 }

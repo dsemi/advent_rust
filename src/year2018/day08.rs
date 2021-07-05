@@ -1,9 +1,50 @@
-#[allow(dead_code)]
-pub fn part1(_input: &str) -> String {
-    "".to_string()
+struct Tree {
+    val: Vec<usize>,
+    children: Vec<Tree>,
 }
 
-#[allow(dead_code)]
-pub fn part2(_input: &str) -> String { 
-    "".to_string()
+impl Tree {
+    fn sum(&self) -> usize {
+        self.val.iter().sum::<usize>() + self.children.iter().map(|t| t.sum()).sum::<usize>()
+    }
+}
+
+fn parse_nodes(input: &str) -> Tree {
+    let mut ns = input.split_whitespace().map(|x| x.parse().unwrap());
+    fn parse_node<I>(ns: &mut I) -> Tree
+    where
+        I: Iterator<Item = usize>,
+    {
+        let n = ns.next().unwrap();
+        let m = ns.next().unwrap();
+        let nodes = (0..n).map(|_| parse_node(ns)).collect();
+        let vals = (0..m).map(|_| ns.next().unwrap()).collect();
+        Tree {
+            val: vals,
+            children: nodes,
+        }
+    }
+    parse_node(&mut ns)
+}
+
+pub fn part1(input: &str) -> usize {
+    parse_nodes(input).sum()
+}
+
+pub fn part2(input: &str) -> usize {
+    let tree = parse_nodes(input);
+    let mut stack = vec![&tree];
+    let mut result = 0;
+    while let Some(node) = stack.pop() {
+        if node.children.is_empty() {
+            result += node.val.iter().sum::<usize>();
+            continue;
+        }
+        for i in &node.val {
+            if i-1 < node.children.len() {
+                stack.push(&node.children[i-1]);
+            }
+        }
+    }
+    result
 }
