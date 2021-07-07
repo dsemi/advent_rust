@@ -1,10 +1,9 @@
 use regex::Regex;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 #[derive(Clone)]
 struct Group {
-    num: i32,
+    num: usize,
     name: String,
     units: i32,
     hit_pts: i32,
@@ -15,7 +14,7 @@ struct Group {
     immunities: Vec<String>,
 }
 
-fn parse_armies(input: &str) -> HashMap<i32, Group> {
+fn parse_armies(input: &str) -> Vec<Option<Group>> {
     input
         .split("\n\n")
         .flat_map(|a| {
@@ -61,7 +60,7 @@ fn parse_armies(input: &str) -> HashMap<i32, Group> {
         .zip(0..)
         .map(|(mut g, n)| {
             g.num = n;
-            (n, g)
+            Some(g)
         })
         .collect()
 }
@@ -83,29 +82,29 @@ impl Group {
 }
 
 fn select_target(
-    groups: &HashMap<i32, Group>,
-    attacked: &mut HashSet<i32>,
+    groups: &Vec<Option<Group>>,
+    attacked: &mut u32,
     grp: &Group,
-) -> Option<i32> {
+) -> Option<usize> {
     let mut mx = (0, 0, 0, 0);
-    for (i, g) in groups.iter() {
-        if grp.name != g.name && !attacked.contains(i) {
-            let mx2 = (*i, grp.calc_dmg(g), g.eff_pwr(), g.initiative);
+    for g in groups.iter().flatten() {
+        if grp.name != g.name && *attacked & 1 << g.num == 0 {
+            let mx2 = (g.num, grp.calc_dmg(g), g.eff_pwr(), g.initiative);
             if (mx2.1, mx2.2, mx2.3) > (mx.1, mx.2, mx.3) {
                 mx = mx2;
             }
         }
     }
     (mx.1 > 0).then(|| {
-        attacked.insert(mx.0);
+        *attacked |= 1 << mx.0;
         mx.0
     })
 }
 
-fn target_selection(groups: &HashMap<i32, Group>) -> Vec<(i32, i32)> {
-    let mut target_selectors = groups.values().collect::<Vec<_>>();
+fn target_selection(groups: &Vec<Option<Group>>) -> Vec<(usize, usize)> {
+    let mut target_selectors = groups.iter().flatten().collect::<Vec<_>>();
     target_selectors.sort_by_key(|g| (-g.eff_pwr(), -g.initiative));
-    let mut s = HashSet::new();
+    let mut s = 0;
     let mut res = target_selectors
         .into_iter()
         .filter_map(|g| select_target(groups, &mut s, g).map(|t| (g, t)))
@@ -114,31 +113,29 @@ fn target_selection(groups: &HashMap<i32, Group>) -> Vec<(i32, i32)> {
     res.into_iter().map(|(g, t)| (g.num, t)).collect()
 }
 
-fn attack(groups: &mut HashMap<i32, Group>, atks: Vec<(i32, i32)>) -> bool {
+fn attack(groups: &mut Vec<Option<Group>>, atks: Vec<(usize, usize)>) -> bool {
     let mut result = false;
     for (k1, k2) in atks {
-        if groups.contains_key(&k1) {
-            let g1 = &groups[&k1];
-            let g2 = &groups[&k2];
+        if let Some(g1) = groups[k1].as_ref() {
+            let g2 = groups[k2].as_ref().unwrap();
             let units_left = g2.units - g1.calc_dmg(&g2) / g2.hit_pts;
             if units_left != g2.units {
                 result = true;
             }
             if units_left <= 0 {
-                groups.remove(&k2);
+                groups[k2] = None;
             } else {
-                let e = groups.get_mut(&k2).unwrap();
-                e.units = units_left;
+                groups[k2].as_mut().unwrap().units = units_left;
             }
         }
     }
     result
 }
 
-fn battle(groups: &mut HashMap<i32, Group>) -> bool {
+fn battle(groups: &mut Vec<Option<Group>>) -> bool {
     let mut changed = true;
     while changed {
-        let mut gen = groups.values();
+        let mut gen = groups.iter().flatten();
         let name = &gen.next().unwrap().name;
         if gen.all(|g| &g.name == name) {
             return true;
@@ -152,20 +149,20 @@ fn battle(groups: &mut HashMap<i32, Group>) -> bool {
 pub fn part1(input: &str) -> i32 {
     let mut groups = parse_armies(input);
     battle(&mut groups);
-    groups.values().map(|g| g.units).sum()
+    groups.iter().flatten().map(|g| g.units).sum()
 }
 
 pub fn part2(input: &str) -> i32 {
     let gps = parse_armies(input);
     for n in 0.. {
         let mut groups = gps.clone();
-        for g in groups.values_mut() {
+        for g in groups.iter_mut().flatten() {
             if g.name == "Immune System" {
                 g.dmg += n;
             }
         }
         if battle(&mut groups) {
-            let result = groups.values().filter_map(|g| (g.name == "Immune System").then(|| g.units)).sum();
+            let result = groups.iter().flatten().filter_map(|g| (g.name == "Immune System").then(|| g.units)).sum();
             if result > 0 {
                 return result;
             }
