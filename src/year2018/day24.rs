@@ -1,5 +1,4 @@
 use regex::Regex;
-use std::collections::HashMap;
 
 #[derive(Clone)]
 struct Group {
