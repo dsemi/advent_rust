@@ -9,7 +9,7 @@ fn partitions(n: usize, t: i32) -> Box<dyn Iterator<Item = Vec<i32>>> {
     }
     Box::new((0..=t).flat_map(move |x| {
         partitions(n - 1, t - x).map(move |mut xs| {
-            xs.insert(0, x);
+            xs.push(x);
             xs
         })
     }))

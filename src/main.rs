@@ -70,7 +70,10 @@ fn parse_day(daystr: &str) -> Vec<i64> {
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let year = args[0].parse().unwrap();
-    let days: Vec<i64> = args[1..].iter().flat_map(|x| parse_day(x)).collect();
+    let mut days: Vec<i64> = args[1..].iter().flat_map(|x| parse_day(x)).collect();
+    if days.is_empty() {
+        days = (1..=25).collect();
+    }
 
     let mut total: f64 = 0.0;
     for &day in days.iter() {

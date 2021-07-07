@@ -56,7 +56,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> i64 {
     let mut prog = intcode::new(input);
-    prog.mem.insert(0, 2);
+    prog.set(0, 2);
     let mut ball = 0;
     let mut paddle = 0;
     let mut score = 0;
