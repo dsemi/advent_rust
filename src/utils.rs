@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use num::Num;
 use num_traits::cast::FromPrimitive;
+use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
@@ -61,9 +62,7 @@ where
     fn next(&mut self) -> Option<(usize, T)> {
         let (d, item) = self.frontier.pop_front()?;
         for neighb in (self.neighbs)(&item) {
-            let hsh = (self.hash)(&neighb);
-            if !self.visited.contains(&hsh) {
-                self.visited.insert(hsh);
+            if self.visited.insert((self.hash)(&neighb)) {
                 self.frontier.push_back((d + 1, neighb));
             }
         }
@@ -125,6 +124,84 @@ where
         }
     }
     None
+}
+
+#[derive(Eq, PartialEq)]
+struct State<T> {
+    dist: usize,
+    elem: T,
+}
+
+impl <T: Eq> Ord for State<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.dist.cmp(&other.dist)
+    }
+}
+
+impl <T: Eq> PartialOrd for State<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+pub struct Dijkstra<T, F> {
+    queue: BinaryHeap<Reverse<State<T>>>,
+    dists: HashMap<T, usize>,
+    neighbors: F,
+}
+
+pub fn dijkstra<T, F, I, I2>(start: T, neighbors: F) -> Dijkstra<T, F>
+where
+    T: Clone,
+    T: Eq,
+    T: Hash,
+    F: FnMut(&T) -> I,
+    I: IntoIterator<Item = (usize, T), IntoIter = I2>,
+    I2: Iterator<Item = (usize, T)>
+{
+    let mut queue = BinaryHeap::new();
+    queue.push(Reverse(State {
+        dist: 0,
+        elem: start,
+    }));
+    Dijkstra {
+        queue: queue,
+        dists: HashMap::new(),
+        neighbors: neighbors,
+    }
+}
+
+impl <T, F, I, I2> Iterator for Dijkstra<T, F>
+where
+    T: Clone,
+    T: Eq,
+    T: Hash,
+    F: FnMut(&T) -> I,
+    I: IntoIterator<Item = (usize, T), IntoIter = I2>,
+    I2: Iterator<Item = (usize, T)>
+{
+    type Item = (usize, T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Reverse(state) = self.queue.pop()?;
+        let shortest = self.dists.entry(state.elem.clone()).or_insert(state.dist);
+        if state.dist <= *shortest {
+            *shortest = state.dist;
+            let neighbs = (self.neighbors)(&state.elem);
+            for (d, st2) in neighbs {
+                let dist = state.dist + d;
+                let shortest = self.dists.entry(st2.clone()).or_insert(dist + 1);
+                if dist < *shortest {
+                    *shortest = dist;
+                    self.queue.push(Reverse(State {
+                        dist: dist,
+                        elem: st2,
+                    }));
+                }
+            }
+        }
+        Some((state.dist, state.elem))
+    }
 }
 
 pub fn unit_dir(c: char) -> Coord<i64> {
