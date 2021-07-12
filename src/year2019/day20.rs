@@ -1,125 +1,167 @@
-use fancy_regex::{Match, Regex};
 use std::collections::HashMap;
 
 use crate::utils::*;
+use crate::year2019::day20::Portal::*;
 
-fn make_portal(m: Match) -> (usize, String) {
-    if m.as_str().starts_with('.') {
-        (m.start(), m.as_str()[1..].to_string())
-    } else {
-        (m.end() - 1, m.as_str()[..m.as_str().len() - 1].to_string())
-    }
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+enum Portal {
+    Outer((usize, usize)),
+    Inner((usize, usize)),
 }
 
-fn parse_maze(
-    input: &str,
-) -> (
-    Vec<Vec<bool>>,
-    Coord<i32>,
-    Coord<i32>,
-    HashMap<Coord<i32>, (Coord<i32>, i32)>,
-) {
-    let rows = input.lines().collect::<Vec<_>>();
-    let mut grid = vec![vec![false; rows[0].len()]; rows.len()];
-    for (r, row) in rows.iter().enumerate() {
-        for (c, v) in row.chars().enumerate() {
-            grid[r][c] = v == '.';
+#[derive(Eq, PartialEq)]
+enum Tile {
+    Wall,
+    Floor,
+    Portal(Portal),
+    Start,
+    End,
+}
+
+struct Maze {
+    grid: Vec<Vec<Tile>>,
+    moves: HashMap<(usize, usize), Vec<(usize, (usize, usize))>>,
+}
+
+fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
+    let grid: Vec<Vec<char>> = input.lines().map(|row| row.chars().collect()).collect();
+    let mut portals: HashMap<String, Vec<Portal>> = HashMap::new();
+    for r in 0..grid.len() {
+        for c in 0..grid[r].len() {
+            if grid[r][c].is_ascii_uppercase() {
+                if r > 0 && grid[r - 1][c].is_ascii_uppercase()
+                    || c > 0 && grid[r][c - 1].is_ascii_uppercase()
+                {
+                    continue;
+                }
+                let (k, b, coord) = if r > 0 && grid[r - 1][c] == '.' {
+                    (
+                        vec![grid[r][c], grid[r + 1][c]],
+                        r + 2 == grid.len(),
+                        (r - 1, c),
+                    )
+                } else if c > 0 && grid[r][c - 1] == '.' {
+                    (
+                        vec![grid[r][c], grid[r][c + 1]],
+                        c + 2 == grid[r].len(),
+                        (r, c - 1),
+                    )
+                } else if grid[r + 1][c].is_ascii_uppercase() {
+                    (vec![grid[r][c], grid[r + 1][c]], r == 0, (r + 2, c))
+                } else {
+                    (vec![grid[r][c], grid[r][c + 1]], c == 0, (r, c + 2))
+                };
+                let e = portals.entry(k.into_iter().collect()).or_insert(Vec::new());
+                e.push(if b { Outer(coord) } else { Inner(coord) });
+                e.sort();
+            }
         }
     }
-
-    let outreg = Regex::new(r"^[A-Z]{2}\.|\.[A-Z]{2}$").unwrap();
-    let innreg = Regex::new(r"(?<!^)[A-Z]{2}\.|\.[A-Z]{2}(?!$)").unwrap();
-
-    let mut outer = HashMap::new();
-    let mut inner = HashMap::new();
-
-    for (r, row) in rows.iter().enumerate() {
-        for m in outreg.find_iter(row) {
-            let (c, s) = make_portal(m.unwrap());
-            outer.insert(s, Coord::new(r as i32, c as i32));
-        }
-        for m in innreg.find_iter(row) {
-            let (c, s) = make_portal(m.unwrap());
-            inner.insert(s, Coord::new(r as i32, c as i32));
+    let mut bi: HashMap<Portal, Portal> = HashMap::new();
+    let mut start = None;
+    let mut end = None;
+    for (k, ps) in portals.iter() {
+        if ps.len() == 2 {
+            bi.insert(ps[0], ps[1]);
+            bi.insert(ps[1], ps[0]);
+        } else if let Outer(p) = ps[0] {
+            if k == "AA" {
+                start = Some(p);
+            } else if k == "ZZ" {
+                end = Some(p);
+            }
+        } else {
+            unreachable!();
         }
     }
-    for (c, col) in transpose(&rows.into_iter().map(|row| row.chars().collect()).collect())
+    let grid2 = grid
         .into_iter()
-        .map(|row| row.into_iter().collect::<String>())
         .enumerate()
-    {
-        for m in outreg.find_iter(&col) {
-            let (r, s) = make_portal(m.unwrap());
-            outer.insert(s, Coord::new(r as i32, c as i32));
-        }
-        for m in innreg.find_iter(&col) {
-            let (r, s) = make_portal(m.unwrap());
-            inner.insert(s, Coord::new(r as i32, c as i32));
-        }
-    }
+        .map(|(r, row)| {
+            row.into_iter()
+                .enumerate()
+                .map(|(c, v)| {
+                    if let Some(portal) = bi.get(&Outer((r, c))) {
+                        Tile::Portal(*portal)
+                    } else if let Some(portal) = bi.get(&Inner((r, c))) {
+                        Tile::Portal(*portal)
+                    } else if (r, c) == start.unwrap() {
+                        Tile::Start
+                    } else if (r, c) == end.unwrap() {
+                        Tile::End
+                    } else if v == '.' {
+                        Tile::Floor
+                    } else {
+                        Tile::Wall
+                    }
+                })
+                .collect()
+        })
+        .collect();
+    (
+        Maze {
+            grid: grid2,
+            moves: HashMap::new(),
+        },
+        start.unwrap(),
+        end.unwrap(),
+    )
+}
 
-    let mut portals = HashMap::new();
-    for (k, v1) in outer.iter() {
-        if let Some(v2) = inner.get(k) {
-            portals.insert(*v1, (*v2, -1));
-            portals.insert(*v2, (*v1, 1));
+impl Maze {
+    fn available_moves(&mut self, pos: &(usize, usize)) -> Vec<(usize, (usize, usize))> {
+        if !self.moves.contains_key(pos) {
+            let mut moves = Vec::new();
+            if let Tile::Portal(portal) = self.grid[pos.0][pos.1] {
+                match portal {
+                    Outer(p) => moves.push((1, p)),
+                    Inner(p) => moves.push((1, p)),
+                }
+            }
+            moves.extend(
+                bfs(*pos, |st| {
+                    let (r, c) = *st;
+                    if st != pos && self.grid[r][c] != Tile::Floor {
+                        return vec![];
+                    }
+                    vec![(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)]
+                        .into_iter()
+                        .filter_map(|(r, c)| (self.grid[r][c] != Tile::Wall).then(|| (r, c)))
+                        .collect()
+                })
+                .filter(|(_, (r, c))| self.grid[*r][*c] != Tile::Floor),
+            );
+            self.moves.insert(*pos, moves);
         }
+        self.moves[pos].clone()
     }
-    (grid, outer["AA"], outer["ZZ"], portals)
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    let (grid, start, finish, portals) = parse_maze(input);
-    fn neighbors(
-        grid: &Vec<Vec<bool>>,
-        portals: &HashMap<Coord<i32>, (Coord<i32>, i32)>,
-        st: &Coord<i32>,
-    ) -> Vec<Coord<i32>> {
-        let mut result = Vec::new();
-        if let Some(v) = portals.get(st) {
-            result.push(v.0);
-        }
-        result.extend(
-            vec![(1, 0), (-1, 0), (0, 1), (0, -1)]
-                .into_iter()
-                .filter_map(|d| {
-                    let st2 = st + &Coord::new(d.0, d.1);
-                    grid[st2.x as usize][st2.y as usize].then(|| st2)
-                }),
-        );
-        result
-    }
-    let x = bfs(start, |x| neighbors(&grid, &portals, x))
-        .filter_map(|(d, st)| (st == finish).then(|| d))
-        .next();
-    x
+    let (mut maze, start, end) = parse_maze(input);
+    dijkstra(start, |x| maze.available_moves(x))
+        .filter_map(|(d, st)| (st == end).then(|| d))
+        .next()
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    let (grid, start, finish, portals) = parse_maze(input);
-    fn neighbors(
-        grid: &Vec<Vec<bool>>,
-        portals: &HashMap<Coord<i32>, (Coord<i32>, i32)>,
-        st: &(Coord<i32>, i32),
-    ) -> Vec<(Coord<i32>, i32)> {
-        let mut result = Vec::new();
-        if let Some((st2, d)) = portals.get(&st.0) {
-            if d + st.1 >= 0 {
-                result.push((*st2, d + st.1));
-            }
-        }
-        result.extend(
-            vec![(1, 0), (-1, 0), (0, 1), (0, -1)]
-                .into_iter()
-                .filter_map(|d| {
-                    let st2 = (st.0 + Coord::new(d.0, d.1), st.1);
-                    grid[st2.0.x as usize][st2.0.y as usize].then(|| st2)
-                }),
-        );
-        result
-    }
-    let x = bfs((start, 0), |x| neighbors(&grid, &portals, x))
-        .filter_map(|(d, st)| (st == (finish, 0)).then(|| d))
-        .next();
-    x
+    let (mut maze, start, end) = parse_maze(input);
+    dijkstra((start, 0), |(x, depth)| {
+        maze.available_moves(x)
+            .into_iter()
+            .filter_map(|(dist, (r, c))| match maze.grid[r][c] {
+                Tile::Portal(Outer(p)) if p == *x => {
+                    if *depth == 0 {
+                        None
+                    } else {
+                        Some((dist, ((r, c), depth - 1)))
+                    }
+                }
+                Tile::Portal(Inner(p)) if p == *x => Some((dist, ((r, c), depth + 1))),
+                _ => Some((dist, ((r, c), *depth))),
+            })
+            .collect::<Vec<_>>()
+    })
+    .filter_map(|(d, st)| (st == (end, 0)).then(|| d))
+    .next()
 }

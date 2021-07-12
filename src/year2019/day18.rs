@@ -62,7 +62,7 @@ impl Maze {
             .iter()
             .enumerate()
             .flat_map(|(i, from)| {
-                if self.moves.get(from).is_none() {
+                if !self.moves.contains_key(from) {
                     let moves = bfs_on(
                         |e| e.dest,
                         Edge {
