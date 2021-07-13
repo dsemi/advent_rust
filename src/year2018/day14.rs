@@ -1,5 +1,5 @@
 struct Step {
-    rs: Vec<u32>,
+    rs: Vec<u8>,
     elf1: usize,
     elf2: usize,
     idx: usize,
@@ -23,21 +23,20 @@ impl Iterator for Step {
         if self.idx >= self.rs.len() {
             let elf1_score = self.rs[self.elf1];
             let elf2_score = self.rs[self.elf2];
-            self.rs.extend(digits(elf1_score + elf2_score));
-            self.elf1 = (elf1_score as usize + self.elf1 + 1).rem_euclid(self.rs.len());
-            self.elf2 = (elf2_score as usize + self.elf2 + 1).rem_euclid(self.rs.len());
+            let tot = elf1_score + elf2_score;
+            if tot >= 10 {
+                self.rs.push(1);
+                self.rs.push(tot % 10);
+            } else {
+                self.rs.push(tot);
+            }
+            self.elf1 = (elf1_score as usize + self.elf1 + 1) % self.rs.len();
+            self.elf2 = (elf2_score as usize + self.elf2 + 1) % self.rs.len();
         }
-        let ans = std::char::from_digit(self.rs[self.idx], 10);
+        let ans = (self.rs[self.idx] + b'0') as char;
         self.idx += 1;
-        ans
+        Some(ans)
     }
-}
-
-fn digits(n: u32) -> Vec<u32> {
-    if n < 10 {
-        return vec![n];
-    }
-    vec![1, n % 10]
 }
 
 pub fn part1(input: &str) -> String {
@@ -47,14 +46,11 @@ pub fn part1(input: &str) -> String {
 
 pub fn part2(input: &str) -> usize {
     let mut rs = String::new();
-    let mut s = Step::new();
-    for _ in 0..input.len() {
-        rs.push(s.next().unwrap());
+    for (i, c) in Step::new().enumerate() {
+        rs.push(c);
+        if rs.ends_with(input) {
+            return i - input.len() + 1;
+        }
     }
-    let mut c = 0;
-    while &rs[c..] != input {
-        rs.push(s.next().unwrap());
-        c += 1;
-    }
-    c
+    unreachable!()
 }
