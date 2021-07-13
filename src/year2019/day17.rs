@@ -147,7 +147,7 @@ pub fn part2(input: &str) -> Option<i64> {
         .join("\n");
     inps.push_str("\n");
     prog = intcode::new(input);
-    prog.set(0, 2);
+    prog[0] = 2;
     for c in inps.chars() {
         prog.input.push_back(c as i64);
     }

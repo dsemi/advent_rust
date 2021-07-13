@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use std::convert::TryInto;
+use std::ops::{Index, IndexMut};
 
 fn parse_instrs(input: &str) -> Vec<i64> {
     input
@@ -42,31 +43,37 @@ pub fn new(input: &str) -> Program {
     }
 }
 
-impl Program {
-    fn get(&self, i: i64) -> i64 {
-        *self.mem.get(i as usize).unwrap_or(&0)
-    }
+impl Index<i64> for Program {
+    type Output = i64;
 
-    pub fn set(&mut self, i: i64, v: i64) {
+    fn index(&self, i: i64) -> &Self::Output {
+        self.mem.get(i as usize).unwrap_or(&0)
+    }
+}
+
+impl IndexMut<i64> for Program {
+    fn index_mut(&mut self, i: i64) -> &mut Self::Output {
         let idx = i as usize;
         if idx >= self.mem.len() {
             self.mem.resize(idx + 1, 0);
         }
-        self.mem[idx] = v;
+        &mut self.mem[idx]
     }
+}
 
+impl Program {
     fn arg(&self, i: i64) -> i64 {
-        let mode = self.get(self.idx) / 10_i64.pow((i + 1).try_into().unwrap()) % 10;
+        let mode = self[self.idx] / 10_i64.pow((i + 1).try_into().unwrap()) % 10;
         match mode {
-            0 => self.get(self.idx + i),
+            0 => self[self.idx + i],
             1 => self.idx + i,
-            2 => self.get(self.idx + i) + self.rel_base,
+            2 => self[self.idx + i] + self.rel_base,
             _ => panic!("Unknown mode"),
         }
     }
 
     fn parse_instr(&mut self) -> Instr {
-        let op_code = self.get(self.idx) % 100;
+        let op_code = self[self.idx] % 100;
         match op_code {
             1 => Instr::Add(self.arg(1), self.arg(2), self.arg(3)),
             2 => Instr::Mul(self.arg(1), self.arg(2), self.arg(3)),
@@ -91,49 +98,48 @@ impl Program {
         loop {
             match self.parse_instr() {
                 Instr::Add(a, b, c) => {
-                    self.set(c, self.get(a) + self.get(b));
+                    self[c] = self[a] + self[b];
                     self.idx += 4;
                 }
                 Instr::Mul(a, b, c) => {
-                    self.set(c, self.get(a) * self.get(b));
+                    self[c] = self[a] * self[b];
                     self.idx += 4;
                 }
                 Instr::Sav(a) => {
                     if self.input.is_empty() {
                         break;
                     }
-                    let v = self.input.pop_front().unwrap();
-                    self.set(a, v);
+                    self[a] = self.input.pop_front().unwrap();
                     self.idx += 2;
                 }
                 Instr::Out(a) => {
-                    self.output.push_back(self.get(a));
+                    self.output.push_back(self[a]);
                     self.idx += 2;
                 }
                 Instr::Jit(a, b) => {
-                    if self.get(a) != 0 {
-                        self.idx = self.get(b);
+                    if self[a] != 0 {
+                        self.idx = self[b];
                     } else {
                         self.idx += 3;
                     }
                 }
                 Instr::Jif(a, b) => {
-                    if self.get(a) == 0 {
-                        self.idx = self.get(b);
+                    if self[a] == 0 {
+                        self.idx = self[b];
                     } else {
                         self.idx += 3;
                     }
                 }
                 Instr::Lt(a, b, c) => {
-                    self.set(c, (self.get(a) < self.get(b)) as i64);
+                    self[c] = (self[a] < self[b]) as i64;
                     self.idx += 4;
                 }
                 Instr::Eql(a, b, c) => {
-                    self.set(c, (self.get(a) == self.get(b)) as i64);
+                    self[c] = (self[a] == self[b]) as i64;
                     self.idx += 4;
                 }
                 Instr::Arb(a) => {
-                    self.rel_base += self.get(a);
+                    self.rel_base += self[a];
                     self.idx += 2;
                 }
                 Instr::Hlt => {
@@ -146,11 +152,11 @@ impl Program {
 }
 
 pub fn run_no_io(a: i64, b: i64, mut prog: Program) -> i64 {
-    prog.set(1, a);
-    prog.set(2, b);
+    prog[1] = a;
+    prog[2] = b;
     prog.run();
     assert!(prog.done);
-    prog.get(0)
+    prog[0]
 }
 
 pub fn run_with_input(inp: Vec<i64>, mut prog: Program) -> Vec<i64> {
