@@ -1,6 +1,4 @@
-use std::iter;
-
-const PATTERN: [i64; 4] = [0, 1, 0, -1];
+use std::cmp::min;
 
 pub fn part1(input: &str) -> String {
     let mut ns: Vec<i64> = input
@@ -10,16 +8,21 @@ pub fn part1(input: &str) -> String {
     for _ in 0..100 {
         ns = (0..ns.len())
             .map(|n| {
-                PATTERN
-                    .iter()
-                    .flat_map(|x| iter::repeat(*x).take(n+1))
-                    .cycle()
-                    .skip(1)
-                    .zip(ns.iter())
-                    .map(|(a, b)| a * b)
-                    .sum::<i64>()
-                    .abs()
-                    % 10
+                let pos = (n..ns.len())
+                    .step_by((n + 1) * 4)
+                    .map(|i| {
+                        let end = min(ns.len(), i + n + 1);
+                        ns[i..end].iter().sum::<i64>()
+                    })
+                    .sum::<i64>();
+                let neg = (n + (n + 1) * 2..ns.len())
+                    .step_by((n + 1) * 4)
+                    .map(|i| {
+                        let end = min(ns.len(), i + n + 1);
+                        ns[i..end].iter().sum::<i64>()
+                    })
+                    .sum::<i64>();
+                (pos - neg).abs() % 10
             })
             .collect();
     }
@@ -40,7 +43,7 @@ pub fn part2(input: &str) -> String {
     ds = ds[offset..].to_vec();
     for _ in 0..100 {
         for i in (1..ds.len()).rev() {
-            ds[i-1] += ds[i];
+            ds[i - 1] += ds[i];
             ds[i] = ds[i] % 10;
         }
         ds[0] = ds[0] % 10;
