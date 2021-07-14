@@ -1,33 +1,35 @@
-fn consecutive_runs(s: &str) -> Vec<i32> {
-    let b = s.as_bytes();
+use std::cmp::Ordering::*;
+
+fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
+    let mut prev = n % 10;
     let mut c = 1;
-    let mut result = Vec::new();
-    for i in 0..b.len() - 1 {
-        if b[i] == b[i + 1] {
-            c += 1;
-        } else {
-            result.push(c);
-            c = 1;
+    let mut b = false;
+    n /= 10;
+    while n != 0 {
+        let m = n % 10;
+        match m.cmp(&prev) {
+            Equal => c += 1,
+            Greater => return false,
+            Less => {
+                b = b || f(c);
+                c = 1;
+                prev = m;
+            }
         }
+        n /= 10;
     }
-    result.push(c);
-    result
+    b || f(c)
 }
 
-fn num_valid(input: &str, f: fn(&str) -> bool) -> usize {
-    let pts: Vec<usize> = input.split('-').map(|x| x.parse().unwrap()).collect();
-    (pts[0]..pts[1] + 1)
-        .filter(|v| {
-            let s = v.to_string();
-            s.chars().zip(s.chars().skip(1)).all(|(a, b)| a <= b) && f(&s)
-        })
-        .count()
+fn num_valid(input: &str, f: fn(u32) -> bool) -> usize {
+    let pts: Vec<u32> = input.split('-').map(|x| x.parse().unwrap()).collect();
+    (pts[0]..pts[1] + 1).filter(|&v| f(v)).count()
 }
 
 pub fn part1(input: &str) -> usize {
-    num_valid(input, |s| consecutive_runs(s).into_iter().any(|x| x >= 2))
+    num_valid(input, |n| solve(n, |x| x >= 2))
 }
 
 pub fn part2(input: &str) -> usize {
-    num_valid(input, |s| consecutive_runs(s).into_iter().any(|x| x == 2))
+    num_valid(input, |n| solve(n, |x| x == 2))
 }
