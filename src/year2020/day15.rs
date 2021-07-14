@@ -12,9 +12,10 @@ fn solve(n: u32, input: &str) -> u32 {
     let mut result = 0;
     for i in j..n {
         if result < bdy {
-            let tmp = &mut m[result as usize];
-            result = if *tmp == 0 { 0 } else { i - *tmp };
-            *tmp = i;
+            result = std::mem::replace(&mut m[result as usize], i);
+            if result != 0 {
+                result = i - result;
+            }
         } else {
             result = match m2.insert(result, i) {
                 Some(v) => i - v,
