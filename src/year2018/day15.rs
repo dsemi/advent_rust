@@ -1,3 +1,4 @@
+use itertools::iterate;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -157,29 +158,31 @@ fn score(grid: &Vec<Vec<(char, i32)>>, c: i32) -> Option<i32> {
     Some(c * total)
 }
 
-pub fn part1(input: &str) -> Option<i32> {
-    let mut grid = parse_graph(input);
-    (0..)
-        .filter_map(|c| {
-            let res = run_round(&mut grid, 3, true);
-            score(&grid, if res == Finished { c + 1 } else { c })
-        })
-        .next()
-}
-
-pub fn part2(input: &str) -> i32 {
-    let grid_start = parse_graph(input);
-    for elf_pwr in 3.. {
-        let mut grid = grid_start.clone();
-        for c in 0.. {
-            let res = run_round(&mut grid, elf_pwr, false);
-            if res == ElfDied {
-                break;
-            }
-            if let Some(sc) = score(&grid, if res == Finished { c + 1 } else { c }) {
-                return sc;
-            }
+fn run(mut grid: Vec<Vec<(char, i32)>>, elf_pwr: i32, allow_elf_death: bool) -> Option<i32> {
+    for c in 0.. {
+        let res = run_round(&mut grid, elf_pwr, allow_elf_death);
+        if res == ElfDied {
+            break;
+        }
+        if let Some(sc) = score(&grid, if res == Finished { c + 1 } else { c }) {
+            return Some(sc);
         }
     }
-    panic!("No solution")
+    None
+}
+
+pub fn part1(input: &str) -> Option<i32> {
+    let grid = parse_graph(input);
+    run(grid, 3, true)
+}
+
+pub fn part2(input: &str) -> Option<i32> {
+    let grid_start = parse_graph(input);
+    let n = iterate(4, |&x| x * 2)
+        .filter(|&x| run(grid_start.clone(), x, false).is_some())
+        .next()
+        .unwrap();
+    let v = (n / 2..=n).collect::<Vec<_>>();
+    let i = v.partition_point(|&x| run(grid_start.clone(), x, false).is_none());
+    run(grid_start.clone(), v[i], false)
 }
