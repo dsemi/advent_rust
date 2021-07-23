@@ -1,36 +1,33 @@
-fn look_and_say(input: &str) -> String {
-    let inp = input.as_bytes();
-    let mut out = String::new();
-    let mut curr = inp[0];
-    let mut count = 1;
-    for c in &inp[1..] {
-        if curr == *c {
-            count += 1;
-            continue;
+fn look_and_say(n: usize, input: &str) -> usize {
+    let mut inp: Vec<u8> = input.bytes().collect();
+    let mut out = Vec::with_capacity(inp.len());
+    for _ in 0..n {
+        let mut curr = inp[0];
+        let mut count = 1;
+        for c in &inp[1..] {
+            if curr == *c {
+                count += 1;
+                continue;
+            }
+            assert!(count < 10);
+            out.push(count + b'0');
+            out.push(curr);
+            curr = *c;
+            count = 1;
         }
-
-        out.push_str(&count.to_string());
-        out.push(curr as char);
-        curr = *c;
-        count = 1;
+        assert!(count < 10);
+        out.push(count + b'0');
+        out.push(curr);
+        std::mem::swap(&mut inp, &mut out);
+        out.clear();
     }
-    out.push_str(&count.to_string());
-    out.push(curr as char);
-    out
+    inp.len()
 }
 
 pub fn part1(input: &str) -> usize {
-    let mut s = input.to_string();
-    for _ in 0..40 {
-        s = look_and_say(&s);
-    }
-    s.len()
+    look_and_say(40, input)
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut s = input.to_string();
-    for _ in 0..50 {
-        s = look_and_say(&s);
-    }
-    s.len()
+    look_and_say(50, input)
 }
