@@ -8,7 +8,6 @@ version = "0.1.0"
 dependencies = [
  "bit-set",
  "counter",
- "fancy-regex",
  "gcd",
  "hex",
  "itertools",
@@ -197,16 +196,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "801bbab217d7f79c0062f4f7205b5d4427c6d1a7bd7aafdd1475f7c59d62b283"
 dependencies = [
  "cfg-if 1.0.0",
-]
-
-[[package]]
-name = "fancy-regex"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a3371ac125221b609ce0cf587a53fbb624fb56267bbe85cf1929350043bf360"
-dependencies = [
- "bit-set",
- "regex",
 ]
 
 [[package]]
