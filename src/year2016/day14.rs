@@ -1,9 +1,16 @@
 use crypto::digest::Digest;
 use crypto::md5::Md5;
 use rayon::prelude::*;
-use std::collections::VecDeque;
 
 const CHUNK_SIZE: usize = 8000;
+
+fn idx(byte: u8) -> usize {
+    match byte {
+        b'0'..=b'9' => (byte - b'0') as usize,
+        b'a'..=b'f' => (byte - b'a' + 10) as usize,
+        _ => panic!("Unknown byte: {}", byte),
+    }
+}
 
 fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
     let mut hasher = Md5::new();
@@ -26,39 +33,28 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                 })
                 .collect::<Vec<_>>()
         })
-        .scan(
-            VecDeque::new(),
-            |pot: &mut VecDeque<(usize, u8)>, (i, hashed)| {
-                while !pot.is_empty() {
-                    if i - pot[0].0 > 1000 {
-                        pot.pop_front();
-                    } else {
-                        break;
-                    }
+        .scan(vec![Vec::new(); 16], |pot, (i, hashed)| {
+            let bytes = hashed.as_bytes();
+            let fives: Vec<usize> = bytes
+                .windows(5)
+                .filter_map(|w| {
+                    (w[0] == w[1] && w[0] == w[2] && w[0] == w[3] && w[0] == w[4]).then(|| {
+                        pot[idx(w[0])]
+                            .drain(..)
+                            .filter(|&v| i - v <= 1000)
+                            .collect::<Vec<_>>()
+                    })
+                })
+                .flatten()
+                .collect();
+            for w in bytes.windows(3) {
+                if w[0] == w[1] && w[0] == w[2] {
+                    pot[idx(w[0])].push(i);
+                    break;
                 }
-                match hashed
-                    .as_bytes()
-                    .windows(3)
-                    .filter_map(|w| (w[0] == w[1] && w[0] == w[2]).then(|| w[0]))
-                    .next()
-                {
-                    None => Some(None),
-                    Some(ch) => {
-                        let (done, rest): (VecDeque<(usize, u8)>, VecDeque<(usize, u8)>) =
-                            pot.iter().partition(|x| {
-                                hashed
-                                    .as_bytes()
-                                    .windows(5)
-                                    .any(|w| w.iter().all(|c| c == &x.1))
-                            });
-                        *pot = rest;
-                        pot.push_back((i, ch));
-                        Some(Some(done.into_iter().map(|x| x.0).collect::<Vec<_>>()))
-                    }
-                }
-            },
-        )
-        .flatten()
+            }
+            Some(fives)
+        })
         .flatten()
 }
 
