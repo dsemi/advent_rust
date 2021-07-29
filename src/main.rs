@@ -32,8 +32,8 @@ fn colorize_time(n: f64) -> String {
 fn run_part(f: Box<dyn Fn(&str) -> String>, input: &str) -> (f64, String) {
     let start = Instant::now();
     let ans = f(input);
-    let end = Instant::now();
-    let t: f64 = (end - start).as_millis() as f64 / 1000.0;
+    let elapsed = start.elapsed();
+    let t: f64 = elapsed.as_millis() as f64 / 1000.0;
     (t, ans)
 }
 
