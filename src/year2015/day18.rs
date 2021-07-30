@@ -1,60 +1,61 @@
-fn make_grid(input: &str) -> [i32; 10000] {
-    let mut grid = [0; 10000];
-    for (i, row) in input.lines().enumerate() {
-        for (j, v) in row.chars().enumerate() {
-            grid[100 * i + j] = if v == '#' { 1 } else { 0 };
+fn parse(input: &str) -> Vec<u128> {
+    let mut res = Vec::with_capacity(100);
+    for line in input.lines() {
+        let mut curr = 0;
+        for v in line.chars() {
+            curr <<= 1;
+            curr |= (v == '#') as u128;
         }
+        res.push(curr);
     }
-    grid
+    res
 }
 
-fn next_grid(grid: [i32; 10000]) -> [i32; 10000] {
-    let mut grid2 = grid.clone();
-    for i in 0..100 {
-        for j in 0..100 {
-            let adj_lights = vec![
-                (i - 1, j - 1),
-                (i, j - 1),
-                (i + 1, j - 1),
-                (i - 1, j),
-                (i + 1, j),
-                (i - 1, j + 1),
-                (i, j + 1),
-                (i + 1, j + 1),
-            ]
-            .into_iter()
-            .filter(|&(x, y)| x < 100 && y < 100 && grid[100 * x + y] > 0)
-            .count();
-            if grid[100 * i + j] > 0 && adj_lights != 2 && adj_lights != 3 {
-                grid2[100 * i + j] = 0;
-            } else if grid[100 * i + j] == 0 && adj_lights == 3 {
-                grid2[100 * i + j] = 1;
+fn step(lights: &mut Vec<u128>) {
+    let mut prev = 0;
+    for i in 0..lights.len() {
+        let mut curr = lights[i];
+        let next = *lights.get(i + 1).unwrap_or(&0);
+        let mut adjs = vec![prev << 1, prev, prev >> 1,
+                            curr << 1,       curr >> 1,
+                            next << 1, next, next >> 1];
+        let mut curr2 = 0;
+        for _ in 0..lights.len() {
+            curr2 <<= 1;
+            let adj = adjs.iter().map(|x| (x & 1) as u8).sum::<u8>();
+            for v in adjs.iter_mut() {
+                *v >>= 1;
             }
+            let mut c = curr & 1;
+            curr >>= 1;
+            if c > 0 && adj != 2 && adj != 3 {
+                c = 0;
+            } else if c == 0 && adj == 3 {
+                c = 1;
+            }
+            curr2 |= c;
         }
+        prev = std::mem::replace(&mut lights[i], curr2);
     }
-    grid2
 }
 
-pub fn part1(input: &str) -> i32 {
-    let mut grid = make_grid(input);
+pub fn part1(input: &str) -> u32 {
+    let mut lights = parse(input);
     for _ in 0..100 {
-        grid = next_grid(grid);
+        step(&mut lights);
     }
-    grid.iter().sum()
+    lights.into_iter().map(|x| x.count_ones()).sum()
 }
 
-pub fn part2(input: &str) -> i32 {
-    let mut grid = make_grid(input);
-    grid[0] = 1;
-    grid[99] = 1;
-    grid[9900] = 1;
-    grid[9999] = 1;
+pub fn part2(input: &str) -> u32 {
+    const CORNERS: u128 = 1 << 99 | 1;
+    let mut lights = parse(input);
+    lights[0] |= CORNERS;
+    lights[99] |= CORNERS;
     for _ in 0..100 {
-        grid = next_grid(grid);
-        grid[0] = 1;
-        grid[99] = 1;
-        grid[9900] = 1;
-        grid[9999] = 1;
+        step(&mut lights);
+        lights[0] |= CORNERS;
+    lights[99] |= CORNERS;
     }
-    grid.iter().sum()
+    lights.into_iter().map(|x| x.count_ones()).sum()
 }
