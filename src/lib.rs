@@ -82,7 +82,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
                     let day = &cap[1].parse::<i64>().unwrap();
                     let test = format!(
                         "#[test]
-                         fn test_{year}_{day}() {{
+                         fn test_{year}_{day:02}() {{
                            let input = get_file_input({year}, {day}, false);
                            let (part1, part2) = get_prob({year}, {day});
                            if let Some((ex1, ex2)) = get_expected_solutions({year}, {day}) {{
