@@ -1,25 +1,35 @@
 use crypto::digest::Digest;
 use crypto::md5::Md5;
 use rayon::prelude::*;
+use safe_arch::*;
 
 const CHUNK_SIZE: usize = 8000;
 
-struct HashRes {
+union HashRes {
+    n: m128i,
     md: [u8; 16],
 }
 
+union HexStr {
+    n: m256i,
+    hex: [u8; 32],
+}
+
 impl HashRes {
-    fn write(&self, res: &mut [u8]) {
-        let mut d = u128::from_be_bytes(self.md);
-        for i in 0..32 {
-            let x = (d & 0xF) as u8;
-            res[31-i] = if x > 9 {
-                x - 10 + b'a'
-            } else {
-                x + b'0'
-            };
-            d >>= 4;
-        }
+    unsafe fn write(&self, res: &mut HexStr) {
+        // Scale up for 32 chars
+        res.n = convert_to_i16_m256i_from_u8_m128i(self.n);
+        // Swap half byte pairs to get proper ordering
+        res.n = shr_all_i16_m256i(res.n, m128i::from(4_i128))
+            | (shl_all_u16_m256i(res.n, m128i::from(8_u128)) & set_splat_i16_m256i(0xf00));
+        // Add ASCII code pointer for digit/letter
+        res.n = add_i8_m256i(
+            res.n,
+            add_i8_m256i(
+                m256i::from([48_i8; 32]),
+                m256i::from([39_i8; 32]) & cmp_gt_mask_i8_m256i(res.n, m256i::from([9_i8; 32])),
+            ),
+        );
     }
 }
 
@@ -43,16 +53,18 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                     let mut h = hasher.clone();
                     h.input_str(&i.to_string());
                     let mut res = HashRes { md: [0; 16] };
-                    let mut out = [0; 32];
-                    h.result(&mut res.md);
-                    res.write(&mut out);
-                    for _ in 0..num {
-                        h.reset();
-                        h.input(&out);
+                    let mut out = HexStr { hex: [0; 32] };
+                    unsafe {
                         h.result(&mut res.md);
                         res.write(&mut out);
+                        for _ in 0..num {
+                            h.reset();
+                            h.input(&out.hex);
+                            h.result(&mut res.md);
+                            res.write(&mut out);
+                        }
+                        (i, out.hex)
                     }
-                    (i, out)
                 })
                 .collect::<Vec<_>>()
         })
