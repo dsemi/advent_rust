@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 use crate::utils::*;
 
@@ -35,7 +35,7 @@ fn tile(c: char) -> Tile {
 struct Maze {
     grid: Vec<Tile>,
     cols: usize,
-    moves: HashMap<usize, Vec<(usize, Edge)>>,
+    moves: AHashMap<usize, Vec<(usize, Edge)>>,
 }
 
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -53,7 +53,7 @@ impl Maze {
                 .flat_map(|line| line.chars().map(tile))
                 .collect(),
             cols: cols,
-            moves: HashMap::new(),
+            moves: AHashMap::new(),
         }
     }
 

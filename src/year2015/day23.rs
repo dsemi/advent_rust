@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
-fn run(mut r: HashMap<&str, i64>, input: &str) -> i64 {
+fn run(mut r: AHashMap<&str, i64>, input: &str) -> i64 {
     let s = input.replace(",", "");
     let instrs: Vec<Vec<&str>> = s
         .lines()
@@ -28,9 +28,9 @@ fn run(mut r: HashMap<&str, i64>, input: &str) -> i64 {
 }
 
 pub fn part1(input: &str) -> i64 {
-    run(hashmap!("a" => 0, "b" => 0), input)
+    run(vec![("a", 0), ("b", 0)].into_iter().collect(), input)
 }
 
 pub fn part2(input: &str) -> i64 {
-    run(hashmap!("a" => 1, "b" => 0), input)
+    run(vec![("a", 1), ("b", 0)].into_iter().collect(), input)
 }

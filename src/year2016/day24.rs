@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 use crate::utils::*;
 
@@ -26,8 +26,8 @@ fn neighbors(grid: &Vec<Vec<char>>, xy: &Coord<i32>) -> Vec<Coord<i32>> {
 fn find_all_distances(
     grid: &Vec<Vec<char>>,
     ns: &Vec<(Coord<i32>, char)>,
-) -> HashMap<(char, char), usize> {
-    let mut result = HashMap::new();
+) -> AHashMap<(char, char), usize> {
+    let mut result = AHashMap::new();
     for (p1, n1) in ns {
         for (p2, n2) in ns {
             if p1 == p2 {
@@ -45,7 +45,7 @@ fn find_all_distances(
     result
 }
 
-fn all_paths_and_dist_map(input: &str) -> (HashMap<(char, char), usize>, Vec<Vec<char>>) {
+fn all_paths_and_dist_map(input: &str) -> (AHashMap<(char, char), usize>, Vec<Vec<char>>) {
     let grid = input.lines().map(|line| line.chars().collect()).collect();
     let mut pts = input
         .lines()
@@ -72,7 +72,7 @@ fn all_paths_and_dist_map(input: &str) -> (HashMap<(char, char), usize>, Vec<Vec
     (dist_map, all_paths)
 }
 
-fn min_path_len(dists: HashMap<(char, char), usize>, all_paths: Vec<Vec<char>>) -> Option<usize> {
+fn min_path_len(dists: AHashMap<(char, char), usize>, all_paths: Vec<Vec<char>>) -> Option<usize> {
     all_paths.into_iter().map(|xs| xs.iter().zip(&xs[1..]).map(|(&a, &b)| dists[&(a, b)]).sum()).min()
 }
 
@@ -80,7 +80,6 @@ pub fn part1(input: &str) -> Option<usize> {
     let (dists, all_paths) = all_paths_and_dist_map(input);
     min_path_len(dists, all_paths)
 }
-
 
 pub fn part2(input: &str) -> Option<usize> {
     let (dists, mut all_paths) = all_paths_and_dist_map(input);

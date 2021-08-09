@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 use std::collections::VecDeque;
 
 fn parse(input: &str) -> (usize, usize) {
@@ -12,7 +12,7 @@ fn parse(input: &str) -> (usize, usize) {
 }
 
 fn play(n: usize, s: usize) -> Option<usize> {
-    let mut m = HashMap::new();
+    let mut m = AHashMap::new();
     let mut arr = vec![0].into_iter().collect::<VecDeque<_>>();
     for p in 1..=s {
         if p % 23 != 0 {

@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use counter::Counter;
-use std::collections::HashMap;
 
 use crate::utils::Coord;
 
@@ -72,7 +72,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let n: usize = 1_000_000_000;
-    let mut t: HashMap<usize, (usize, Vec<Vec<char>>)> = HashMap::new();
+    let mut t: AHashMap<usize, (usize, Vec<Vec<char>>)> = AHashMap::new();
     let mut grid = parse_landscape(input);
     for c in (0..n+1).rev() {
         let r = resource_value(&grid);

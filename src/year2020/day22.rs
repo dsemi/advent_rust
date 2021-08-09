@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 use std::collections::VecDeque;
 
 fn parse_game(s: &str) -> (VecDeque<i64>, VecDeque<i64>) {
@@ -10,7 +10,7 @@ fn parse_game(s: &str) -> (VecDeque<i64>, VecDeque<i64>) {
 }
 
 fn play(mut a_s: VecDeque<i64>, mut b_s: VecDeque<i64>, p2: bool, sub: bool) -> (i64, bool) {
-    let mut s = HashSet::new();
+    let mut s = AHashSet::new();
     if sub && a_s.iter().max().unwrap() > b_s.iter().max().unwrap() {
         return (0, true);
     }

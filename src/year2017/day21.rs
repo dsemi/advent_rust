@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 use crate::utils::*;
 
@@ -11,7 +11,7 @@ fn parse_img(input: &str) -> Grid {
         .collect()
 }
 
-fn parse_expansions(input: &str) -> HashMap<Grid, Grid> {
+fn parse_expansions(input: &str) -> AHashMap<Grid, Grid> {
     input
         .lines()
         .flat_map(|line| {
@@ -36,7 +36,7 @@ fn sqr(grid: &Grid, i: usize, j: usize, span: usize) -> Grid {
         .collect()
 }
 
-fn expand_image(img: &Grid, m: &HashMap<Grid, Grid>) -> Grid {
+fn expand_image(img: &Grid, m: &AHashMap<Grid, Grid>) -> Grid {
     let size = img.len();
     let span = if size % 2 == 0 { 2 } else { 3 };
     let sq_size = size / span;

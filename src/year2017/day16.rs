@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 use crate::year2017::day16::Action::*;
 
@@ -45,7 +45,7 @@ fn apply_action(s: &mut String, action: &Action) {
 
 fn dance(n: usize, actions: Vec<Action>) -> String {
     let mut result = "abcdefghijklmnop".to_string();
-    let mut tbl = HashMap::new();
+    let mut tbl = AHashMap::new();
     for c in 0..n {
         if let Some(v) = tbl.insert(result.clone(), c) {
             for _ in 0..((n - c) % (c - v)) {

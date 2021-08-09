@@ -1,6 +1,6 @@
+use ahash::AHashMap;
 use regex::Regex;
 use std::cmp::max;
-use std::collections::HashMap;
 
 use crate::utils::*;
 
@@ -43,7 +43,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 fn neighbors(
-    grid: &HashMap<Coord<i32>, Node>,
+    grid: &AHashMap<Coord<i32>, Node>,
     st: &(Coord<i32>, Coord<i32>),
 ) -> Vec<(Coord<i32>, Coord<i32>)> {
     vec![
@@ -63,7 +63,7 @@ fn neighbors(
 
 pub fn part2(input: &str) -> Option<usize> {
     let nodes = parse_nodes(input);
-    let mut grid = HashMap::new();
+    let mut grid = AHashMap::new();
     let mut opn = Coord::new(0, 0);
     let mut mx = Coord::new(0, 0);
     for node in nodes {

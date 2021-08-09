@@ -1,6 +1,5 @@
+use ahash::{AHashMap, AHashSet};
 use itertools::iterate;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::collections::VecDeque;
 
 use crate::utils::*;
@@ -37,8 +36,8 @@ fn find_next_move(
     enemy: char,
     coord: Coord<i32>,
 ) -> Option<Coord<i32>> {
-    let mut path = HashMap::new();
-    let mut visited = HashSet::new();
+    let mut path = AHashMap::new();
+    let mut visited = AHashSet::new();
     visited.insert(coord);
     let mut frontier = VecDeque::new();
     frontier.push_back(coord);

@@ -1,8 +1,8 @@
+use ahash::AHashMap;
 use regex::Regex;
-use std::collections::HashMap;
 
-fn parse_bags(s: &str) -> HashMap<String, Vec<(i64, String)>> {
-    let mut m = HashMap::new();
+fn parse_bags(s: &str) -> AHashMap<String, Vec<(i64, String)>> {
+    let mut m = AHashMap::new();
     let re = Regex::new(r"(?:(\d+) )?(\w+ \w+) bags?").unwrap();
     for line in s.lines() {
         let bags = re.captures_iter(line).collect::<Vec<_>>();
@@ -18,7 +18,7 @@ fn parse_bags(s: &str) -> HashMap<String, Vec<(i64, String)>> {
     m
 }
 
-fn holds_shiny_gold(m: &HashMap<String, Vec<(i64, String)>>, k: &str) -> bool {
+fn holds_shiny_gold(m: &AHashMap<String, Vec<(i64, String)>>, k: &str) -> bool {
     m[k]
         .iter()
         .any(|(_, k2)| k2 == "shiny gold" || holds_shiny_gold(m, &k2))
@@ -29,7 +29,7 @@ pub fn part1(input: &str) -> usize {
     m.keys().filter(|&k| holds_shiny_gold(&m, k)).count()
 }
 
-fn count_bags(m: &HashMap<String, Vec<(i64, String)>>, k: &str) -> i64 {
+fn count_bags(m: &AHashMap<String, Vec<(i64, String)>>, k: &str) -> i64 {
     m[k]
         .iter()
         .map(|(n, k2)| n + n * count_bags(m, &k2))

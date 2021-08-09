@@ -1,3 +1,5 @@
+use std::cmp::Ordering::Equal;
+use std::cmp::max_by;
 use std::env;
 use std::time::Instant;
 
@@ -10,6 +12,7 @@ extern crate scan_fmt;
 
 #[macro_use]
 mod utils;
+// mod md5;
 mod problems;
 mod year2015;
 mod year2016;
@@ -76,8 +79,12 @@ fn main() {
     }
 
     let mut total: f64 = 0.0;
+    let mut max_day = (0.0, 0);
     for &day in days.iter() {
-        total += run_problem(year, day);
+        let t = run_problem(year, day);
+        max_day = max_by(max_day, (t, day), |a, b| a.0.partial_cmp(&b.0).unwrap_or(Equal));
+        total += t;
     }
+    println!("Max: Day {:2} {:48.3} seconds", max_day.1, max_day.0);
     println!("Total: {:53.3} seconds", total);
 }

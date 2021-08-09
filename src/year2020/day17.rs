@@ -1,9 +1,8 @@
+use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 fn solve(s: &str, dim: usize) -> usize {
-    let mut on_cubes: HashSet<Vec<i64>> = s
+    let mut on_cubes: AHashSet<Vec<i64>> = s
         .lines()
         .enumerate()
         .flat_map(|(y, row)| {
@@ -21,7 +20,7 @@ fn solve(s: &str, dim: usize) -> usize {
         .collect();
     let pts = vec![vec![-1, 0, 1]; dim];
     for _ in 0..6 {
-        let mut m = HashMap::new();
+        let mut m = AHashMap::new();
         for pos in &on_cubes {
             for neighb in pts.iter().multi_cartesian_product() {
                 let pos2: Vec<i64> = pos.iter().zip(neighb).map(|(a, b)| a + b).collect();
@@ -31,7 +30,7 @@ fn solve(s: &str, dim: usize) -> usize {
                 }
             }
         }
-        let p1: HashSet<Vec<i64>> = on_cubes
+        let p1: AHashSet<Vec<i64>> = on_cubes
             .iter()
             .filter(|&pos| (2..=3).contains(m.get(pos).unwrap_or(&0)))
             .cloned()

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 use std::collections::VecDeque;
 
 type Planet = Vec<Vec<bool>>;
@@ -48,7 +48,7 @@ fn biodiversity(p: &Planet) -> u64 {
 
 pub fn part1(input: &str) -> u64 {
     let mut planet = parse_grid(input);
-    let mut s = HashSet::new();
+    let mut s = AHashSet::new();
     let mut result = biodiversity(&planet);
     while s.insert(result) {
         let counts = neighbor_counts(&planet);

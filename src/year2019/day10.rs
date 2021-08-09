@@ -1,7 +1,7 @@
+use ahash::AHashMap;
 use gcd::Gcd;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
-use std::collections::HashMap;
 
 type Coord = (i32, i32);
 
@@ -43,7 +43,7 @@ fn cmp(a: &Coord, b: &Coord) -> Ordering {
 }
 
 fn visibilities(pt: &Coord, pts: &Vec<Coord>) -> Vec<Vec<Coord>> {
-    let mut m: HashMap<Coord, Vec<Coord>> = HashMap::new();
+    let mut m: AHashMap<Coord, Vec<Coord>> = AHashMap::new();
     for p in pts.iter() {
         if p != pt {
             let e = m.entry(theta(*pt, *p)).or_insert(vec![]);

@@ -1,5 +1,5 @@
+use ahash::AHashSet;
 use itertools::Itertools;
-use std::collections::HashSet;
 
 fn reverse<T>(v: &mut Vec<T>, mut lo: usize, mut hi: usize) {
     let len = v.len();
@@ -48,7 +48,7 @@ pub fn part1(input: &str) -> u32 {
         .sum()
 }
 
-fn grid<I>(bss: I) -> HashSet<(i32, i32)>
+fn grid<I>(bss: I) -> AHashSet<(i32, i32)>
 where
     I: Iterator<Item = Vec<usize>>,
 {
@@ -72,9 +72,9 @@ fn adjacents(c: (i32, i32)) -> impl Iterator<Item = (i32, i32)> {
         })
 }
 
-fn region_containing(arr: &HashSet<(i32, i32)>, c: (i32, i32)) -> HashSet<(i32, i32)> {
+fn region_containing(arr: &AHashSet<(i32, i32)>, c: (i32, i32)) -> AHashSet<(i32, i32)> {
     let mut xs = vec![c];
-    let mut result = HashSet::new();
+    let mut result = AHashSet::new();
     while let Some(x) = xs.pop() {
         if !arr.contains(&x) || result.contains(&x) {
             continue;
@@ -87,7 +87,7 @@ fn region_containing(arr: &HashSet<(i32, i32)>, c: (i32, i32)) -> HashSet<(i32, 
 
 pub fn part2(input: &str) -> usize {
     let arr = grid(hashes(input));
-    let mut s = HashSet::new();
+    let mut s = AHashSet::new();
     (0..128)
         .cartesian_product(0..128)
         .filter_map(|x| {

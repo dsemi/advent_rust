@@ -1,7 +1,7 @@
+use ahash::AHashMap;
+use ahash::AHashSet;
 use itertools::Itertools;
 use regex::Regex;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 use crate::utils::*;
 
@@ -33,7 +33,7 @@ impl Floors {
 }
 
 fn parse_floors(input: &str) -> Floors {
-    let mut tbl = HashMap::new();
+    let mut tbl = AHashMap::new();
     let re = Regex::new(r"\S+ (microchip|generator)").unwrap();
     for (i, line) in input.lines().enumerate() {
         for item in re.find_iter(line) {
@@ -77,7 +77,7 @@ fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
 
 fn neighbors(floors: &Floors) -> Vec<Floors> {
     let mut result = Vec::new();
-    let mut neighbs = HashSet::new();
+    let mut neighbs = AHashSet::new();
     for e in vec![floors.elev + 1, floors.elev - 1] {
         if e > 0 && e <= 4 {
             for mut floors2 in all_moves(floors, e) {

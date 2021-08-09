@@ -1,11 +1,11 @@
+use ahash::AHashMap;
+use ahash::AHashSet;
 use itertools::Itertools;
 use num::Num;
 use num_traits::cast::FromPrimitive;
 use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::hash::Hash;
 use std::iter::Sum;
@@ -43,7 +43,7 @@ where
 
 pub struct Bfs<T, F, G, H> {
     pub frontier: VecDeque<(usize, T)>,
-    pub visited: HashSet<H>,
+    pub visited: AHashSet<H>,
     pub hash: G,
     pub neighbs: F,
 }
@@ -89,12 +89,12 @@ where
     F3: Fn(&T) -> usize,
     F4: Fn(&T) -> bool,
 {
-    let mut visited: HashSet<T> = vec![start].into_iter().collect();
+    let mut visited: AHashSet<T> = vec![start].into_iter().collect();
     let mut queue: BinaryHeap<(Reverse<usize>, T)> = BinaryHeap::new();
     queue.push((Reverse(0), start));
-    let mut came_from: HashMap<T, T> = HashMap::new();
-    let mut g_score: HashMap<T, usize> = vec![(start, 0)].into_iter().collect();
-    let mut f_score: HashMap<T, usize> = vec![(start, heur(&start))].into_iter().collect();
+    let mut came_from: AHashMap<T, T> = AHashMap::new();
+    let mut g_score: AHashMap<T, usize> = vec![(start, 0)].into_iter().collect();
+    let mut f_score: AHashMap<T, usize> = vec![(start, heur(&start))].into_iter().collect();
     while let Some((_, st)) = queue.pop() {
         if goal(&st) {
             let mut result = vec![st];
@@ -146,7 +146,7 @@ impl <T: Eq> PartialOrd for State<T> {
 
 pub struct Dijkstra<T, F> {
     queue: BinaryHeap<Reverse<State<T>>>,
-    dists: HashMap<T, usize>,
+    dists: AHashMap<T, usize>,
     neighbors: F,
 }
 
@@ -166,7 +166,7 @@ where
     }));
     Dijkstra {
         queue: queue,
-        dists: HashMap::new(),
+        dists: AHashMap::new(),
         neighbors: neighbors,
     }
 }
@@ -212,14 +212,6 @@ pub fn unit_dir(c: char) -> Coord<i64> {
         '^' => Coord::new(0, 1),
         _ => panic!("Unknown direction"),
     }
-}
-
-macro_rules! hashmap {
-    ($( $key: expr => $val: expr ),* $(,)?) => {{
-         let mut map = ::std::collections::HashMap::new();
-         $( map.insert($key, $val); )*
-         map
-    }}
 }
 
 pub fn transpose<T: Copy>(inp: &Vec<Vec<T>>) -> Vec<Vec<T>> {
