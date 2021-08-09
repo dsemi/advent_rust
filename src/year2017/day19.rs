@@ -1,9 +1,9 @@
+use ahash::AHashMap;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 
 use crate::utils::*;
 
-fn parse_grid(input: &str) -> HashMap<Coord<i32>, char> {
+fn parse_grid(input: &str) -> AHashMap<Coord<i32>, char> {
     input
         .lines()
         .enumerate()
@@ -15,7 +15,7 @@ fn parse_grid(input: &str) -> HashMap<Coord<i32>, char> {
         .collect()
 }
 
-fn turn(grid: &HashMap<Coord<i32>, char>, dir: Coord<i32>, pos: Coord<i32>) -> Coord<i32> {
+fn turn(grid: &AHashMap<Coord<i32>, char>, dir: Coord<i32>, pos: Coord<i32>) -> Coord<i32> {
     lazy_static! {
         static ref LEFT: Coord<i32> = Coord::new(0, 1);
         static ref RIGHT: Coord<i32> = Coord::new(0, -1);
@@ -28,7 +28,7 @@ fn turn(grid: &HashMap<Coord<i32>, char>, dir: Coord<i32>, pos: Coord<i32>) -> C
     }
 }
 
-fn follow_path(grid: HashMap<Coord<i32>, char>) -> Vec<char> {
+fn follow_path(grid: AHashMap<Coord<i32>, char>) -> Vec<char> {
     let mut coord = grid.keys().min().unwrap().clone();
     let mut dir = Coord::new(1, 0);
     let mut result = Vec::new();

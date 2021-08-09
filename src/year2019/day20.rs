@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 use crate::utils::*;
 use crate::year2019::day20::Portal::*;
@@ -20,12 +20,12 @@ enum Tile {
 
 struct Maze {
     grid: Vec<Vec<Tile>>,
-    moves: HashMap<(usize, usize), Vec<(usize, (usize, usize))>>,
+    moves: AHashMap<(usize, usize), Vec<(usize, (usize, usize))>>,
 }
 
 fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
     let grid: Vec<Vec<char>> = input.lines().map(|row| row.chars().collect()).collect();
-    let mut portals: HashMap<String, Vec<Portal>> = HashMap::new();
+    let mut portals: AHashMap<String, Vec<Portal>> = AHashMap::new();
     for r in 0..grid.len() {
         for c in 0..grid[r].len() {
             if grid[r][c].is_ascii_uppercase() {
@@ -57,7 +57,7 @@ fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
             }
         }
     }
-    let mut bi: HashMap<Portal, Portal> = HashMap::new();
+    let mut bi: AHashMap<Portal, Portal> = AHashMap::new();
     let mut start = None;
     let mut end = None;
     for (k, ps) in portals.iter() {
@@ -101,7 +101,7 @@ fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
     (
         Maze {
             grid: grid2,
-            moves: HashMap::new(),
+            moves: AHashMap::new(),
         },
         start.unwrap(),
         end.unwrap(),

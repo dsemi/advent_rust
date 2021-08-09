@@ -1,9 +1,9 @@
+use ahash::AHashMap;
 use regex::Regex;
-use std::collections::HashMap;
 
 lazy_static! {
-    static ref TAPE: HashMap<&'static str, fn(i32) -> bool> = {
-        let mut m: HashMap<&'static str, fn(i32) -> bool> = HashMap::new();
+    static ref TAPE: AHashMap<&'static str, fn(i32) -> bool> = {
+        let mut m: AHashMap<&'static str, fn(i32) -> bool> = AHashMap::new();
         m.insert("children", |x| x == 3);
         m.insert("cats", |x| x == 7);
         m.insert("samoyeds", |x| x == 2);
@@ -18,7 +18,7 @@ lazy_static! {
     };
 }
 
-fn solve<'a>(input: &str, tape: HashMap<&'a str, fn(i32) -> bool>) -> Option<usize> {
+fn solve<'a>(input: &str, tape: AHashMap<&'a str, fn(i32) -> bool>) -> Option<usize> {
     let re = Regex::new(r"(\w+): (\d+)").unwrap();
     input
         .lines()
@@ -33,14 +33,14 @@ fn solve<'a>(input: &str, tape: HashMap<&'a str, fn(i32) -> bool>) -> Option<usi
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    solve(input, HashMap::new())
+    solve(input, AHashMap::new())
 }
 
 pub fn part2(input: &str) -> Option<usize> {
     solve(
         input,
         {
-            let mut m: HashMap<&'static str, fn(i32) -> bool> = HashMap::new();
+            let mut m: AHashMap<&'static str, fn(i32) -> bool> = AHashMap::new();
             m.insert("cats", |x| x > 7);
             m.insert("pomeranians", |x| x < 3);
             m.insert("goldfish", |x| x < 5);

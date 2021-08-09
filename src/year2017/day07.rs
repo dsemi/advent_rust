@@ -1,6 +1,5 @@
+use ahash::{AHashMap, AHashSet};
 use counter::Counter;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 use crate::utils::*;
 
@@ -14,11 +13,11 @@ pub fn part1(input: &str) -> String {
     let c = inp[1]
         .iter()
         .flat_map(|x| x.split(", "))
-        .collect::<HashSet<_>>();
+        .collect::<AHashSet<_>>();
     let s = inp[0]
         .iter()
         .map(|x| x.split_whitespace().next().unwrap())
-        .collect::<HashSet<_>>();
+        .collect::<AHashSet<_>>();
     (&s - &c).into_iter().next().map(|x| x.to_string()).unwrap()
 }
 
@@ -27,7 +26,7 @@ struct Node {
     children: Vec<String>,
 }
 
-fn find_imbalance(m: &HashMap<String, Node>, curr: &str) -> (i64, bool) {
+fn find_imbalance(m: &AHashMap<String, Node>, curr: &str) -> (i64, bool) {
     let node = &m[curr];
     if node.children.is_empty() {
         return (node.weight, false);

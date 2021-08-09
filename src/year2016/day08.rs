@@ -1,9 +1,9 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 
 const W: usize = 50;
 const H: usize = 6;
 
-fn process_instr(grid: &mut HashSet<(usize, usize)>, line: &str) {
+fn process_instr(grid: &mut AHashSet<(usize, usize)>, line: &str) {
     if let Ok((a, b)) = scan_fmt!(line, "rect {}x{}", usize, usize) {
         for c in 0..a {
             for r in 0..b {
@@ -24,8 +24,8 @@ fn process_instr(grid: &mut HashSet<(usize, usize)>, line: &str) {
     }
 }
 
-fn lit_pixels(input: &str) -> HashSet<(usize, usize)> {
-    let mut result = HashSet::new();
+fn lit_pixels(input: &str) -> AHashSet<(usize, usize)> {
+    let mut result = AHashSet::new();
     input
         .lines()
         .for_each(|line| process_instr(&mut result, line));

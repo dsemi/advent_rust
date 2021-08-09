@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 fn redistribute_until_cycle(input: &str) -> (usize, usize) {
     let mut ns: Vec<usize> = input
@@ -6,7 +6,7 @@ fn redistribute_until_cycle(input: &str) -> (usize, usize) {
         .map(|x| x.parse().unwrap())
         .collect();
     let len = ns.len();
-    let mut m: HashMap<Vec<usize>, usize> = HashMap::new();
+    let mut m: AHashMap<Vec<usize>, usize> = AHashMap::new();
     for c in 0.. {
         if m.contains_key(&ns) {
             return (c, c - m[&ns]);

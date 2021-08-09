@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 
 use crate::year2020::day08::Instr::Acc;
 use crate::year2020::day08::Instr::Jmp;
@@ -26,7 +26,7 @@ fn parse_prog(s: &str) -> Vec<Instr> {
 }
 
 fn run_prog(prog: &Vec<Instr>) -> (i64, bool) {
-    let mut visited = HashSet::new();
+    let mut visited = AHashSet::new();
     let mut acc = 0;
     let mut i = 0;
     while 0 <= i && i < prog.len() as i64 {

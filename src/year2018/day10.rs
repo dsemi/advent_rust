@@ -1,5 +1,5 @@
+use ahash::AHashSet;
 use std::cmp::{max, min};
-use std::collections::HashSet;
 
 use crate::utils::Coord;
 
@@ -54,7 +54,7 @@ fn find_message(objs: &mut Vec<Obj>) -> usize {
 }
 
 fn show_objects(objs: &Vec<Obj>) -> String {
-    let lights = objs.iter().map(|obj| obj.pos).collect::<HashSet<_>>();
+    let lights = objs.iter().map(|obj| obj.pos).collect::<AHashSet<_>>();
     let (x0, y0, x1, y1) = bounding_box(objs);
     let mut result = "\n".to_owned();
     for y in y0..=y1 {

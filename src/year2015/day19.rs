@@ -1,7 +1,6 @@
+use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
 use regex::{Captures, Regex};
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 fn parse_mappings(input: &str) -> (&str, Vec<(&str, &str)>) {
     let v: Vec<_> = input.split("\n\n").collect();
@@ -32,14 +31,14 @@ pub fn part1(input: &str) -> usize {
     mappings
         .into_iter()
         .flat_map(|(k, v)| single_replacements(s, k, v))
-        .collect::<HashSet<_>>()
+        .collect::<AHashSet<_>>()
         .len()
 }
 
 pub fn part2(input: &str) -> i32 {
     let (s, mappings) = parse_mappings(input);
     let mut mol: String = s.chars().rev().collect();
-    let reps: HashMap<String, String> = mappings
+    let reps: AHashMap<String, String> = mappings
         .into_iter()
         .map(|(a, b)| (b.chars().rev().collect(), a.chars().rev().collect()))
         .collect();

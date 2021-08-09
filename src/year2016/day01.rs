@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 use std::iter;
 
 use crate::utils::Coord;
@@ -29,7 +29,7 @@ pub fn part1(input: &str) -> i32 {
 }
 
 pub fn part2(input: &str) -> i32 {
-    let mut s = HashSet::new();
+    let mut s = AHashSet::new();
     for pos in path(input) {
         if s.contains(&pos) {
             return pos.x.abs() + pos.y.abs();

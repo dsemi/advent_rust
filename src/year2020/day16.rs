@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 
 fn parse_rules(s: &str) -> (Vec<(String, i64, i64, i64, i64)>, Vec<i64>, Vec<Vec<i64>>) {
     let parts: Vec<&str> = s.split("\n\n").collect();
@@ -59,12 +59,12 @@ pub fn part2(input: &str) -> i64 {
             })
             .collect();
     }
-    let mut poss_set: Vec<HashSet<String>> = poss
+    let mut poss_set: Vec<AHashSet<String>> = poss
         .into_iter()
         .map(|p| p.into_iter().map(|x| x.0).collect())
         .collect();
     while !poss_set.iter().all(|p| p.len() == 1) {
-        let ones: HashSet<String> = poss_set
+        let ones: AHashSet<String> = poss_set
             .iter()
             .filter(|p| p.len() == 1)
             .flat_map(|p| p.iter().map(|x| x.to_string()))

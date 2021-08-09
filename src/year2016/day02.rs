@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 use crate::utils::Coord;
 
 fn run(input: &str, pad: &str) -> String {
-    let d: HashMap<Coord<i32>, &str> = pad
+    let d: AHashMap<Coord<i32>, &str> = pad
         .lines()
         .enumerate()
         .flat_map(|(y, line)| {

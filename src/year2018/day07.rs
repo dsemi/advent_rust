@@ -1,17 +1,16 @@
+use ahash::{AHashMap, AHashSet};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::collections::HashMap;
-use std::collections::HashSet;
 
 struct Scheduler {
     avail: BinaryHeap<Reverse<char>>,
-    preds: HashMap<char, HashSet<char>>,
-    succs: HashMap<char, HashSet<char>>,
+    preds: AHashMap<char, AHashSet<char>>,
+    succs: AHashMap<char, AHashSet<char>>,
 }
 
 fn parse_steps(input: &str) -> Scheduler {
-    let mut preds = HashMap::new();
-    let mut succs = HashMap::new();
+    let mut preds = AHashMap::new();
+    let mut succs = AHashMap::new();
     for line in input.lines() {
         let (a, b) = scan_fmt!(
             line,
@@ -20,8 +19,8 @@ fn parse_steps(input: &str) -> Scheduler {
             char
         )
         .unwrap();
-        preds.entry(b).or_insert_with(|| HashSet::new()).insert(a);
-        succs.entry(a).or_insert_with(|| HashSet::new()).insert(b);
+        preds.entry(b).or_insert_with(|| AHashSet::new()).insert(a);
+        succs.entry(a).or_insert_with(|| AHashSet::new()).insert(b);
     }
     let mut avail = BinaryHeap::new();
     for c in succs.keys() {
@@ -38,7 +37,7 @@ fn parse_steps(input: &str) -> Scheduler {
 
 impl Scheduler {
     fn run(&mut self, mut workers: usize) -> (String, u32) {
-        let mut done = HashSet::new();
+        let mut done = AHashSet::new();
         let mut work_queue = BinaryHeap::new();
         let mut result = ("".to_owned(), 0);
 
@@ -61,7 +60,7 @@ impl Scheduler {
             result.1 = time;
             workers += 1;
             done.insert(curr);
-            for st in self.succs.get(&curr).unwrap_or(&HashSet::new()) {
+            for st in self.succs.get(&curr).unwrap_or(&AHashSet::new()) {
                 if !done.contains(st) && done.is_superset(&self.preds[st]) {
                     self.avail.push(Reverse(*st));
                 }

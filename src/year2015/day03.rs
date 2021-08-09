@@ -1,8 +1,8 @@
-use std::collections::HashSet;
+use ahash::AHashSet;
 
 use crate::utils::*;
 
-fn locations(inp: impl Iterator<Item = char>) -> HashSet<Coord<i64>> {
+fn locations(inp: impl Iterator<Item = char>) -> AHashSet<Coord<i64>> {
     std::iter::once(Coord::new(0, 0))
         .chain(inp.scan(Coord::new(0, 0), |loc, c| {
             *loc += unit_dir(c);

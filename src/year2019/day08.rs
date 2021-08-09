@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 pub fn part1(input: &str) -> i32 {
     let cnts = input
@@ -7,7 +7,7 @@ pub fn part1(input: &str) -> i32 {
         .chunks(150)
         .into_iter()
         .map(|x| {
-            let mut t = HashMap::new();
+            let mut t = AHashMap::new();
             for c in x.into_iter() {
                 *t.entry(c).or_insert(0) += 1;
             }

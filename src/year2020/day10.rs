@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 fn parse_nums(s: &str) -> Vec<i64> {
     let mut ns: Vec<i64> = s.lines().map(|x| x.parse().unwrap()).collect();
@@ -10,7 +10,7 @@ fn parse_nums(s: &str) -> Vec<i64> {
 
 pub fn part1(input: &str) -> i64 {
     let ns = parse_nums(input);
-    let mut cnt = HashMap::new();
+    let mut cnt = AHashMap::new();
     for (a, b) in ns.iter().zip(ns[1..].iter()) {
         let counter = cnt.entry(b - a).or_insert(0);
         *counter += 1;

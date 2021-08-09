@@ -1,10 +1,10 @@
 use itertools::Itertools;
 use std::cmp::max;
-use std::collections::HashMap;
+use ahash::AHashMap;
 use std::hash::Hash;
 
 struct IdMap<T> {
-    m: HashMap<T, usize>,
+    m: AHashMap<T, usize>,
 }
 
 impl<T> IdMap<T>
@@ -13,7 +13,7 @@ where
     T: Hash,
 {
     fn new() -> Self {
-        IdMap { m: HashMap::new() }
+        IdMap { m: AHashMap::new() }
     }
 
     fn id(&mut self, k: T) -> usize {

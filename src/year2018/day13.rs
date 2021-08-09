@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 use crate::utils::Coord;
 use crate::year2018::day13::Turn::*;
@@ -45,13 +45,13 @@ fn move_cart(cart: &mut Cart, grid: &Vec<Vec<char>>) {
 
 struct Tracks {
     grid: Vec<Vec<char>>,
-    carts: HashMap<Coord<i32>, Cart>,
+    carts: AHashMap<Coord<i32>, Cart>,
 }
 
 fn parse_tracks(input: &str) -> Tracks {
     let mut result = Tracks {
         grid: Vec::new(),
-        carts: HashMap::new(),
+        carts: AHashMap::new(),
     };
     for (r, line) in input.lines().enumerate() {
         result.grid.push(Vec::new());

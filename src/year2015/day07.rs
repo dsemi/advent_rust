@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 use std::iter::once;
 
 struct Node<'a>(&'a dyn Fn(u16, u16) -> u16, &'a str, &'a str);
 
-type Network<'a> = HashMap<&'a str, Node<'a>>;
+type Network<'a> = AHashMap<&'a str, Node<'a>>;
 
-fn val<'a>(graph: &Network<'a>, cache: &mut HashMap<&'a str, u16>, signal: &'a str) -> u16 {
+fn val<'a>(graph: &Network<'a>, cache: &mut AHashMap<&'a str, u16>, signal: &'a str) -> u16 {
     signal.parse().ok().unwrap_or_else(|| {
         if !cache.contains_key(&signal) {
             let Node(f, a, b) = graph[&signal];
@@ -16,7 +16,7 @@ fn val<'a>(graph: &Network<'a>, cache: &mut HashMap<&'a str, u16>, signal: &'a s
     })
 }
 
-fn lookup<'a>(graph: Network<'a>, signal: &'a str, mut cache: HashMap<&'a str, u16>) -> u16 {
+fn lookup<'a>(graph: Network<'a>, signal: &'a str, mut cache: AHashMap<&'a str, u16>) -> u16 {
     val(&graph, &mut cache, signal)
 }
 
@@ -40,7 +40,7 @@ fn parse_cmds<'a>(input: &'a str) -> Network<'a> {
 }
 
 pub fn part1(input: &str) -> u16 {
-    lookup(parse_cmds(input), "a", HashMap::new())
+    lookup(parse_cmds(input), "a", AHashMap::new())
 }
 
 pub fn part2(input: &str) -> u16 {

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
-fn run_cmd<'a>(reg: &mut HashMap<&'a str, i64>, line: &'a str) -> i64 {
+fn run_cmd<'a>(reg: &mut AHashMap<&'a str, i64>, line: &'a str) -> i64 {
     match line.split_whitespace().collect::<Vec<_>>()[..] {
         [r, op, n, "if", r2, cond, n2] => {
             let cmp_fn: fn(i64, i64) -> bool = match cond {
@@ -23,7 +23,7 @@ fn run_cmd<'a>(reg: &mut HashMap<&'a str, i64>, line: &'a str) -> i64 {
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    let mut tbl = HashMap::new();
+    let mut tbl = AHashMap::new();
     input.lines().for_each(|line| {
         run_cmd(&mut tbl, line);
     });
@@ -31,6 +31,6 @@ pub fn part1(input: &str) -> Option<i64> {
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let mut tbl = HashMap::new();
+    let mut tbl = AHashMap::new();
     input.lines().map(|line| run_cmd(&mut tbl, line)).max()
 }

@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 use crate::year2018::day04::Record::*;
 
@@ -25,12 +25,12 @@ fn parse_records<'a>(input: &'a str) -> impl Iterator<Item = Record> + 'a {
     })
 }
 
-fn guard_sleep_freqs<I>(records: I) -> HashMap<usize, Vec<usize>>
+fn guard_sleep_freqs<I>(records: I) -> AHashMap<usize, Vec<usize>>
 where
     I: IntoIterator<Item = Record>,
 {
     let (mut guard, mut last_m, mut st) = (0, 0, 0);
-    let mut result: HashMap<usize, Vec<usize>> = HashMap::new();
+    let mut result: AHashMap<usize, Vec<usize>> = AHashMap::new();
     for record in records {
         match record {
             GuardChange(guard_num) => {

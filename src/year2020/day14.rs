@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
     let mut mask = Vec::new();
@@ -23,7 +23,7 @@ fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
 
 pub fn part1(input: &str) -> u64 {
     let cmds = parse_cmds(input);
-    let mut m = HashMap::new();
+    let mut m = AHashMap::new();
     for (mask, r, v) in cmds {
         let mut v = v;
         for (i, c) in mask {
@@ -38,7 +38,7 @@ pub fn part1(input: &str) -> u64 {
     m.values().sum()
 }
 
-fn set_vals(m: &mut HashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
+fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
     if xs.is_empty() {
         m.insert(r, v);
         return;
@@ -57,7 +57,7 @@ fn set_vals(m: &mut HashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
 
 pub fn part2(input: &str) -> u64 {
     let cmds = parse_cmds(input);
-    let mut m = HashMap::new();
+    let mut m = AHashMap::new();
     for (mask, r, v) in cmds {
         set_vals(&mut m, &mask[..], r, v);
     }

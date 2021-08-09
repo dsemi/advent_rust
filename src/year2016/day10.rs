@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use std::cmp::{max, min};
-use std::collections::HashMap;
 
 use crate::year2016::day10::Src::*;
 
@@ -10,7 +10,7 @@ enum Src {
 
 type Node = Vec<Src>;
 
-fn populate_ins(m: &mut HashMap<String, Vec<i64>>, tbl: &HashMap<String, Node>, k: &String) {
+fn populate_ins(m: &mut AHashMap<String, Vec<i64>>, tbl: &AHashMap<String, Node>, k: &String) {
     if m.contains_key(k) {
         return;
     }
@@ -28,8 +28,8 @@ fn populate_ins(m: &mut HashMap<String, Vec<i64>>, tbl: &HashMap<String, Node>, 
     m.insert(k.clone(), inps);
 }
 
-fn run_factory(input: &str) -> HashMap<String, Vec<i64>> {
-    let mut tbl: HashMap<String, Node> = HashMap::new();
+fn run_factory(input: &str) -> AHashMap<String, Vec<i64>> {
+    let mut tbl: AHashMap<String, Node> = AHashMap::new();
     for line in input.lines() {
         match line.split_whitespace().collect::<Vec<_>>()[..] {
             ["bot", n, _, _, _, o1, n1, _, _, _, o2, n2] => {
@@ -45,7 +45,7 @@ fn run_factory(input: &str) -> HashMap<String, Vec<i64>> {
             _ => panic!("Parse failed: {}", line),
         }
     }
-    let mut result: HashMap<String, Vec<i64>> = HashMap::new();
+    let mut result: AHashMap<String, Vec<i64>> = AHashMap::new();
     for k in tbl.keys() {
         populate_ins(&mut result, &tbl, k);
     }

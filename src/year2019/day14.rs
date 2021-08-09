@@ -1,8 +1,8 @@
+use ahash::AHashMap;
 use num::integer::div_mod_floor;
 use std::cmp::max;
-use std::collections::HashMap;
 
-type Reactions<'a> = HashMap<&'a str, (i64, Vec<(i64, &'a str)>)>;
+type Reactions<'a> = AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>;
 
 fn parse_reactions<'a>(input: &'a str) -> Reactions<'a> {
     input
@@ -25,7 +25,7 @@ fn parse_reactions<'a>(input: &'a str) -> Reactions<'a> {
 fn num_ore<'a>(reactions: &Reactions<'a>, n: i64) -> i64 {
     fn go<'a>(
         reactions: &Reactions<'a>,
-        surplus: &mut HashMap<&'a str, i64>,
+        surplus: &mut AHashMap<&'a str, i64>,
         ore: &mut i64,
         k: &'a str,
         c: i64,
@@ -49,7 +49,7 @@ fn num_ore<'a>(reactions: &Reactions<'a>, n: i64) -> i64 {
         }
     }
     let mut ore = 0;
-    let mut surplus = HashMap::new();
+    let mut surplus = AHashMap::new();
     go(reactions, &mut surplus, &mut ore, "FUEL", n);
     ore
 }

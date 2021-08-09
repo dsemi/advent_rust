@@ -1,5 +1,5 @@
+use ahash::AHashSet;
 use std::cmp::max;
-use std::collections::HashSet;
 
 use crate::year2018::day19::Instr;
 use crate::year2018::day19::Op::*;
@@ -54,7 +54,7 @@ pub fn part1(input: &str) -> Option<i64> {
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let mut s = HashSet::new();
+    let mut s = AHashSet::new();
     Prog::parse_instrs(input)
         .take_while(|&x| s.insert(x))
         .last()

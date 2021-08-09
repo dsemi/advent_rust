@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 use take_until::TakeUntilExt;
 
 use crate::utils::*;
@@ -24,7 +24,7 @@ pub fn part1(input: &str) -> i64 {
 }
 
 fn spiral_path() -> impl Iterator<Item = i64> {
-    let mut tbl = HashMap::new();
+    let mut tbl = AHashMap::new();
     tbl.insert(Coord::new(0, 0), 1);
     (1..)
         .flat_map(|i| vec![i; 2])

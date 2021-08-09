@@ -1,8 +1,8 @@
+use ahash::AHashMap;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
-    let mut d = HashMap::new();
+    let mut d = AHashMap::new();
     let mut result: Vec<Vec<i32>> = Vec::new();
     let l = (input.lines().count() as f32).sqrt() as usize + 1;
     for _ in 0..l {
