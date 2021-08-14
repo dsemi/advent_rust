@@ -1,6 +1,6 @@
 extern crate proc_macro;
-use itertools::Itertools;
 use proc_macro::TokenStream;
+use quote::quote;
 use regex::Regex;
 use std::fs;
 use syn;
@@ -10,21 +10,19 @@ pub fn make_ptypes(_item: TokenStream) -> TokenStream {
     let to_strings = vec![
         "i8", "i16", "i32", "i64", "i128", "u8", "u16", "u32", "u64", "u128", "usize", "String",
     ];
-    to_strings
-        .iter()
-        .map(|x| {
-            format!(
-                "impl PType for {} {{
-                   fn to(&self) -> String {{
-                     self.to_string()
-                   }}
-                 }}",
-                x
-            )
-        })
-        .join("\n")
-        .parse()
-        .unwrap()
+    let gen = to_strings
+        .into_iter()
+        .map(|x| x.parse::<proc_macro2::TokenStream>().unwrap());
+    let tokens = quote! {
+        #(
+            impl PType for #gen {
+                fn to(&self) -> String {
+                    self.to_string()
+                }
+            }
+        )*
+    };
+    tokens.into()
 }
 
 #[proc_macro]
@@ -70,7 +68,7 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn make_tests(_item: TokenStream) -> TokenStream {
-    let mut result = String::new();
+    let mut result = proc_macro2::TokenStream::new();
     let y_re = Regex::new(r"year(\d\d\d\d)$").unwrap();
     let d_re = Regex::new(r"/day(\d\d).rs$").unwrap();
     for entry in fs::read_dir("src").unwrap() {
@@ -80,23 +78,23 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
             for entry in fs::read_dir(dir).unwrap() {
                 if let Some(cap) = d_re.captures(entry.unwrap().path().to_str().unwrap()) {
                     let day = &cap[1].parse::<i64>().unwrap();
-                    let test = format!(
-                        "#[test]
-                         fn test_{year}_{day:02}() {{
-                           let input = get_file_input({year}, {day}, false);
-                           let (part1, part2) = get_prob({year}, {day});
-                           if let Some((ex1, ex2)) = get_expected_solutions({year}, {day}) {{
-                             assert_eq!(ex1, part1(&input));
-                             assert_eq!(ex2, part2(&input));
-                           }}
-                         }}\n\n",
-                        year = year,
-                        day = day
-                    );
-                    result.push_str(&test);
+                    let fn_name: proc_macro2::TokenStream =
+                        format!("test_{0}_{1:02}", year, day).parse().unwrap();
+                    let test = quote! {
+                        #[test]
+                        fn #fn_name() {
+                            let input = get_file_input(#year, #day, false);
+                            let (part1, part2) = get_prob(#year, #day);
+                            if let Some((ex1, ex2)) = get_expected_solutions(#year, #day) {
+                                assert_eq!(ex1, part1(&input));
+                                assert_eq!(ex2, part2(&input));
+                            }
+                        }
+                    };
+                    result.extend(test);
                 }
             }
         }
     }
-    result.parse().unwrap()
+    result.into()
 }
