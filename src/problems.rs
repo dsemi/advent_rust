@@ -1,4 +1,4 @@
-use advent::{make_problems, make_ptypes, make_tests};
+use advent::{detect_problems, make_problems, make_ptypes, make_tests};
 use reqwest::blocking::Client;
 use std::env;
 use std::fmt::Debug;
@@ -60,7 +60,9 @@ impl<T: PType, S: PType, U: PType> PType for (T, S, U) {
     }
 }
 
-fn wrap<T>(f: &'static dyn Fn(&str) -> T) -> Box<dyn Fn(&str) -> String>
+type Output = Box<dyn Fn(&str) -> String>;
+
+fn wrap<T>(f: &'static dyn Fn(&str) -> T) -> Output
 where
     T: PType,
 {
@@ -72,6 +74,8 @@ macro_rules! make_prob {
         (wrap(&crate::$y::$d::part1), wrap(&crate::$y::$d::part2))
     };
 }
+
+detect_problems!();
 
 make_problems!();
 
@@ -86,10 +90,7 @@ fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
     }
     match &DICT[year.to_string()][day.to_string()] {
         json::JsonValue::Array(v) => {
-            let solns = v
-                .iter()
-                .map(|x| x.as_str().unwrap())
-                .collect::<Vec<_>>();
+            let solns = v.iter().map(|x| x.as_str().unwrap()).collect::<Vec<_>>();
             Some((solns[0].to_string(), solns[1].to_string()))
         }
         _ => None,
