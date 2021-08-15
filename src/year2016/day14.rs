@@ -50,7 +50,7 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .map(|i| {
-                    let mut h = hasher.clone();
+                    let mut h = hasher;
                     h.input_str(&i.to_string());
                     let mut res = HashRes { md: [0; 16] };
                     let mut out = HexStr { hex: [0; 32] };

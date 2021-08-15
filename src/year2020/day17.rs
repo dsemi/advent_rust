@@ -11,9 +11,7 @@ fn solve(s: &str, dim: usize) -> usize {
                 .filter(|(_, v)| v == &'#')
                 .map(move |(x, _)| {
                     let mut v = vec![x as i64, y as i64];
-                    for _ in 2..dim {
-                        v.push(0);
-                    }
+                    v.extend(vec![0; dim - 2]);
                     v
                 })
         })

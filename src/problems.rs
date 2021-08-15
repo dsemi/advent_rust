@@ -1,5 +1,4 @@
 use advent::{make_problems, make_ptypes, make_tests};
-use json;
 use reqwest::blocking::Client;
 use std::env;
 use std::fmt::Debug;
@@ -88,7 +87,7 @@ fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
     match &DICT[year.to_string()][day.to_string()] {
         json::JsonValue::Array(v) => {
             let solns = v
-                .into_iter()
+                .iter()
                 .map(|x| x.as_str().unwrap())
                 .collect::<Vec<_>>();
             Some((solns[0].to_string(), solns[1].to_string()))

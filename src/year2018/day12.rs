@@ -33,7 +33,7 @@ fn next_gen(m: &Map, s: Vec<(i64, char)>) -> Vec<(i64, char)> {
         .collect()
 }
 
-fn sum_indices(s: &Vec<(i64, char)>) -> i64 {
+fn sum_indices(s: &[(i64, char)]) -> i64 {
     s.iter().filter_map(|(i, c)| (*c == '#').then(|| i)).sum()
 }
 
@@ -49,7 +49,7 @@ fn find_arith(m: &Map, mut x: Vec<(i64, char)>) -> (i64, i64, i64) {
     let mut prev = 0;
     for c in 0.. {
         let si = sum_indices(&x);
-        x = next_gen(&m, x);
+        x = next_gen(m, x);
         let prev2 = sum_indices(&x) - si;
         if prev2 == prev {
             return (c, prev, si);

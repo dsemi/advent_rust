@@ -30,7 +30,7 @@ fn ap(d: &str, p: Coord3) -> Coord3 {
     }
 }
 
-fn path<'a>(input: &'a str) -> impl Iterator<Item = Coord3> + 'a {
+fn path(input: &str) -> impl Iterator<Item = Coord3> + '_ {
     input.split(',').scan(Coord3(0, 0, 0), |acc, x| {
         *acc = ap(x, *acc);
         Some(*acc)
@@ -38,9 +38,9 @@ fn path<'a>(input: &'a str) -> impl Iterator<Item = Coord3> + 'a {
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    path(input).last().map(|x| dist_from_origin(x))
+    path(input).last().map(dist_from_origin)
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    path(input).map(|x| dist_from_origin(x)).max()
+    path(input).map(dist_from_origin).max()
 }

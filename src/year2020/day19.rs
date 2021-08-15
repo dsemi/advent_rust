@@ -18,7 +18,7 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
             Multi(
                 ps[1]
                     .split(" | ")
-                    .map(|part| part.split(" ").map(|x| x.parse().unwrap()).collect())
+                    .map(|part| part.split(' ').map(|x| x.parse().unwrap()).collect())
                     .collect(),
             )
         };
@@ -35,7 +35,7 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
 }
 
 fn count_matches(rules: Vec<Rule>, messages: Vec<&str>) -> usize {
-    fn go<'a>(rules: &'a Vec<Rule>, rule: &Rule, s: &'a [u8]) -> Vec<&'a [u8]> {
+    fn go<'a>(rules: &'a [Rule], rule: &Rule, s: &'a [u8]) -> Vec<&'a [u8]> {
         if s.is_empty() {
             return vec![];
         }
@@ -50,9 +50,9 @@ fn count_matches(rules: Vec<Rule>, messages: Vec<&str>) -> usize {
             // Need vec b/c option could partially succeed down the wrong path and not
             // backtrack properly.
             Multi(rss) => rss
-                .into_iter()
+                .iter()
                 .flat_map(|rs| {
-                    rs.into_iter().fold(vec![s], |acc, r| {
+                    rs.iter().fold(vec![s], |acc, r| {
                         acc.into_iter()
                             .flat_map(|x| go(rules, &rules[*r], x))
                             .collect()

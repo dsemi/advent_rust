@@ -1,8 +1,8 @@
 fn count_valid(f: fn(usize, usize, char, &str) -> bool, input: &str) -> usize {
     input.lines()
         .filter(|line| {
-            let vs: Vec<&str> = line.split(" ").collect();
-            let ns: Vec<usize> = vs[0].split("-").map(|x| x.parse().unwrap()).collect();
+            let vs: Vec<&str> = line.split(' ').collect();
+            let ns: Vec<usize> = vs[0].split('-').map(|x| x.parse().unwrap()).collect();
             f(ns[0], ns[1], vs[1].chars().next().unwrap(), vs[2])
         })
         .count()

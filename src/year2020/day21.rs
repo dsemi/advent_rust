@@ -8,7 +8,7 @@ fn parse_ings(s: &str) -> Vec<(Vec<&str>, Vec<&str>)> {
             let parts: Vec<&str> = line.split(" (contains ").collect();
             let (ingredients, allergens) = (parts[0], parts[1]);
             (
-                ingredients.split(" ").collect(),
+                ingredients.split(' ').collect(),
                 allergens[..allergens.len() - 1].split(", ").collect(),
             )
         })
@@ -20,7 +20,7 @@ fn allergens<'a>(foods: Vec<(Vec<&'a str>, Vec<&'a str>)>) -> AHashMap<&'a str, 
     for (ings, alls) in foods {
         let ingset: AHashSet<&str> = AHashSet::from_iter(ings);
         for allergen in alls {
-            let e = m.entry(allergen).or_insert(ingset.clone());
+            let e = m.entry(allergen).or_insert_with(|| ingset.clone());
             e.retain(|x| ingset.contains(x));
         }
     }
@@ -49,10 +49,10 @@ pub fn part2(input: &str) -> String {
     while !alls.is_empty() {
         for (k, v) in &alls {
             if v.len() == 1 {
-                done.insert(k.clone(), v.iter().next().unwrap().clone());
+                done.insert(*k, *v.iter().next().unwrap());
             }
         }
-        let s: AHashSet<&str> = done.values().map(|x| *x).collect();
+        let s: AHashSet<&str> = done.values().copied().collect();
         alls = alls
             .into_iter()
             .filter(|(k, _)| !done.contains_key(k))

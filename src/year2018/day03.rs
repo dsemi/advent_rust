@@ -31,14 +31,14 @@ fn parse_claims(input: &str) -> Vec<Claim> {
         .collect()
 }
 
-fn coord_freq(claims: &Vec<Claim>) -> Vec<Vec<usize>> {
+fn coord_freq(claims: &[Claim]) -> Vec<Vec<usize>> {
     let max_x = claims.iter().map(|c| c.x1).max().unwrap();
     let max_y = claims.iter().map(|c| c.y1).max().unwrap();
     let mut result = vec![vec![0; max_y + 1]; max_x + 1];
     for claim in claims {
-        for x in claim.x0..claim.x1 {
-            for y in claim.y0..claim.y1 {
-                result[x][y] += 1;
+        for row in result.iter_mut().take(claim.x1).skip(claim.x0) {
+            for e in row.iter_mut().take(claim.y1).skip(claim.y0) {
+                *e += 1;
             }
         }
     }

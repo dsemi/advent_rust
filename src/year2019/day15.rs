@@ -3,13 +3,13 @@ use crate::year2019::intcode;
 
 fn search(prog: intcode::Program) -> impl Iterator<Item = (usize, bool, intcode::Program)> {
     let start = (0, 0);
-    let frontier = vec![(0, (false, start, prog.clone()))]
+    let frontier = vec![(0, (false, start, prog))]
         .into_iter()
         .collect();
     let visited = vec![start].into_iter().collect();
     Bfs {
-        frontier: frontier,
-        visited: visited,
+        frontier,
+        visited,
         hash: |x: &(bool, (i64, i64), intcode::Program)| x.1,
         neighbs: |(_, st, p): &(bool, (i64, i64), intcode::Program)| {
             [(0, 1), (0, -1), (-1, 0), (1, 0)]

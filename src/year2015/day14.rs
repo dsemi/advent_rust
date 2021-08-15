@@ -42,6 +42,6 @@ pub fn part2(input: &str) -> Option<i32> {
                 .map(move |x| if x == m { 1 } else { 0 })
                 .collect()
         })
-        .collect();
+        .collect::<Vec<_>>();
     transpose(&v).into_iter().map(|x| x.iter().sum()).max()
 }

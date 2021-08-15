@@ -13,7 +13,7 @@ pub fn part1(input: &str) -> String {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .filter_map(|i| {
-                    let mut h = hasher.clone();
+                    let mut h = hasher;
                     h.input_str(&i.to_string());
                     let mut output = [0; 16];
                     h.result(&mut output);
@@ -35,7 +35,7 @@ pub fn part2(input: &str) -> String {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .filter_map(|i| {
-                    let mut h = hasher.clone();
+                    let mut h = hasher;
                     h.input_str(&i.to_string());
                     let mut output = [0; 16];
                     h.result(&mut output);

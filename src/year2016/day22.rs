@@ -67,14 +67,13 @@ pub fn part2(input: &str) -> Option<usize> {
     let mut opn = Coord::new(0, 0);
     let mut mx = Coord::new(0, 0);
     for node in nodes {
-        grid.insert(node.coord.clone(), node.clone());
+        grid.insert(node.coord, node.clone());
         if node.used == 0 {
-            opn = node.coord.clone();
+            opn = node.coord;
         }
         mx = max(mx, node.coord);
     }
-    let x = bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st))
-        .filter_map(|(d, v)| (v.1 == Coord::new(0, 0)).then(|| d))
-        .next();
-    x
+    let mut x = bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st))
+        .filter_map(|(d, v)| (v.1 == Coord::new(0, 0)).then(|| d));
+    x.next()
 }

@@ -1,12 +1,18 @@
 use ahash::AHashMap;
 
-fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
+struct Cmd {
+    mask: Vec<(u64, char)>,
+    r: u64,
+    v: u64,
+}
+
+fn parse_cmds(s: &str) -> Vec<Cmd> {
     let mut mask = Vec::new();
     let mut res = Vec::new();
     for line in s.lines() {
         if line.starts_with("mask") {
             mask = line
-                .split(" ")
+                .split(' ')
                 .last()
                 .unwrap()
                 .chars()
@@ -15,7 +21,11 @@ fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
                 .collect();
         } else {
             let (r, v) = scan_fmt!(line, "mem[{}] = {}", u64, u64).unwrap();
-            res.push((mask.clone(), r, v));
+            res.push(Cmd {
+                mask: mask.clone(),
+                r,
+                v,
+            });
         }
     }
     res
@@ -24,7 +34,7 @@ fn parse_cmds(s: &str) -> Vec<(Vec<(u64, char)>, u64, u64)> {
 pub fn part1(input: &str) -> u64 {
     let cmds = parse_cmds(input);
     let mut m = AHashMap::new();
-    for (mask, r, v) in cmds {
+    for Cmd { mask, r, v } in cmds {
         let mut v = v;
         for (i, c) in mask {
             match c {
@@ -58,7 +68,7 @@ fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
 pub fn part2(input: &str) -> u64 {
     let cmds = parse_cmds(input);
     let mut m = AHashMap::new();
-    for (mask, r, v) in cmds {
+    for Cmd { mask, r, v } in cmds {
         set_vals(&mut m, &mask[..], r, v);
     }
     m.values().sum()

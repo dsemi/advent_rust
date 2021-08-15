@@ -14,7 +14,7 @@ enum Instr {
 fn parse_prog(s: &str) -> Vec<Instr> {
     s.lines()
         .map(|line| {
-            let w: Vec<&str> = line.split(" ").collect();
+            let w: Vec<&str> = line.split(' ').collect();
             match w[0] {
                 "acc" => Acc(w[1].parse().unwrap()),
                 "jmp" => Jmp(w[1].parse().unwrap()),
@@ -25,7 +25,7 @@ fn parse_prog(s: &str) -> Vec<Instr> {
         .collect()
 }
 
-fn run_prog(prog: &Vec<Instr>) -> (i64, bool) {
+fn run_prog(prog: &[Instr]) -> (i64, bool) {
     let mut visited = AHashSet::new();
     let mut acc = 0;
     let mut i = 0;
@@ -48,7 +48,7 @@ pub fn part1(input: &str) -> i64 {
     run_prog(&parse_prog(input)).0
 }
 
-fn flip(prog: &mut Vec<Instr>, i: usize) {
+fn flip(prog: &mut [Instr], i: usize) {
     prog[i] = match &prog[i] {
         Jmp(n) => Nop(*n),
         Nop(n) => Jmp(*n),

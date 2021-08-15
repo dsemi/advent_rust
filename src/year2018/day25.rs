@@ -20,7 +20,7 @@ fn dist(a: Coord4, b: Coord4) -> i64 {
 }
 
 fn constellations(mut pts: Vec<Coord4>) -> Vec<Vec<Coord4>> {
-    if pts.len() == 0 {
+    if pts.is_empty() {
         return vec![];
     }
     let mut neighbs = vec![pts.pop().unwrap()];

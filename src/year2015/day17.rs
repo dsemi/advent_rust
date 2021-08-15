@@ -6,7 +6,7 @@ fn all_combos(input: &str) -> impl Iterator<Item = Vec<Vec<i32>>> {
         xs.clone()
             .into_iter()
             .combinations(n)
-            .filter(|combo| combo.into_iter().sum::<i32>() == 150)
+            .filter(|combo| combo.iter().sum::<i32>() == 150)
             .collect()
     })
 }

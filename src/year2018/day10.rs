@@ -29,7 +29,7 @@ fn parse_objects(input: &str) -> Vec<Obj> {
         .collect()
 }
 
-fn bounding_box(objs: &Vec<Obj>) -> (i32, i32, i32, i32) {
+fn bounding_box(objs: &[Obj]) -> (i32, i32, i32, i32) {
     let mut result = (i32::MAX, i32::MAX, i32::MIN, i32::MIN);
     for obj in objs {
         result.0 = min(result.0, obj.pos.x);
@@ -53,7 +53,7 @@ fn find_message(objs: &mut Vec<Obj>) -> usize {
     result
 }
 
-fn show_objects(objs: &Vec<Obj>) -> String {
+fn show_objects(objs: &[Obj]) -> String {
     let lights = objs.iter().map(|obj| obj.pos).collect::<AHashSet<_>>();
     let (x0, y0, x1, y1) = bounding_box(objs);
     let mut result = "\n".to_owned();

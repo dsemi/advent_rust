@@ -9,7 +9,7 @@ fn mid_pt(x: i64, y: i64) -> i64 {
 
 fn corners() -> impl Iterator<Item = i64> {
     (1..).flat_map(|i| vec![i; 2]).scan(1, |state, x| {
-        *state = *state + x;
+        *state += x;
         Some(*state)
     })
 }
@@ -49,5 +49,5 @@ fn spiral_path() -> impl Iterator<Item = i64> {
 
 pub fn part2(input: &str) -> Option<i64> {
     let n = input.parse().unwrap();
-    spiral_path().filter(|&x| x > n).next()
+    spiral_path().find(|&x| x > n)
 }

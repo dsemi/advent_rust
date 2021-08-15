@@ -20,11 +20,11 @@ fn lookup<'a>(graph: Network<'a>, signal: &'a str, mut cache: AHashMap<&'a str, 
     val(&graph, &mut cache, signal)
 }
 
-fn parse_cmds<'a>(input: &'a str) -> Network<'a> {
+fn parse_cmds(input: &str) -> Network<'_> {
     input
         .lines()
         .map(|line| {
-            let cmd = line.split(" ").collect::<Vec<_>>();
+            let cmd = line.split(' ').collect::<Vec<_>>();
             let node = match cmd[..cmd.len() - 2] {
                 [a, "AND", b] => Node(&|a, b| a & b, a, b),
                 [a, "OR", b] => Node(&|a, b| a | b, a, b),

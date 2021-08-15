@@ -44,7 +44,7 @@ fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
             (a.parse().unwrap(), b.parse().unwrap())
         })
         .collect();
-    ips.sort();
+    ips.sort_unstable();
     IpRanges::new(ips.into_iter())
 }
 

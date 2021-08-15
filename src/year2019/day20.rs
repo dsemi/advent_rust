@@ -3,10 +3,12 @@ use ahash::AHashMap;
 use crate::utils::*;
 use crate::year2019::day20::Portal::*;
 
+type Pos = (usize, usize);
+
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 enum Portal {
-    Outer((usize, usize)),
-    Inner((usize, usize)),
+    Outer(Pos),
+    Inner(Pos),
 }
 
 #[derive(Eq, PartialEq)]
@@ -20,10 +22,10 @@ enum Tile {
 
 struct Maze {
     grid: Vec<Vec<Tile>>,
-    moves: AHashMap<(usize, usize), Vec<(usize, (usize, usize))>>,
+    moves: AHashMap<Pos, Vec<(usize, Pos)>>,
 }
 
-fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
+fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
     let grid: Vec<Vec<char>> = input.lines().map(|row| row.chars().collect()).collect();
     let mut portals: AHashMap<String, Vec<Portal>> = AHashMap::new();
     for r in 0..grid.len() {
@@ -51,7 +53,7 @@ fn parse_maze(input: &str) -> (Maze, (usize, usize), (usize, usize)) {
                 } else {
                     (vec![grid[r][c], grid[r][c + 1]], c == 0, (r, c + 2))
                 };
-                let e = portals.entry(k.into_iter().collect()).or_insert(Vec::new());
+                let e = portals.entry(k.into_iter().collect()).or_insert_with(Vec::new);
                 e.push(if b { Outer(coord) } else { Inner(coord) });
                 e.sort();
             }

@@ -4,7 +4,7 @@ fn solve(n: u32, input: &str) -> u32 {
     let mut m = vec![0; n as usize];
     let mut filter = BitSet::new();
     let mut j = 1;
-    for v in input.split(",") {
+    for v in input.split(',') {
         let k = v.parse().unwrap();
         m[k] = j;
         filter.insert(k);

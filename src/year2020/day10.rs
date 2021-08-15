@@ -2,7 +2,7 @@ use ahash::AHashMap;
 
 fn parse_nums(s: &str) -> Vec<i64> {
     let mut ns: Vec<i64> = s.lines().map(|x| x.parse().unwrap()).collect();
-    ns.sort();
+    ns.sort_unstable();
     ns.insert(0, 0);
     ns.push(ns.last().unwrap() + 3);
     ns

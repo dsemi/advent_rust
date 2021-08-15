@@ -15,9 +15,8 @@ pub fn part1(input: &str) -> Option<i64> {
     let factor = mod_exp(7, md - m - 1, md);
     n = door;
     for i in 0..m {
-        match tbl.get(&n) {
-            Some(v) => return Some(mod_exp(card, i * m + v, md)),
-            None => (),
+        if let Some(v) = tbl.get(&n) {
+            return Some(mod_exp(card, i * m + v, md));
         }
         n = n * factor % md;
     }

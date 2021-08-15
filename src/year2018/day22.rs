@@ -84,7 +84,7 @@ pub fn part2(input: &str) -> usize {
     let (depth, target) = parse(input);
     let els = erosion_levels(depth, target);
 
-    fn neighbors(els: &Vec<Vec<Tool>>, node: &Node) -> Vec<Node> {
+    fn neighbors(els: &[Vec<Tool>], node: &Node) -> Vec<Node> {
         vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
             .into_iter()
             .filter_map(move |d| {

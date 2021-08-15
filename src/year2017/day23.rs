@@ -46,7 +46,7 @@ fn parse_instrs(input: &str) -> Prog {
     Prog {
         reg: [0; 8],
         line: 0,
-        instrs: instrs,
+        instrs,
     }
 }
 

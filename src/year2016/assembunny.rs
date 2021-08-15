@@ -85,7 +85,7 @@ pub fn parse_instrs(input: &str) -> Sim {
     Sim {
         regs: [0; 4],
         line: 0,
-        instrs: instrs,
+        instrs,
     }
 }
 
@@ -100,10 +100,11 @@ impl Sim {
     pub fn run(&mut self) -> Option<i64> {
         while self.line >= 0 && self.line < self.instrs.len() as i64 {
             match &self.instrs[self.line as usize] {
-                Cpy(x, y) => match y {
-                    Reg(i) => self.regs[*i] = self.val(x),
-                    _ => (),
-                },
+                Cpy(x, y) => {
+                    if let Reg(i) = y {
+                        self.regs[*i] = self.val(x);
+                    }
+                }
                 Inc(r) => self.regs[*r] += 1,
                 Dec(r) => self.regs[*r] -= 1,
                 Tgl(r) => {

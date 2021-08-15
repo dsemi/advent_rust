@@ -52,7 +52,7 @@ impl Maze {
                 .lines()
                 .flat_map(|line| line.chars().map(tile))
                 .collect(),
-            cols: cols,
+            cols,
             moves: AHashMap::new(),
         }
     }
@@ -100,13 +100,7 @@ impl Maze {
                             .collect::<Vec<_>>()
                         },
                     )
-                    .filter(|(_, edge)| {
-                        if let Tile::Key(_) = self.grid[edge.dest] {
-                            true
-                        } else {
-                            false
-                        }
-                    })
+                    .filter(|(_, edge)| matches!(self.grid[edge.dest], Tile::Key(_)))
                     .collect();
                     self.moves.insert(*from, moves);
                 }
@@ -120,7 +114,7 @@ impl Maze {
                                 (
                                     *len,
                                     Node {
-                                        poss: poss,
+                                        poss,
                                         keys: node.keys | edge.keys,
                                     },
                                 )

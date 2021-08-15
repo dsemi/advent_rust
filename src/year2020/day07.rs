@@ -21,7 +21,7 @@ fn parse_bags(s: &str) -> AHashMap<String, Vec<(i64, String)>> {
 fn holds_shiny_gold(m: &AHashMap<String, Vec<(i64, String)>>, k: &str) -> bool {
     m[k]
         .iter()
-        .any(|(_, k2)| k2 == "shiny gold" || holds_shiny_gold(m, &k2))
+        .any(|(_, k2)| k2 == "shiny gold" || holds_shiny_gold(m, k2))
 }
 
 pub fn part1(input: &str) -> usize {
@@ -32,7 +32,7 @@ pub fn part1(input: &str) -> usize {
 fn count_bags(m: &AHashMap<String, Vec<(i64, String)>>, k: &str) -> i64 {
     m[k]
         .iter()
-        .map(|(n, k2)| n + n * count_bags(m, &k2))
+        .map(|(n, k2)| n + n * count_bags(m, k2))
         .sum()
 }
 

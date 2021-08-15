@@ -10,11 +10,11 @@ fn parse_grid(input: &str) -> Planet {
         .collect()
 }
 
-fn neighbor_counts(p: &Planet) -> Vec<Vec<u64>> {
+fn neighbor_counts(p: &[Vec<bool>]) -> Vec<Vec<u64>> {
     let mut result = vec![vec![0; p[0].len()]; p.len()];
     for r in 0..p.len() {
         for c in 0..p[r].len() {
-            for (dr, dc) in vec![(-1, 0), (1, 0), (0, -1), (0, 1)] {
+            for (dr, dc) in &[(-1, 0), (1, 0), (0, -1), (0, 1)] {
                 let r2 = r as i32 + dr;
                 let c2 = c as i32 + dc;
                 if r2 >= 0 && r2 < p.len() as i32 && c2 >= 0 && c2 < p[r2 as usize].len() as i32 {
@@ -34,7 +34,7 @@ fn next_bug(v: bool, adj_bugs: u64) -> bool {
     }
 }
 
-fn biodiversity(p: &Planet) -> u64 {
+fn biodiversity(p: &[Vec<bool>]) -> u64 {
     let mut i = 1;
     let mut result = 0;
     for row in p {
@@ -62,9 +62,9 @@ pub fn part1(input: &str) -> u64 {
     result
 }
 
-fn step(planets: &mut VecDeque<Planet>, empty: &Planet) {
-    planets.push_front(empty.clone());
-    planets.push_back(empty.clone());
+fn step(planets: &mut VecDeque<Planet>, empty: &[Vec<bool>]) {
+    planets.push_front(empty.to_owned());
+    planets.push_back(empty.to_owned());
     let mut counts = planets
         .iter()
         .map(|p| neighbor_counts(p))

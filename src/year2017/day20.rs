@@ -10,7 +10,7 @@ struct Particle {
     acc: Coord3<i64>,
 }
 
-fn parse_particles<'a>(input: &'a str) -> impl Iterator<Item = Particle> + 'a {
+fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
     let reg = Regex::new(r"-?\d+").unwrap();
     input.lines().map(move |line| {
         let cs: Vec<Coord3<i64>> = line

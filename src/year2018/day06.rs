@@ -14,7 +14,7 @@ fn parse_coords(input: &str) -> Vec<Coord<i32>> {
         .collect()
 }
 
-fn all_within(xs: &Vec<Coord<i32>>, buffer: i32) -> impl Iterator<Item = Coord<i32>> {
+fn all_within(xs: &[Coord<i32>], buffer: i32) -> impl Iterator<Item = Coord<i32>> {
     let (mut x0, mut y0, mut x1, mut y1) = (i32::MAX, i32::MAX, i32::MIN, i32::MIN);
     for x in xs {
         x0 = min(x0, x.x);
@@ -32,8 +32,8 @@ fn all_within(xs: &Vec<Coord<i32>>, buffer: i32) -> impl Iterator<Item = Coord<i
 pub fn part1(input: &str) -> Option<usize> {
     let coords = parse_coords(input);
     let mut ns = Vec::new();
-    for i in vec![0, 10] {
-        let t = all_within(&coords, i)
+    for i in &[0, 10] {
+        let t = all_within(&coords, *i)
             .filter_map(|coord| {
                 let dists = coords
                     .iter()
@@ -62,6 +62,6 @@ pub fn part2(input: &str) -> usize {
     let n = 10_000;
     let coords = parse_coords(input);
     all_within(&coords, (n / coords.len()) as i32)
-        .filter(|x| coords.iter().map(|y| dist(&x, y)).sum::<i32>() < n as i32)
+        .filter(|x| coords.iter().map(|y| dist(x, y)).sum::<i32>() < n as i32)
         .count()
 }

@@ -5,15 +5,13 @@ use crate::year2016::assembunny;
 
 pub fn part1(input: &str) -> Option<i64> {
     let ssim = assembunny::parse_instrs(input);
-    (0..)
-        .filter(|i| {
-            let mut sim = ssim.clone();
-            sim.regs[0] = *i;
-            sim.take(10)
-                .zip([0, 1].iter().cycle())
-                .all(|(a, b)| a == *b)
-        })
-        .next()
+    (0..).find(|i| {
+        let mut sim = ssim.clone();
+        sim.regs[0] = *i;
+        sim.take(10)
+            .zip([0, 1].iter().cycle())
+            .all(|(a, b)| a == *b)
+    })
 }
 
 pub fn part2(_: &str) -> String {

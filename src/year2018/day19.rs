@@ -70,8 +70,8 @@ impl Prog {
             })
             .collect();
         Self {
-            ip: ip,
-            instrs: instrs,
+            ip,
+            instrs,
             reg: [0; 6],
         }
     }
@@ -97,7 +97,7 @@ impl Prog {
             Eqrr => {
                 self.reg[c as usize] = (self.reg[a as usize] == self.reg[b as usize]) as i64;
                 return Some(self.reg[a as usize]);
-            },
+            }
         }
         None
     }

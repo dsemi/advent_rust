@@ -5,7 +5,7 @@ fn parse_grid(input: Vec<i64>) -> Vec<Vec<char>> {
     inp.lines().map(|line| line.chars().collect()).collect()
 }
 
-fn is_scaffold(grid: &Vec<Vec<char>>, pos: (usize, usize)) -> bool {
+fn is_scaffold(grid: &[Vec<char>], pos: (usize, usize)) -> bool {
     pos.1 < grid.len() && pos.0 < grid[pos.1].len() && "#^<>v".contains(grid[pos.1][pos.0])
 }
 
@@ -28,7 +28,7 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-fn keep_moving(grid: &Vec<Vec<char>>, pos: (i64, i64), c: &str, d: (i64, i64)) -> Vec<String> {
+fn keep_moving(grid: &[Vec<char>], pos: (i64, i64), c: &str, d: (i64, i64)) -> Vec<String> {
     let mut p = (pos.0 + d.0, pos.1 + d.1);
     if !is_scaffold(grid, (p.0 as usize, p.1 as usize)) {
         return vec![];
@@ -44,14 +44,14 @@ fn keep_moving(grid: &Vec<Vec<char>>, pos: (i64, i64), c: &str, d: (i64, i64)) -
     result
 }
 
-fn go(grid: &Vec<Vec<char>>, pos: (i64, i64), (x, y): (i64, i64)) -> Vec<String> {
+fn go(grid: &[Vec<char>], pos: (i64, i64), (x, y): (i64, i64)) -> Vec<String> {
     keep_moving(grid, pos, "L", (y, -x))
         .into_iter()
         .chain(keep_moving(grid, pos, "R", (-y, x)))
         .collect()
 }
 
-fn find_path(grid: &Vec<Vec<char>>) -> Vec<String> {
+fn find_path(grid: &[Vec<char>]) -> Vec<String> {
     let (pos, dir) = (0..grid.len())
         .filter_map(|r| {
             (0..grid[r].len())
@@ -78,12 +78,12 @@ fn find_path(grid: &Vec<Vec<char>>) -> Vec<String> {
     res.chunks(2).map(|ch| ch.join(",")).collect()
 }
 
-fn splits(x: &Vec<String>, s: &Vec<String>) -> Vec<Vec<String>> {
+fn splits(x: &[String], s: &[String]) -> Vec<Vec<String>> {
     let mut i = 0;
     let mut c = 0;
     let mut result: Vec<Vec<String>> = Vec::new();
     while s.len() <= x.len() && i <= x.len() - s.len() {
-        if &x[i..i + s.len()].to_vec() == s {
+        if x[i..i + s.len()].to_vec() == s {
             result.push(x[c..i].to_vec());
             i += s.len();
             c = i;
@@ -145,7 +145,7 @@ pub fn part2(input: &str) -> Option<i64> {
         .chain(vec!["n".to_string()])
         .collect::<Vec<_>>()
         .join("\n");
-    inps.push_str("\n");
+    inps.push('\n');
     prog = intcode::new(input);
     prog[0] = 2;
     for c in inps.chars() {

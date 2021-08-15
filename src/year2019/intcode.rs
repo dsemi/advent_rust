@@ -4,7 +4,7 @@ use std::ops::{Index, IndexMut};
 
 fn parse_instrs(input: &str) -> Vec<i64> {
     input
-        .split(",")
+        .split(',')
         .map(|x| x.parse().unwrap())
         .collect()
 }

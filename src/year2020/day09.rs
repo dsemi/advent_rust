@@ -1,10 +1,11 @@
 use itertools::Itertools;
+use std::cmp::Ordering::*;
 
 fn parse_nums(s: &str) -> Vec<i64> {
     s.lines().map(|x| x.parse().unwrap()).collect()
 }
 
-fn find_first_invalid(ns: &Vec<i64>) -> i64 {
+fn find_first_invalid(ns: &[i64]) -> i64 {
     let mut n = 25;
     loop {
         if !ns[n - 25..n]
@@ -27,12 +28,16 @@ pub fn part2(input: &str) -> Option<i64> {
     let n = find_first_invalid(&ns);
     let (mut lo, mut hi, mut acc) = (0, 0, 0);
     while acc != n {
-        if acc < n {
-            acc += ns[hi];
-            hi += 1;
-        } else if acc > n {
-            acc -= ns[lo];
-            lo += 1;
+        match acc.cmp(&n) {
+            Less => {
+                acc += ns[hi];
+                hi += 1;
+            }
+            Greater => {
+                acc -= ns[lo];
+                lo += 1;
+            }
+            Equal => (),
         }
     }
     let arr = &ns[lo..hi];

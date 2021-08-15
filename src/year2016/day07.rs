@@ -3,7 +3,7 @@ struct Ip<'a> {
     hypernets: Vec<&'a str>,
 }
 
-fn ips<'a>(input: &'a str) -> impl Iterator<Item = Ip<'a>> + 'a {
+fn ips<'a>(input: &'a str) -> impl Iterator<Item = Ip<'a>> + '_ {
     input.lines().map(|line| {
         let mut ip = Ip {
             supernets: Vec::new(),
@@ -33,7 +33,7 @@ pub fn part1(input: &str) -> usize {
         .count()
 }
 
-fn abas<'a>(s: &'a [u8]) -> impl Iterator<Item = (u8, u8)> + 'a {
+fn abas(s: &[u8]) -> impl Iterator<Item = (u8, u8)> + '_ {
     (0..s.len() - 2)
         .filter_map(move |i| (s[i] != s[i + 1] && s[i] == s[i + 2]).then(|| (s[i], s[i + 1])))
 }

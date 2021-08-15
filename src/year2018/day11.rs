@@ -1,15 +1,15 @@
 fn make_sat(input: &str) -> Vec<Vec<i64>> {
     let serial_num: i64 = input.parse().unwrap();
     let mut grid: Vec<Vec<i64>> = vec![vec![0; 301]; 301];
-    for y in 1..grid.len() {
-        for x in 1..grid[y].len() {
+    for (y, row) in grid.iter_mut().enumerate().skip(1) {
+        for (x, e) in row.iter_mut().enumerate().skip(1) {
             let rack_id = x as i64 + 10;
             let mut power_level = rack_id * y as i64;
             power_level += serial_num;
             power_level *= rack_id;
             power_level = (power_level / 100).rem_euclid(10);
             power_level -= 5;
-            grid[y][x] = power_level;
+            *e = power_level;
         }
     }
     for y in (1..grid.len()).rev() {
@@ -28,7 +28,7 @@ fn make_sat(input: &str) -> Vec<Vec<i64>> {
     grid
 }
 
-fn max_cell(size: usize, sat: &Vec<Vec<i64>>) -> (usize, usize, i64) {
+fn max_cell(size: usize, sat: &[Vec<i64>]) -> (usize, usize, i64) {
     (1..sat.len() - size)
         .flat_map(|y| {
             (1..sat[y].len() - size).map(move |x| {

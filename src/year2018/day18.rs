@@ -7,7 +7,7 @@ fn parse_landscape(input: &str) -> Vec<Vec<char>> {
     input.lines().map(|line| line.chars().collect()).collect()
 }
 
-fn neighbors<'a>(grid: &'a Vec<Vec<char>>, c: Coord<i32>) -> impl Iterator<Item = char> + 'a {
+fn neighbors(grid: &[Vec<char>], c: Coord<i32>) -> impl Iterator<Item = char> + '_ {
     vec![
         Coord::new(-1, 0),
         Coord::new(1, 0),
@@ -47,7 +47,7 @@ fn step(grid: &mut Vec<Vec<char>>) {
     }
 }
 
-fn resource_value(grid: &Vec<Vec<char>>) -> usize {
+fn resource_value(grid: &[Vec<char>]) -> usize {
     let mut ws = 0;
     let mut ls = 0;
     for row in grid {

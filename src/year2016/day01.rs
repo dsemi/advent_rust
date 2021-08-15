@@ -3,7 +3,7 @@ use std::iter;
 
 use crate::utils::Coord;
 
-fn path<'a>(input: &'a str) -> impl Iterator<Item = Coord<i32>> + 'a {
+fn path(input: &str) -> impl Iterator<Item = Coord<i32>> + '_ {
     input
         .split(", ")
         .flat_map(|x| {

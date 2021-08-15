@@ -18,12 +18,10 @@ pub fn part2(input: &str) -> i64 {
     let prog = intcode::new(input);
     let (mut x, mut y) = (0, 0);
     while !is_pulled(&prog, x + 99, y) {
-        if is_pulled(&prog, x, y + 100) {
-            y += 1;
-        } else {
+        if !is_pulled(&prog, x, y + 100) {
             x += 1;
-            y += 1;
         }
+        y += 1;
     }
     x * 10000 + y
 }

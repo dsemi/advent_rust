@@ -33,7 +33,7 @@ fn parse_scans(input: &str) -> Ground {
     );
     let grid = vec![vec!['.'; (y1 - y0 + 1) as usize]; (x1 - x0 + 1) as usize];
     let mut ground = Ground {
-        grid: grid,
+        grid,
         offset_x: x0,
         min_y: y0,
         max_y: y1,
@@ -84,7 +84,7 @@ impl Ground {
             if self.get(coord) == '.' {
                 self.set(coord, '|');
             }
-            return false;
+            false
         } else {
             let lefts = self.spread(coord, left);
             let rights = self.spread(coord, right);

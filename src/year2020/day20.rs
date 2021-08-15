@@ -22,7 +22,7 @@ fn parse_tiles(s: &str) -> Vec<Tile> {
                 .parse()
                 .unwrap();
             let grid = gen.map(|x| x.chars().map(|x| x == '#').collect()).collect();
-            Tile { num: n, grid: grid }
+            Tile { num: n, grid }
         })
         .collect()
 }
@@ -37,8 +37,8 @@ fn transpose(t: &mut Grid) {
     }
 }
 
-fn orientations(tile: &Grid) -> Vec<Grid> {
-    let mut t = tile.clone();
+fn orientations(tile: &[Row]) -> Vec<Grid> {
+    let mut t = tile.to_owned();
     let mut v = Vec::new();
     for _ in 0..4 {
         v.push(t.clone());
@@ -46,16 +46,16 @@ fn orientations(tile: &Grid) -> Vec<Grid> {
         v.push(t.clone());
         t.reverse();
     }
-    assert!(&t == tile);
+    assert!(t == tile);
     v
 }
 
-fn find_corners(tiles: &Vec<Tile>) -> (Vec<u64>, AHashMap<Row, Vec<Tile>>) {
+fn find_corners(tiles: &[Tile]) -> (Vec<u64>, AHashMap<Row, Vec<Tile>>) {
     let mut m = AHashMap::new();
     for tile in tiles {
         for t in orientations(&tile.grid) {
             let hash: Row = t.iter().map(|row| row[0]).collect();
-            let e = m.entry(hash).or_insert(vec![]);
+            let e = m.entry(hash).or_insert_with(Vec::new);
             e.push(Tile {
                 num: tile.num,
                 grid: t,
@@ -91,8 +91,7 @@ fn place_tiles(tiles: Vec<Tile>) -> (Vec<Tile>, usize) {
     let (corners, m) = find_corners(&tiles);
     let mut start = tiles
         .into_iter()
-        .filter(|x| corners.iter().any(|n| x.num == *n))
-        .next()
+        .find(|x| corners.iter().any(|n| x.num == *n))
         .unwrap();
     while m[&start
         .grid
@@ -140,7 +139,7 @@ fn place_tiles(tiles: Vec<Tile>) -> (Vec<Tile>, usize) {
     (grid, size)
 }
 
-fn find_sea_monsters(pic: &Vec<u128>) -> u32 {
+fn find_sea_monsters(pic: &[u128]) -> u32 {
     let mons = [
         0b00000000000000000010,
         0b10000110000110000111,
@@ -149,14 +148,14 @@ fn find_sea_monsters(pic: &Vec<u128>) -> u32 {
     let cnt: u32 = mons.iter().map(|&x: &u128| x.count_ones()).sum();
     pic.windows(3)
         .map(|wind| {
-            let mut rs: Vec<u128> = wind.iter().map(|x| *x).collect();
+            let mut rs: Vec<u128> = wind.iter().copied().collect();
             let mut tot = 0;
             while rs.iter().any(|x| x > &0) {
                 if rs.iter().zip(&mons).all(|(a, b)| a & b == *b) {
                     tot += cnt;
                 }
-                for i in 0..rs.len() {
-                    rs[i] >>= 1;
+                for e in rs.iter_mut() {
+                    *e >>= 1;
                 }
             }
             tot
@@ -169,8 +168,8 @@ pub fn part2(input: &str) -> Option<u32> {
     let mut inner_size = 0;
     for tile in grid.iter_mut() {
         tile.grid = tile.grid[1..tile.grid.len() - 1]
-            .into_iter()
-            .map(|row| row[1..row.len() - 1].into_iter().copied().collect())
+            .iter()
+            .map(|row| row[1..row.len() - 1].iter().copied().collect())
             .collect();
         inner_size = tile.grid.len();
     }
@@ -191,9 +190,9 @@ pub fn part2(input: &str) -> Option<u32> {
             .into_iter()
             .map(|row| {
                 row.iter()
-                    .fold(0 as u128, |acc, x| (acc << 1) + (*x as u128))
+                    .fold(0_u128, |acc, x| (acc << 1) + (*x as u128))
             })
-            .collect();
+            .collect::<Vec<_>>();
         let ms = find_sea_monsters(&p2);
         if ms != 0 {
             let tot: u32 = p2.into_iter().map(|row| row.count_ones()).sum();

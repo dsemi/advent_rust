@@ -81,14 +81,14 @@ fn is_winning(boss: Person, player: Person) -> bool {
 fn person(equip: Equip) -> Person {
     Person {
         hitpoints: 100,
-        equip: equip,
+        equip,
     }
 }
 
 fn parse_boss(input: &str) -> Person {
     let v: Vec<i32> = input
         .lines()
-        .map(|line| line.split(" ").last().unwrap().parse().unwrap())
+        .map(|line| line.split(' ').last().unwrap().parse().unwrap())
         .collect();
     Person {
         hitpoints: v[0],

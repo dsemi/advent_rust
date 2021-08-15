@@ -18,7 +18,7 @@ lazy_static! {
     };
 }
 
-fn solve<'a>(input: &str, tape: AHashMap<&'a str, fn(i32) -> bool>) -> Option<usize> {
+fn solve(input: &str, tape: AHashMap<&str, fn(i32) -> bool>) -> Option<usize> {
     let re = Regex::new(r"(\w+): (\d+)").unwrap();
     input
         .lines()

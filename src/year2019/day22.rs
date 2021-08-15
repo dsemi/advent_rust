@@ -19,8 +19,8 @@ impl LinearTrans {
         let a = mod_inv(self.a, self.modulus);
         let b = times(self.modulus, -a, self.b);
         Self {
-            a: a,
-            b: b,
+            a,
+            b,
             modulus: self.modulus,
         }
     }
@@ -64,7 +64,7 @@ fn mod_inv(a0: i64, b0: i64) -> i64 {
         return 1;
     }
     while a > 1 {
-        result = result - a.div_euclid(b) * x0;
+        result -= a.div_euclid(b) * x0;
         a = a.rem_euclid(b);
         std::mem::swap(&mut a, &mut b);
         std::mem::swap(&mut x0, &mut result);
@@ -83,20 +83,20 @@ fn parse_techs(input: &str, modulus: i64) -> LinearTrans {
                 LinearTrans {
                     a: modulus - 1,
                     b: modulus - 1,
-                    modulus: modulus,
+                    modulus,
                 }
             } else if let Ok(n) = scan_fmt!(line, "cut {}", i64) {
                 LinearTrans {
                     a: 1,
                     b: (-n).rem_euclid(modulus),
-                    modulus: modulus,
+                    modulus,
                 }
             } else {
                 let n = scan_fmt!(line, "deal with increment {}", i64).unwrap();
                 LinearTrans {
                     a: n.rem_euclid(modulus),
                     b: 0,
-                    modulus: modulus,
+                    modulus,
                 }
             }
         })

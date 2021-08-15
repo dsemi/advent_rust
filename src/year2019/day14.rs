@@ -4,7 +4,7 @@ use std::cmp::max;
 
 type Reactions<'a> = AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>;
 
-fn parse_reactions<'a>(input: &'a str) -> Reactions<'a> {
+fn parse_reactions(input: &str) -> Reactions {
     input
         .lines()
         .map(|line| {
@@ -22,7 +22,7 @@ fn parse_reactions<'a>(input: &'a str) -> Reactions<'a> {
         .collect()
 }
 
-fn num_ore<'a>(reactions: &Reactions<'a>, n: i64) -> i64 {
+fn num_ore(reactions: &Reactions, n: i64) -> i64 {
     fn go<'a>(
         reactions: &Reactions<'a>,
         surplus: &mut AHashMap<&'a str, i64>,
@@ -42,7 +42,7 @@ fn num_ore<'a>(reactions: &Reactions<'a>, n: i64) -> i64 {
                 }
             }
             if r != 0 {
-                *surplus.entry(&k).or_insert(0) += n - r;
+                *surplus.entry(k).or_insert(0) += n - r;
             }
         } else {
             *ore += c;

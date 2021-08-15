@@ -44,13 +44,7 @@ fn parse_wires(input: &str) -> Vec<Wire> {
                             (steps + n, pos, prev, true)
                         };
                         steps += n;
-                        Segment {
-                            o: o,
-                            a: a,
-                            b: b,
-                            d: d,
-                            r: r,
-                        }
+                        Segment { o, a, b, d, r }
                     })
                     .collect(),
             }

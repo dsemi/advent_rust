@@ -78,13 +78,13 @@ fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
 fn neighbors(floors: &Floors) -> Vec<Floors> {
     let mut result = Vec::new();
     let mut neighbs = AHashSet::new();
-    for e in vec![floors.elev + 1, floors.elev - 1] {
-        if e > 0 && e <= 4 {
-            for mut floors2 in all_moves(floors, e) {
+    for e in &[floors.elev + 1, floors.elev - 1] {
+        if *e > 0 && *e <= 4 {
+            for mut floors2 in all_moves(floors, *e) {
                 if floors2.is_valid() {
                     floors2.flrs.sort();
                     let neighb = Floors {
-                        elev: e,
+                        elev: *e,
                         flrs: floors2.flrs.clone(),
                     };
                     if !neighbs.contains(&neighb) {
@@ -92,11 +92,11 @@ fn neighbors(floors: &Floors) -> Vec<Floors> {
                         result.push(neighb);
                     }
                 }
-                for mut floors3 in all_moves(&floors2, e) {
+                for mut floors3 in all_moves(&floors2, *e) {
                     if floors3.is_valid() {
                         floors3.flrs.sort();
                         let neighb = Floors {
-                            elev: e,
+                            elev: *e,
                             flrs: floors3.flrs,
                         };
                         if !neighbs.contains(&neighb) {

@@ -42,11 +42,11 @@ fn cmp(a: &Coord, b: &Coord) -> Ordering {
     det.cmp(&0)
 }
 
-fn visibilities(pt: &Coord, pts: &Vec<Coord>) -> Vec<Vec<Coord>> {
+fn visibilities(pt: &Coord, pts: &[Coord]) -> Vec<Vec<Coord>> {
     let mut m: AHashMap<Coord, Vec<Coord>> = AHashMap::new();
     for p in pts.iter() {
         if p != pt {
-            let e = m.entry(theta(*pt, *p)).or_insert(vec![]);
+            let e = m.entry(theta(*pt, *p)).or_insert_with(Vec::new);
             (*e).push(*p);
         }
     }

@@ -25,7 +25,7 @@ fn turn(c: Coord<i32>, turn: Turn) -> Coord<i32> {
     }
 }
 
-fn move_cart(cart: &mut Cart, grid: &Vec<Vec<char>>) {
+fn move_cart(cart: &mut Cart, grid: &[Vec<char>]) {
     cart.pos += cart.dir;
     match grid[cart.pos.x as usize][cart.pos.y as usize] {
         '\\' => cart.dir = Coord::new(cart.dir.y, cart.dir.x),
@@ -68,8 +68,8 @@ fn parse_tracks(input: &str) -> Tracks {
                 result.carts.insert(
                     pos,
                     Cart {
-                        pos: pos,
-                        dir: dir,
+                        pos,
+                        dir,
                         turn: Left,
                     },
                 );
@@ -85,8 +85,12 @@ impl Iterator for Tracks {
 
     fn next(&mut self) -> Option<Vec<(i32, i32)>> {
         while self.carts.len() > 1 {
-            let poss = self.carts.keys().sorted().copied().collect::<Vec<_>>();
-            let v = poss
+            let v = self
+                .carts
+                .keys()
+                .sorted()
+                .copied()
+                .collect::<Vec<_>>()
                 .into_iter()
                 .filter_map(|p| {
                     self.carts.remove(&p).and_then(|mut cart| {

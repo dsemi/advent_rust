@@ -1,6 +1,6 @@
 use ahash::AHashMap;
 
-fn parse_orbits<'a>(input: &'a str) -> impl Iterator<Item = (&'a str, &'a str)> {
+fn parse_orbits(input: &str) -> impl Iterator<Item = (&str, &str)> {
     input.lines().map(|line| {
         let pts: Vec<&str> = line.split(')').collect();
         (pts[0], pts[1])
@@ -10,7 +10,7 @@ fn parse_orbits<'a>(input: &'a str) -> impl Iterator<Item = (&'a str, &'a str)> 
 pub fn part1(input: &str) -> usize {
     let mut t = AHashMap::new();
     for (k, v) in parse_orbits(input) {
-        let e = t.entry(k.to_string()).or_insert(vec![]);
+        let e = t.entry(k.to_string()).or_insert_with(Vec::new);
         (*e).push(v);
     }
     let mut depth = 0;
@@ -31,7 +31,7 @@ fn path_from_com<'a>(t: &'a AHashMap<&str, &str>, key: &'a str) -> Vec<&'a str> 
     let mut result = Vec::new();
     let mut k = key;
     while t.contains_key(k) {
-        k = &t[k];
+        k = t[k];
         result.push(k);
     }
     result.reverse();

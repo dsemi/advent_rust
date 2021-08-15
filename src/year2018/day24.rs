@@ -31,11 +31,11 @@ fn parse_armies(input: &str) -> Vec<Option<Group>> {
                 let mut group = Group {
                     num: 0,
                     name: name[..name.len() - 1].to_string(),
-                    units: units,
+                    units,
                     hit_pts: hp,
-                    dmg: dmg,
-                    element: element,
-                    initiative: initiative,
+                    dmg,
+                    element,
+                    initiative,
                     weaknesses: Vec::new(),
                     immunities: Vec::new(),
                 };
@@ -80,11 +80,7 @@ impl Group {
     }
 }
 
-fn select_target(
-    groups: &Vec<Option<Group>>,
-    attacked: &mut u32,
-    grp: &Group,
-) -> Option<usize> {
+fn select_target(groups: &[Option<Group>], attacked: &mut u32, grp: &Group) -> Option<usize> {
     let mut mx = (0, 0, 0, 0);
     for g in groups.iter().flatten() {
         if grp.name != g.name && *attacked & 1 << g.num == 0 {
@@ -100,7 +96,7 @@ fn select_target(
     })
 }
 
-fn target_selection(groups: &Vec<Option<Group>>) -> Vec<(usize, usize)> {
+fn target_selection(groups: &[Option<Group>]) -> Vec<(usize, usize)> {
     let mut target_selectors = groups.iter().flatten().collect::<Vec<_>>();
     target_selectors.sort_by_key(|g| (-g.eff_pwr(), -g.initiative));
     let mut s = 0;
@@ -117,7 +113,7 @@ fn attack(groups: &mut Vec<Option<Group>>, atks: Vec<(usize, usize)>) -> bool {
     for (k1, k2) in atks {
         if let Some(g1) = groups[k1].as_ref() {
             let g2 = groups[k2].as_ref().unwrap();
-            let units_left = g2.units - g1.calc_dmg(&g2) / g2.hit_pts;
+            let units_left = g2.units - g1.calc_dmg(g2) / g2.hit_pts;
             if units_left != g2.units {
                 result = true;
             }
@@ -161,7 +157,11 @@ pub fn part2(input: &str) -> i32 {
             }
         }
         if battle(&mut groups) {
-            let result = groups.iter().flatten().filter_map(|g| (g.name == "Immune System").then(|| g.units)).sum();
+            let result = groups
+                .iter()
+                .flatten()
+                .filter_map(|g| (g.name == "Immune System").then(|| g.units))
+                .sum();
             if result > 0 {
                 return result;
             }

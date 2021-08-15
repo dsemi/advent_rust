@@ -48,7 +48,7 @@ fn solve<T: Copy + Ord>(input: &str, mut start: T, step: fn(T, &Pipe) -> T) -> T
             }
         }
     }
-    let v = start.clone();
+    let v = start;
     dfs(&mut pipes, &mut start, step, 0, v);
     start
 }

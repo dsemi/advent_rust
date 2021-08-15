@@ -17,7 +17,7 @@ pub fn part1(input: &str) -> Option<i64> {
 
 pub fn part2(input: &str) -> Option<i64> {
     let mut ids = seat_ids(input);
-    ids.sort();
+    ids.sort_unstable();
     for i in 0 .. ids.len() {
         if ids[i] + 2 == ids[i+1] {
             return Some(ids[i] + 1);

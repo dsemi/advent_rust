@@ -30,13 +30,13 @@ fn parse_expansions(input: &str) -> AHashMap<Grid, Grid> {
         .collect()
 }
 
-fn sqr(grid: &Grid, i: usize, j: usize, span: usize) -> Grid {
+fn sqr(grid: &[Vec<bool>], i: usize, j: usize, span: usize) -> Grid {
     (i..i + span)
         .map(|x| grid[x][j..j + span].to_vec())
         .collect()
 }
 
-fn expand_image(img: &Grid, m: &AHashMap<Grid, Grid>) -> Grid {
+fn expand_image(img: &[Vec<bool>], m: &AHashMap<Grid, Grid>) -> Grid {
     let size = img.len();
     let span = if size % 2 == 0 { 2 } else { 3 };
     let sq_size = size / span;
@@ -45,7 +45,7 @@ fn expand_image(img: &Grid, m: &AHashMap<Grid, Grid>) -> Grid {
     let mut result = vec![vec![false; new_size]; new_size];
     for r in 0..sq_size {
         for c in 0..sq_size {
-            let sq = sqr(&img, r * span, c * span, span);
+            let sq = sqr(img, r * span, c * span, span);
             let exp = &m[&sq];
             for (x, row) in exp.iter().enumerate() {
                 for (y, v) in row.iter().enumerate() {

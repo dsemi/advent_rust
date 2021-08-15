@@ -1,3 +1,5 @@
+#![allow(clippy::many_single_char_names)]
+
 use std::cmp::Ordering::Equal;
 use std::cmp::max_by;
 use std::env;
@@ -62,8 +64,8 @@ fn run_problem(year: i64, day: i64) -> f64 {
 }
 
 fn parse_day(daystr: &str) -> Vec<i64> {
-    if daystr.contains("-") {
-        let v: Vec<i64> = daystr.splitn(2, "-").map(|x| x.parse().unwrap()).collect();
+    if daystr.contains('-') {
+        let v: Vec<i64> = daystr.splitn(2, '-').map(|x| x.parse().unwrap()).collect();
         (v[0]..=v[1]).collect()
     } else {
         vec![daystr.parse().unwrap()]

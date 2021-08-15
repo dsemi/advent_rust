@@ -28,8 +28,7 @@ fn stabilize(s: &str, p2: bool) -> usize {
                                         && 0 <= coord.y
                                         && coord.y < grid[0].len() as i64
                                 })
-                                .filter(|coord| grid[coord.x as usize][coord.y as usize] == 'L')
-                                .next();
+                                .find(|coord| grid[coord.x as usize][coord.y as usize] == 'L');
                             if let Some(coord) = pos {
                                 if p2 || {
                                     let x = st_coord - coord;

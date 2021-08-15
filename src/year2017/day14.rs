@@ -38,7 +38,7 @@ fn knot_hash(input: &str) -> Vec<usize> {
         .collect()
 }
 
-fn hashes<'a>(key: &'a str) -> impl Iterator<Item = Vec<usize>> + 'a {
+fn hashes(key: &str) -> impl Iterator<Item = Vec<usize>> + '_ {
     (0..128).map(move |i| knot_hash(&format!("{}-{}", key, i)))
 }
 

@@ -44,9 +44,9 @@ pub fn part2(input: &str) -> String {
     for _ in 0..100 {
         for i in (1..ds.len()).rev() {
             ds[i - 1] += ds[i];
-            ds[i] = ds[i] % 10;
+            ds[i] %= 10;
         }
-        ds[0] = ds[0] % 10;
+        ds[0] %= 10;
     }
     ds[..8]
         .iter()

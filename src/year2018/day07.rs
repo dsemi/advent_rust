@@ -19,8 +19,8 @@ fn parse_steps(input: &str) -> Scheduler {
             char
         )
         .unwrap();
-        preds.entry(b).or_insert_with(|| AHashSet::new()).insert(a);
-        succs.entry(a).or_insert_with(|| AHashSet::new()).insert(b);
+        preds.entry(b).or_insert_with(AHashSet::new).insert(a);
+        succs.entry(a).or_insert_with(AHashSet::new).insert(b);
     }
     let mut avail = BinaryHeap::new();
     for c in succs.keys() {
@@ -29,9 +29,9 @@ fn parse_steps(input: &str) -> Scheduler {
         }
     }
     Scheduler {
-        avail: avail,
-        preds: preds,
-        succs: succs,
+        avail,
+        preds,
+        succs,
     }
 }
 

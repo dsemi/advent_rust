@@ -1,9 +1,10 @@
+#![allow(clippy::many_single_char_names)]
+
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use regex::Regex;
 use std::fs;
-use syn;
 
 #[proc_macro]
 pub fn make_ptypes(_item: TokenStream) -> TokenStream {

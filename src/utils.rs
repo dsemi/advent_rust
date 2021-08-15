@@ -37,7 +37,7 @@ where
         frontier: vec![(0, start)].into_iter().collect(),
         visited: vec![x].into_iter().collect(),
         hash: h,
-        neighbs: neighbs,
+        neighbs,
     }
 }
 
@@ -165,9 +165,9 @@ where
         elem: start,
     }));
     Dijkstra {
-        queue: queue,
+        queue,
         dists: AHashMap::new(),
-        neighbors: neighbors,
+        neighbors,
     }
 }
 
@@ -194,7 +194,7 @@ where
                 if dist < *shortest {
                     *shortest = dist;
                     self.queue.push(Reverse(State {
-                        dist: dist,
+                        dist,
                         elem: st2,
                     }));
                 }
@@ -214,13 +214,13 @@ pub fn unit_dir(c: char) -> Coord<i64> {
     }
 }
 
-pub fn transpose<T: Copy>(inp: &Vec<Vec<T>>) -> Vec<Vec<T>> {
+pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     let cols = inp.iter().map(|x| x.len()).max().unwrap();
     let mut out = vec![vec![]; cols];
     for i in 0..cols {
-        for j in 0..inp.len() {
-            if i < inp[j].len() {
-                out[i].push(inp[j][i]);
+        for row in inp.iter() {
+            if i < row.len() {
+                out[i].push(row[i]);
             }
         }
     }
@@ -241,7 +241,7 @@ where
     T: FromPrimitive,
 {
     pub fn new(x: T, y: T) -> Self {
-        Self { x: x, y: y }
+        Self { x, y }
     }
 
     pub fn scale(&self, n: T) -> Self {
@@ -407,7 +407,7 @@ where
     T: Num,
 {
     pub fn new(x: T, y: T, z: T) -> Self {
-        Self { x: x, y: y, z: z }
+        Self { x, y, z }
     }
 
     pub fn scale(&self, n: T) -> Self {
@@ -496,7 +496,7 @@ fn mul_inv(mut a: i64, b0: i64) -> i64 {
 
 pub fn chinese_remainder(an: Vec<(i64, i64)>) -> i64 {
     let mut sum = 0;
-    let prod = an.iter().map(|x| x.1).fold(1, |a, b| a * b);
+    let prod = an.iter().map(|x| x.1).product();
     for (a_i, n_i) in &an {
         let p = prod / n_i;
         sum += a_i * mul_inv(p, *n_i) * p;

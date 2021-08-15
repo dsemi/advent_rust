@@ -8,7 +8,7 @@ enum Record {
     SleepToggle(usize),
 }
 
-fn parse_records<'a>(input: &'a str) -> impl Iterator<Item = Record> + 'a {
+fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
     input.lines().sorted().map(|line| {
         let (time, rest) = line.split_once("] ").unwrap();
         if rest.starts_with("Guard") {
@@ -69,7 +69,7 @@ pub fn part1(input: &str) -> usize {
         .max()
         .unwrap()
         .1;
-    n * sleep_freqs[&n].iter().position_max().unwrap()
+    n * sleep_freqs[n].iter().position_max().unwrap()
 }
 
 pub fn part2(input: &str) -> usize {
@@ -78,8 +78,8 @@ pub fn part2(input: &str) -> usize {
         .iter()
         .map(|(k, v)| {
             v.iter()
-                .zip(0..v.len())
-                .map(|x| (x.0, x.1, k))
+                .enumerate()
+                .map(|x| (x.1, x.0, k))
                 .max()
                 .unwrap()
         })

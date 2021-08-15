@@ -2,7 +2,7 @@ fn process(input: &str, f: fn(i64, i64, i64) -> i64) -> i64 {
     input
         .lines()
         .map(|line| {
-            let v: Vec<i64> = line.split("x").map(|x| x.parse().unwrap()).collect();
+            let v: Vec<i64> = line.split('x').map(|x| x.parse().unwrap()).collect();
             f(v[0], v[1], v[2])
         })
         .sum()

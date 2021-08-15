@@ -3,7 +3,9 @@ use itertools::Itertools;
 
 use crate::utils::*;
 
-fn neighbors(grid: &Vec<Vec<char>>, xy: &Coord<i32>) -> Vec<Coord<i32>> {
+type Adj = AHashMap<(char, char), usize>;
+
+fn neighbors(grid: &[Vec<char>], xy: &Coord<i32>) -> Vec<Coord<i32>> {
     vec![
         Coord::new(1, 0),
         Coord::new(-1, 0),
@@ -23,10 +25,7 @@ fn neighbors(grid: &Vec<Vec<char>>, xy: &Coord<i32>) -> Vec<Coord<i32>> {
     .collect()
 }
 
-fn find_all_distances(
-    grid: &Vec<Vec<char>>,
-    ns: &Vec<(Coord<i32>, char)>,
-) -> AHashMap<(char, char), usize> {
+fn find_all_distances(grid: &[Vec<char>], ns: &[(Coord<i32>, char)]) -> Adj {
     let mut result = AHashMap::new();
     for (p1, n1) in ns {
         for (p2, n2) in ns {
@@ -45,8 +44,11 @@ fn find_all_distances(
     result
 }
 
-fn all_paths_and_dist_map(input: &str) -> (AHashMap<(char, char), usize>, Vec<Vec<char>>) {
-    let grid = input.lines().map(|line| line.chars().collect()).collect();
+fn all_paths_and_dist_map(input: &str) -> (Adj, Vec<Vec<char>>) {
+    let grid = input
+        .lines()
+        .map(|line| line.chars().collect())
+        .collect::<Vec<_>>();
     let mut pts = input
         .lines()
         .enumerate()
@@ -72,8 +74,11 @@ fn all_paths_and_dist_map(input: &str) -> (AHashMap<(char, char), usize>, Vec<Ve
     (dist_map, all_paths)
 }
 
-fn min_path_len(dists: AHashMap<(char, char), usize>, all_paths: Vec<Vec<char>>) -> Option<usize> {
-    all_paths.into_iter().map(|xs| xs.iter().zip(&xs[1..]).map(|(&a, &b)| dists[&(a, b)]).sum()).min()
+fn min_path_len(dists: Adj, all_paths: Vec<Vec<char>>) -> Option<usize> {
+    all_paths
+        .into_iter()
+        .map(|xs| xs.iter().zip(&xs[1..]).map(|(&a, &b)| dists[&(a, b)]).sum())
+        .min()
 }
 
 pub fn part1(input: &str) -> Option<usize> {

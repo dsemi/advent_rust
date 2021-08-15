@@ -31,11 +31,7 @@ fn neighbors(coord: &Coord<i32>) -> Vec<Coord<i32>> {
         .collect()
 }
 
-fn find_next_move(
-    grid: &Vec<Vec<(char, i32)>>,
-    enemy: char,
-    coord: Coord<i32>,
-) -> Option<Coord<i32>> {
+fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> Option<Coord<i32>> {
     let mut path = AHashMap::new();
     let mut visited = AHashSet::new();
     visited.insert(coord);
@@ -96,7 +92,7 @@ fn run_round(grid: &mut Vec<Vec<(char, i32)>>, elf_power: i32, allow_elf_death: 
             continue;
         }
         let enemy = if v.0 == 'E' { 'G' } else { 'E' };
-        if let Some(p) = find_next_move(&grid, enemy, pos) {
+        if let Some(p) = find_next_move(grid, enemy, pos) {
             grid[pos.x as usize][pos.y as usize] = ('.', 0);
             grid[p.x as usize][p.y as usize] = v;
             pos = p;
@@ -137,7 +133,7 @@ fn run_round(grid: &mut Vec<Vec<(char, i32)>>, elf_power: i32, allow_elf_death: 
     Finished
 }
 
-fn score(grid: &Vec<Vec<(char, i32)>>, c: i32) -> Option<i32> {
+fn score(grid: &[Vec<(char, i32)>], c: i32) -> Option<i32> {
     let mut elves = false;
     let mut goblins = false;
     let mut total = 0;
@@ -178,10 +174,9 @@ pub fn part1(input: &str) -> Option<i32> {
 pub fn part2(input: &str) -> Option<i32> {
     let grid_start = parse_graph(input);
     let n = iterate(4, |&x| x * 2)
-        .filter(|&x| run(grid_start.clone(), x, false).is_some())
-        .next()
+        .find(|&x| run(grid_start.clone(), x, false).is_some())
         .unwrap();
     let v = (n / 2..=n).collect::<Vec<_>>();
     let i = v.partition_point(|&x| run(grid_start.clone(), x, false).is_none());
-    run(grid_start.clone(), v[i], false)
+    run(grid_start, v[i], false)
 }

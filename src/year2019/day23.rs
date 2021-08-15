@@ -26,7 +26,7 @@ fn parse_network(input: &str) -> Network {
         computers.push(prog);
     }
     Network {
-        computers: computers,
+        computers,
         x: 0,
         y: 0,
     }

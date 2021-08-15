@@ -6,12 +6,12 @@ struct Room<'a> {
     checksum: &'a str,
 }
 
-fn parse_rooms<'a>(input: &'a str) -> impl Iterator<Item = Room<'a>> + 'a {
+fn parse_rooms<'a>(input: &'a str) -> impl Iterator<Item = Room<'a>> + '_ {
     input.lines().map(|line| {
         let (name, rest) = line.rsplit_once('-').unwrap();
         let (sector, rest2) = rest.split_once('[').unwrap();
         Room {
-            name: name,
+            name,
             sector_id: sector.parse().unwrap(),
             checksum: &rest2[..rest2.len() - 1],
         }

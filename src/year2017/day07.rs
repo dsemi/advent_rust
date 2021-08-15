@@ -8,7 +8,7 @@ pub fn part1(input: &str) -> String {
         &input
             .lines()
             .map(|line| line.split(" -> ").collect())
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     let c = inp[1]
         .iter()

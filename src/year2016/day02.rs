@@ -7,19 +7,14 @@ fn run(input: &str, pad: &str) -> String {
         .lines()
         .enumerate()
         .flat_map(|(y, line)| {
-            line.split(" ")
+            line.split(' ')
                 .enumerate()
                 .filter(|(_, c)| c != &".")
                 .map(|(x, c)| (Coord::new(x as i32, y as i32), c))
                 .collect::<Vec<_>>()
         })
         .collect();
-    let mut xy = d
-        .keys()
-        .filter(|k| d[&k] == "5")
-        .next()
-        .unwrap()
-        .clone();
+    let mut xy = *d.keys().find(|k| d[k] == "5").unwrap();
     let mut result = String::new();
     for line in input.lines() {
         xy = line.chars().fold(xy, |a, b| {
@@ -42,15 +37,21 @@ fn run(input: &str, pad: &str) -> String {
 }
 
 pub fn part1(input: &str) -> String {
-    run(input, "1 2 3\n\
+    run(
+        input,
+        "1 2 3\n\
                 4 5 6\n\
-                7 8 9")
+                7 8 9",
+    )
 }
 
 pub fn part2(input: &str) -> String {
-    run(input, ". . 1 . .\n\
+    run(
+        input,
+        ". . 1 . .\n\
                 . 2 3 4 .\n\
                 5 6 7 8 9\n\
                 . A B C .\n\
-                . . D . .")
+                . . D . .",
+    )
 }

@@ -35,7 +35,7 @@ fn parse_buses(s: &str) -> (i64, Vec<(i64, i64)>) {
     (
         t,
         ls[1]
-            .split(",")
+            .split(',')
             .enumerate()
             .filter(|&(_, x)| x != "x")
             .map(|(i, x)| (-(i as i64), x.parse().unwrap()))

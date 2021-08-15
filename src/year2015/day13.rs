@@ -49,8 +49,8 @@ pub fn part1(input: &str) -> Option<i32> {
 
 pub fn part2(input: &str) -> Option<i32> {
     let mut d = parse_happiness(input);
-    for i in 0..d.len() {
-        d[i].push(0);
+    for e in d.iter_mut() {
+        e.push(0);
     }
     d.push(vec![0; d[0].len()]);
     max_happiness(d)
