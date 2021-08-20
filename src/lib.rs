@@ -93,7 +93,7 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn make_mods(item: TokenStream) -> TokenStream {
-    // Use Span::call_site() when it becomes stable.
+    // Use Span::source_file() when it becomes stable.
     let mut mods = proc_macro2::TokenStream::new();
     let dir = syn::parse_macro_input!(item as syn::LitStr);
     let re = Regex::new(r"/(day\d\d).rs$").unwrap();
@@ -110,8 +110,10 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
 
 // Some #[problem] proc_macro_attribute that accumulates problems into a Map
 // could limit the filesystem parsing to make_mods (or remove it entirely once
-// call_site stabilizes). Maintaining state across the macro calls could be
-// problematic. syn::Ident is !Sync, so it doesn't work with lazy_static.
+// source_file stabilizes). Maintaining state across the macro calls could be
+// problematic. syn::Ident is !Sync, so it doesn't work with lazy_static. Also,
+// syn::Ident is 'part1' or 'part2', with no extra information. source_file span
+// would be needed to get the full context.
 
 #[proc_macro]
 pub fn make_tests(_item: TokenStream) -> TokenStream {
