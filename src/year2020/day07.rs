@@ -1,4 +1,5 @@
 use ahash::AHashMap;
+use ahash::AHashSet;
 
 fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
     s.lines()
@@ -19,29 +20,26 @@ fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
         .collect()
 }
 
-fn holds_shiny_gold<'a>(
-    cache: &mut AHashMap<&'a str, bool>,
-    m: &AHashMap<&str, Vec<(u32, &'a str)>>,
-    k: &'a str,
-) -> bool {
-    match cache.get(k) {
-        None => {
-            let v = m[k]
-                .iter()
-                .any(|(_, k2)| k2 == &"shiny gold" || holds_shiny_gold(cache, m, k2));
-            cache.insert(k, v);
-            v
-        }
-        Some(v) => *v,
-    }
-}
-
 pub fn part1(input: &str) -> usize {
     let m = parse_bags(input);
-    let mut c = AHashMap::new();
-    m.keys()
-        .filter(|&k| holds_shiny_gold(&mut c, &m, k))
-        .count()
+    let mut rev = AHashMap::new();
+    for (k, v) in m {
+        for (_, k2) in v {
+            rev.entry(k2).or_insert_with(Vec::new).push(k);
+        }
+    }
+    let mut stack = rev[&"shiny gold"].clone();
+    let mut visited = AHashSet::new();
+    let mut ans = 0;
+    while let Some(v) = stack.pop() {
+        if visited.insert(v) {
+            ans += 1;
+            if let Some(vs) = rev.get(v) {
+                stack.extend(vs);
+            }
+        }
+    }
+    ans
 }
 
 fn count_bags(m: &AHashMap<&str, Vec<(u32, &str)>>, k: &str) -> u32 {

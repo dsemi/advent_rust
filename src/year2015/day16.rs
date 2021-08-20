@@ -1,5 +1,4 @@
 use ahash::AHashMap;
-use regex::Regex;
 
 lazy_static! {
     static ref TAPE: AHashMap<&'static str, fn(i32) -> bool> = {
@@ -19,14 +18,12 @@ lazy_static! {
 }
 
 fn solve(input: &str, tape: AHashMap<&str, fn(i32) -> bool>) -> Option<usize> {
-    let re = Regex::new(r"(\w+): (\d+)").unwrap();
     input
         .lines()
         .position(|line| {
-            re.captures_iter(line).all(|cap| {
-                let key = &cap[1];
-                let val = cap[2].parse().unwrap();
-                tape.get(key).unwrap_or_else(|| &TAPE[key])(val)
+            line.split_once(": ").unwrap().1.split(", ").all(|attr| {
+                let (key, val) = attr.split_once(": ").unwrap();
+                tape.get(key).unwrap_or_else(|| &TAPE[key])(val.parse().unwrap())
             })
         })
         .map(|x| x + 1)
