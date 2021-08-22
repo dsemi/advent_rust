@@ -22,8 +22,9 @@ fn step(lights: &mut Vec<u128>) {
         let mut curr2 = 0;
         for _ in 0..lights.len() {
             curr2 <<= 1;
-            let adj = adjs.iter().map(|x| (x & 1) as u8).sum::<u8>();
+            let mut adj = 0;
             for v in adjs.iter_mut() {
+                adj += (*v & 1) as u8;
                 *v >>= 1;
             }
             let mut c = curr & 1;
@@ -55,7 +56,7 @@ pub fn part2(input: &str) -> u32 {
     for _ in 0..100 {
         step(&mut lights);
         lights[0] |= CORNERS;
-    lights[99] |= CORNERS;
+        lights[99] |= CORNERS;
     }
     lights.into_iter().map(|x| x.count_ones()).sum()
 }
