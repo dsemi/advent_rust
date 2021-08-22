@@ -10,26 +10,6 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::sync::Mutex;
 
-#[proc_macro]
-pub fn make_ptypes(_item: TokenStream) -> TokenStream {
-    let to_strings = vec![
-        "i8", "i16", "i32", "i64", "i128", "u8", "u16", "u32", "u64", "u128", "usize", "String",
-    ];
-    let gen = to_strings
-        .into_iter()
-        .map(|x| x.parse::<proc_macro2::TokenStream>().unwrap());
-    let tokens = quote! {
-        #(
-            impl PType for #gen {
-                fn to(&self) -> String {
-                    self.to_string()
-                }
-            }
-        )*
-    };
-    tokens.into()
-}
-
 lazy_static! {
     static ref PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
 }

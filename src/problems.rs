@@ -1,4 +1,4 @@
-use advent::{detect_problems, make_problems, make_ptypes, make_tests};
+use advent::{detect_problems, make_problems};
 use reqwest::blocking::Client;
 use std::env;
 use std::fmt::Debug;
@@ -34,7 +34,17 @@ trait PType {
     fn to(&self) -> String;
 }
 
-make_ptypes!();
+macro_rules! make_ptypes {
+    ($($typ:ty),*) => ($(
+        impl PType for $typ {
+            fn to(&self) -> String {
+                self.to_string()
+            }
+        }
+    )*)
+}
+
+make_ptypes!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, String);
 
 impl<T: PType> PType for Option<T> {
     fn to(&self) -> String {
@@ -72,29 +82,37 @@ where
 macro_rules! make_prob {
     ($y:ident, $d:ident) => {
         (wrap(&crate::$y::$d::part1), wrap(&crate::$y::$d::part2))
-    };
+    }
 }
 
 detect_problems!();
 
 make_problems!();
 
-#[allow(dead_code)]
-fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
-    lazy_static! {
-        static ref DICT: json::JsonValue = json::parse(
-            &fs::read_to_string(Path::new("test/expectedAnswers.json"))
-                .expect("Error reading json file")
-        )
-        .unwrap();
-    }
-    match &DICT[year.to_string()][day.to_string()] {
-        json::JsonValue::Array(v) => {
-            let solns = v.iter().map(|x| x.as_str().unwrap()).collect::<Vec<_>>();
-            Some((solns[0].to_string(), solns[1].to_string()))
-        }
-        _ => None,
-    }
-}
+#[cfg(test)]
+mod tests {
+    use crate::problems::{get_file_input, get_prob};
+    use advent::make_tests;
+    use std::fs;
+    use std::path::Path;
 
-make_tests!();
+    #[allow(dead_code)]
+    fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
+        lazy_static! {
+            static ref DICT: json::JsonValue = json::parse(
+                &fs::read_to_string(Path::new("test/expectedAnswers.json"))
+                    .expect("Error reading json file")
+            )
+            .unwrap();
+        }
+        match &DICT[year.to_string()][day.to_string()] {
+            json::JsonValue::Array(v) => {
+                let solns = v.iter().map(|x| x.as_str().unwrap()).collect::<Vec<_>>();
+                Some((solns[0].to_string(), solns[1].to_string()))
+            }
+            _ => None,
+        }
+    }
+
+    make_tests!();
+}
