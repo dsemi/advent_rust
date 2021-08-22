@@ -1,2 +1,2 @@
-[target.x86_64-unknown-linux-gnu]
-rustflags = ["-Ctarget-feature=+avx2"]
+[build]
+rustflags = ["-Ctarget-cpu=native"]
