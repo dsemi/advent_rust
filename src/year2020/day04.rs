@@ -2,12 +2,14 @@ use ahash::AHashSet;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while, take_while_m_n};
 use nom::character::complete::{digit1, multispace0};
-use nom::combinator::verify;
+use nom::combinator::{map_res, recognize, verify};
 use nom::sequence::{pair, terminated};
-use nom::{map_res, named, recognize, IResult};
+use nom::IResult;
 use std::str::FromStr;
 
-named!(int <&str, i32>, map_res!(recognize!(digit1), FromStr::from_str));
+fn int(i: &str) -> IResult<&str, i32> {
+    map_res(recognize(digit1), FromStr::from_str)(i)
+}
 
 fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
     let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
