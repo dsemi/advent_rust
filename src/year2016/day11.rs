@@ -19,12 +19,9 @@ struct Floors {
 
 impl Floors {
     fn is_valid(&self) -> bool {
-        for p in self.flrs.iter() {
-            if p.chip != p.gen && self.flrs.iter().any(|x| x.gen == p.chip) {
-                return false;
-            }
-        }
-        true
+        self.flrs
+            .iter()
+            .all(|p| p.chip == p.gen || self.flrs.iter().all(|x| x.gen != p.chip))
     }
 
     fn is_done(&self) -> bool {
