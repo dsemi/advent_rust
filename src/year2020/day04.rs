@@ -5,10 +5,9 @@ use nom::character::complete::{digit1, multispace0};
 use nom::combinator::{map_res, recognize, verify};
 use nom::sequence::{pair, terminated};
 use nom::IResult;
-use std::str::FromStr;
 
 fn int(i: &str) -> IResult<&str, i32> {
-    map_res(recognize(digit1), FromStr::from_str)(i)
+    map_res(recognize(digit1), |s: &str| s.parse())(i)
 }
 
 fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
@@ -61,7 +60,7 @@ fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
 fn count_matches(input: &str, validate: bool) -> usize {
     input
         .split("\n\n")
-        .filter(|line| matches!(parse(line, validate), Ok(_)))
+        .filter(|line| parse(line, validate).is_ok())
         .count()
 }
 

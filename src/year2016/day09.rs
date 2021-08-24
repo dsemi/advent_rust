@@ -1,31 +1,23 @@
-use lazy_static::lazy_static;
-use regex::Regex;
+use nom::bytes::complete::tag;
+use nom::character::complete::digit1;
+use nom::combinator::{map_res, recognize};
+use nom::sequence::{delimited, separated_pair};
+use nom::IResult;
 
-struct Marker {
-    data_len: usize,
-    repeat: usize,
-    marker_len: usize,
+fn int(i: &str) -> IResult<&str, usize> {
+    map_res(recognize(digit1), |s: &str| s.parse())(i)
 }
 
-fn parse_marker(input: &str) -> Option<Marker> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"^\((\d+)x(\d+)\)").unwrap();
-    }
-    RE.captures(input).map(|cap| Marker {
-        data_len: cap[1].parse().unwrap(),
-        repeat: cap[2].parse().unwrap(),
-        marker_len: cap[0].len(),
-    })
+fn marker(i: &str) -> IResult<&str, (usize, usize)> {
+    delimited(tag("("), separated_pair(int, tag("x"), int), tag(")"))(i)
 }
 
 fn decompressed_len(f: fn(&str) -> usize, input: &str) -> usize {
     if input.is_empty() {
         return 0;
     }
-    if let Some(marker) = parse_marker(input) {
-        let tot_len = marker.marker_len + marker.data_len;
-        let repeated_chars = &input[marker.marker_len..tot_len];
-        marker.repeat * f(repeated_chars) + decompressed_len(f, &input[tot_len..])
+    if let Ok((rest, (data_len, repeat))) = marker(input) {
+        repeat * f(&rest[..data_len]) + decompressed_len(f, &rest[data_len..])
     } else {
         1 + decompressed_len(f, &input[1..])
     }
