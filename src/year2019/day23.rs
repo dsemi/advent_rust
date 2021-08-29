@@ -1,3 +1,5 @@
+use genawaiter::{rc::gen, yield_};
+
 use crate::year2019::intcode;
 
 struct Packet {
@@ -17,77 +19,74 @@ struct Network {
     y: i64,
 }
 
-fn parse_network(input: &str) -> Network {
-    let p = intcode::new(input);
-    let mut computers = Vec::new();
-    for i in 0..50 {
-        let mut prog = p.clone();
-        prog.input.push_back(i);
-        computers.push(prog);
+impl Network {
+    fn new(input: &str) -> Self {
+        let p = intcode::new(input);
+        let mut computers = Vec::new();
+        for i in 0..50 {
+            let mut prog = p.clone();
+            prog.input.push_back(i);
+            computers.push(prog);
+        }
+        Self {
+            computers,
+            x: 0,
+            y: 0,
+        }
     }
-    Network {
-        computers,
-        x: 0,
-        y: 0,
-    }
-}
 
-impl Iterator for Network {
-    type Item = Vec<Signal>;
-
-    fn next(&mut self) -> Option<Vec<Signal>> {
-        loop {
-            let mut result = Vec::new();
-            let packets = self
-                .computers
-                .iter_mut()
-                .filter_map(|comp| {
-                    comp.run();
-                    comp.recv(3).map(|ns| Packet {
-                        address: ns[0],
-                        x: ns[1],
-                        y: ns[2],
+    fn run(&mut self) -> impl Iterator<Item = Signal> + '_ {
+        gen!({
+            loop {
+                let packets = self
+                    .computers
+                    .iter_mut()
+                    .filter_map(|comp| {
+                        comp.run();
+                        comp.recv(3).map(|ns| Packet {
+                            address: ns[0],
+                            x: ns[1],
+                            y: ns[2],
+                        })
                     })
-                })
-                .collect::<Vec<_>>();
-            if !packets.is_empty() {
-                for packet in packets {
-                    if packet.address == 255 {
-                        result.push(Signal::ToNat(packet.y));
-                        self.x = packet.x;
-                        self.y = packet.y;
-                    } else {
-                        self.computers[packet.address as usize]
-                            .input
-                            .push_back(packet.x);
-                        self.computers[packet.address as usize]
-                            .input
-                            .push_back(packet.y);
+                    .collect::<Vec<_>>();
+                if !packets.is_empty() {
+                    for packet in packets {
+                        if packet.address == 255 {
+                            yield_!(Signal::ToNat(packet.y));
+                            self.x = packet.x;
+                            self.y = packet.y;
+                        } else {
+                            self.computers[packet.address as usize]
+                                .input
+                                .push_back(packet.x);
+                            self.computers[packet.address as usize]
+                                .input
+                                .push_back(packet.y);
+                        }
+                    }
+                } else {
+                    let mut all_inp = true;
+                    for comp in self.computers.iter_mut() {
+                        comp.input.push_back(-1);
+                        comp.run();
+                        all_inp = all_inp && comp.output.len() < 3;
+                    }
+                    if all_inp {
+                        yield_!(Signal::FromNat(self.y));
+                        self.computers[0].input.push_back(self.x);
+                        self.computers[0].input.push_back(self.y);
                     }
                 }
-            } else {
-                let mut all_inp = true;
-                for comp in self.computers.iter_mut() {
-                    comp.input.push_back(-1);
-                    comp.run();
-                    all_inp = all_inp && comp.output.len() < 3;
-                }
-                if all_inp {
-                    result.push(Signal::FromNat(self.y));
-                    self.computers[0].input.push_back(self.x);
-                    self.computers[0].input.push_back(self.y);
-                }
             }
-            if !result.is_empty() {
-                return Some(result);
-            }
-        }
+        })
+        .into_iter()
     }
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    parse_network(input)
-        .flatten()
+    Network::new(input)
+        .run()
         .filter_map(|p| match p {
             Signal::ToNat(v) => Some(v),
             _ => None,
@@ -96,8 +95,8 @@ pub fn part1(input: &str) -> Option<i64> {
 }
 
 pub fn part2(input: &str) -> i64 {
-    parse_network(input)
-        .flatten()
+    Network::new(input)
+        .run()
         .filter_map(|p| match p {
             Signal::FromNat(v) => Some(v),
             _ => None,
