@@ -1,5 +1,5 @@
 use ahash::AHashMap;
-use itertools::Itertools;
+use genawaiter::{rc::gen, yield_};
 
 use crate::utils::Coord;
 use crate::year2018::day13::Turn::*;
@@ -80,49 +80,36 @@ fn parse_tracks(input: &str) -> Tracks {
     result
 }
 
-impl Iterator for Tracks {
-    type Item = Vec<(i32, i32)>;
-
-    fn next(&mut self) -> Option<Vec<(i32, i32)>> {
-        while self.carts.len() > 1 {
-            let v = self
-                .carts
-                .keys()
-                .sorted()
-                .copied()
-                .collect::<Vec<_>>()
-                .into_iter()
-                .filter_map(|p| {
-                    self.carts.remove(&p).and_then(|mut cart| {
+impl Tracks {
+    fn tick(&mut self) -> impl Iterator<Item = (i32, i32)> + '_ {
+        gen!({
+            while self.carts.len() > 1 {
+                let mut ps = self.carts.keys().copied().collect::<Vec<_>>();
+                ps.sort_unstable();
+                for p in ps {
+                    if let Some(mut cart) = self.carts.remove(&p) {
                         move_cart(&mut cart, &self.grid);
                         if self.carts.contains_key(&cart.pos) {
                             self.carts.remove(&cart.pos);
-                            Some((cart.pos.y, cart.pos.x))
+                            yield_!((cart.pos.y, cart.pos.x));
                         } else {
                             self.carts.insert(cart.pos, cart);
-                            None
                         }
-                    })
-                })
-                .collect::<Vec<_>>();
-            if !v.is_empty() {
-                return Some(v);
+                    }
+                }
             }
-        }
-        assert!(self.carts.len() <= 1);
-        let v = self
-            .carts
-            .drain()
-            .map(|x| (x.0.y, x.0.x))
-            .collect::<Vec<_>>();
-        (!v.is_empty()).then(|| v)
+            for p in self.carts.drain() {
+                yield_!((p.0.y, p.0.x));
+            }
+        })
+        .into_iter()
     }
 }
 
 pub fn part1(input: &str) -> Option<(i32, i32)> {
-    parse_tracks(input).flatten().next()
+    parse_tracks(input).tick().next()
 }
 
 pub fn part2(input: &str) -> Option<(i32, i32)> {
-    parse_tracks(input).flatten().last()
+    parse_tracks(input).tick().last()
 }
