@@ -1,62 +1,65 @@
 use ahash::AHashMap;
-use counter::Counter;
 
-use crate::utils::Coord;
-
-fn parse_landscape(input: &str) -> Vec<Vec<char>> {
-    input.lines().map(|line| line.chars().collect()).collect()
-}
-
-fn neighbors(grid: &[Vec<char>], c: Coord<i32>) -> impl Iterator<Item = char> + '_ {
-    vec![
-        Coord::new(-1, 0),
-        Coord::new(1, 0),
-        Coord::new(0, -1),
-        Coord::new(0, 1),
-        Coord::new(-1, -1),
-        Coord::new(-1, 1),
-        Coord::new(1, -1),
-        Coord::new(1, 1),
-    ]
-    .into_iter()
-    .filter_map(move |d| {
-        let c2 = c + d;
-        (c2.x >= 0 && c2.x < grid.len() as i32 && c2.y >= 0 && c2.y < grid[c2.x as usize].len() as i32)
-            .then(|| grid[c2.x as usize][c2.y as usize])
-    })
-}
-
-fn step(grid: &mut Vec<Vec<char>>) {
-    let mut counts = Vec::new();
-    for (r, row) in grid.iter().enumerate() {
-        counts.push(Vec::new());
-        for (c, _) in row.iter().enumerate() {
-            counts[r].push(neighbors(grid, Coord::new(r as i32, c as i32)).collect::<Counter<_>>());
-        }
+fn acre(c: char) -> u128 {
+    match c {
+        '.' => 0,
+        '|' => 1,
+        '#' => 2,
+        _ => panic!("Unrecognized char: {}", c),
     }
-    for (r, row) in grid.iter_mut().enumerate() {
-        for (c, v) in row.iter_mut().enumerate() {
-            if *v == '.' && counts[r][c][&'|'] >= 3 {
-                *v = '|';
-            } else if *v == '|' && counts[r][c][&'#'] >= 3 {
-                *v = '#';
-            } else if *v == '#' && (counts[r][c][&'#'] < 1 || counts[r][c][&'|'] < 1) {
-                *v = '.';
+}
+
+fn parse_landscape(input: &str) -> Vec<u128> {
+    input
+        .lines()
+        .map(|line| line.chars().map(acre).reduce(|a, b| a << 2 | b).unwrap())
+        .collect()
+}
+
+fn step(grid: &mut Vec<u128>) {
+    let mut prev = 0;
+    for i in 0..grid.len() {
+        let mut curr = grid[i];
+        let next = *grid.get(i + 1).unwrap_or(&0);
+        let mut adjs = vec![prev << 2, prev, prev >> 2,
+                            curr << 2,       curr >> 2,
+                            next << 2, next, next >> 2];
+        let mut curr2 = 0;
+        for _ in 0..grid.len() {
+            curr2 <<= 2;
+            let mut adj_trees = 0;
+            let mut adj_lumberyards = 0;
+            for v in adjs.iter_mut() {
+                adj_trees += (*v & 1) as u8;
+                *v >>= 1;
+                adj_lumberyards += (*v & 1) as u8;
+                *v >>= 1;
             }
+            let mut c = curr & 3;
+            curr >>= 2;
+            if c == 0 && adj_trees >= 3 {
+                c = 1;
+            } else if c == 1 && adj_lumberyards >= 3 {
+                c = 2;
+            } else if c == 2 && (adj_trees < 1 || adj_lumberyards < 1) {
+                c = 0;
+            }
+            curr2 |= c;
         }
+        prev = std::mem::replace(&mut grid[i], curr2);
     }
 }
 
-fn resource_value(grid: &[Vec<char>]) -> usize {
+fn resource_value(grid: &[u128]) -> usize {
     let mut ws = 0;
     let mut ls = 0;
     for row in grid {
-        for v in row {
-            if *v == '|' {
-                ws += 1;
-            } else if *v == '#' {
-                ls += 1;
-            }
+        let mut c = *row;
+        while c > 0 {
+            ws += (c & 1) as usize;
+            c >>= 1;
+            ls += (c & 1) as usize;
+            c >>= 1;
         }
     }
     ws * ls
@@ -71,24 +74,17 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let n: usize = 1_000_000_000;
-    let mut t: AHashMap<usize, (usize, Vec<Vec<char>>)> = AHashMap::new();
+    const N: usize = 1_000_000_000;
+    let mut t: AHashMap<Vec<u128>, usize> = AHashMap::new();
     let mut grid = parse_landscape(input);
-    for c in (0..n+1).rev() {
-        let r = resource_value(&grid);
-        match t.get(&r) {
-            Some((n, g)) if g == &grid => {
-                let steps_away = c.rem_euclid(n - c);
-                for _ in 0..steps_away {
-                    step(&mut grid);
-                }
-                return resource_value(&grid);
-            },
-            _ => {
-                t.insert(r, (c, grid.clone()));
-                step(&mut grid);
-            },
+    let mut rs = Vec::new();
+    for c in 0..=N {
+        rs.push(resource_value(&grid));
+        if let Some(base) = t.get(&grid) {
+            return rs[base + (N - base) % (c - base)];
         }
+        t.insert(grid.clone(), c);
+        step(&mut grid);
     }
     panic!("No solution found")
 }
