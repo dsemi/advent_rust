@@ -12,7 +12,15 @@ impl Iterator for Prog {
         while self.reg[self.ip] >= 0 && self.reg[self.ip] < self.instrs.len() as i64 {
             if self.reg[self.ip] + 9 <= self.instrs.len() as i64 {
                 match self.instrs[self.reg[self.ip] as usize..self.reg[self.ip] as usize + 9] {
-                    [Instr(Seti, 0, _, t), Instr(Addi, t2, 1, u), Instr(Muli, u2, n, u3), Instr(Gtrr, u4, r, u5), Instr(Addr, u6, ip, ip2), Instr(Addi, ip3, 1, ip4), Instr(Seti, ipv8, _, ip5), Instr(Addi, t3, u7, t4), Instr(Seti, ipv, _, ip6)]
+                    [Instr(Seti, 0, _, t),
+                     Instr(Addi, t2, 1, u),
+                     Instr(Muli, u2, n, u3),
+                     Instr(Gtrr, u4, r, u5),
+                     Instr(Addr, u6, ip, ip2),
+                     Instr(Addi, ip3, 1, ip4),
+                     Instr(Seti, ipv8, _, ip5),
+                     Instr(Addi, t3, u7, t4), 
+                     Instr(Seti, ipv, _, ip6)]
                         if t == t2
                             && t == t3
                             && t == t4
