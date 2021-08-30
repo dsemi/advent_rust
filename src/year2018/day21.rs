@@ -19,7 +19,7 @@ impl Iterator for Prog {
                      Instr(Addr, u6, ip, ip2),
                      Instr(Addi, ip3, 1, ip4),
                      Instr(Seti, ipv8, _, ip5),
-                     Instr(Addi, t3, u7, t4), 
+                     Instr(Addi, t3, u7, t4),
                      Instr(Seti, ipv, _, ip6)]
                         if t == t2
                             && t == t3
