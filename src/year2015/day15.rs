@@ -1,18 +1,20 @@
-use ndarray::prelude::*;
 use regex::Regex;
 use std::cmp::max;
-use std::iter::once;
 
-fn partitions(n: usize, t: i32) -> Box<dyn Iterator<Item = Vec<i32>>> {
-    if n == 1 {
-        return Box::new(once(vec![t]));
+fn partitions<F: FnMut(&mut [i32])>(n: usize, t: i32, f: &mut F) {
+    fn fun<F: FnMut(&mut [i32])>(n: usize, t: i32, buf: &mut [i32], f: &mut F) {
+        if n == 0 {
+            buf[n] = t;
+            f(buf);
+        } else {
+            for x in 0..=t {
+                buf[n] = x;
+                fun(n - 1, t - x, buf, f);
+            }
+        }
     }
-    Box::new((0..=t).flat_map(move |x| {
-        partitions(n - 1, t - x).map(move |mut xs| {
-            xs.push(x);
-            xs
-        })
-    }))
+    let mut buf = vec![0; n];
+    fun(n - 1, t, &mut buf, f);
 }
 
 fn parse_ingredients(s: &str) -> Vec<Vec<i32>> {
@@ -26,22 +28,26 @@ fn parse_ingredients(s: &str) -> Vec<Vec<i32>> {
         .collect()
 }
 
-fn scores(total: i32, cal_pred: fn(i32) -> bool, ings: Vec<Vec<i32>>) -> impl Iterator<Item = i32> {
-    partitions(ings.len(), total)
-        .map(move |ms| {
-            ms.iter()
-                .zip(ings.iter())
-                .map(|(n, i)| *n * arr1(i))
-                .fold(Array::zeros(5), |acc, x| acc + x)
-        })
-        .filter(move |v| cal_pred(v[4]))
-        .map(|v| v.slice(s![..4]).map(|&x| max(0, x)).product())
+fn max_score(total: i32, cal_pred: fn(i32) -> bool, ings: Vec<Vec<i32>>) -> i32 {
+    let mut res = i32::MIN;
+    partitions(ings.len(), total, &mut |ms| {
+        let mut v = vec![0; 5];
+        for i in 0..ms.len() {
+            for (j, e) in v.iter_mut().enumerate() {
+                *e += ms[i] * ings[i][j];
+            }
+        }
+        if cal_pred(v[4]) {
+            res = max(res, v[..4].iter().map(|&x| max(0, x)).product());
+        }
+    });
+    res
 }
 
-pub fn part1(input: &str) -> Option<i32> {
-    scores(100, |_| true, parse_ingredients(input)).max()
+pub fn part1(input: &str) -> i32 {
+    max_score(100, |_| true, parse_ingredients(input))
 }
 
-pub fn part2(input: &str) -> Option<i32> {
-    scores(100, |x| x == 500, parse_ingredients(input)).max()
+pub fn part2(input: &str) -> i32 {
+    max_score(100, |x| x == 500, parse_ingredients(input))
 }
