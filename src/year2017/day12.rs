@@ -1,8 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use ahash::{AHashMap, AHashSet};
 
 use crate::utils::*;
 
-fn parse_pipes(input: &str) -> HashMap<i64, Vec<i64>> {
+fn parse_pipes(input: &str) -> AHashMap<i64, Vec<i64>> {
     input
         .lines()
         .map(|line| {
@@ -22,7 +22,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let m = parse_pipes(input);
-    let mut seen = HashSet::new();
+    let mut seen = AHashSet::new();
     m.keys()
         .filter_map(|n| {
             (!seen.contains(n)).then(|| seen.extend(bfs(*n, |x| m[x].clone()).map(|x| x.1)))

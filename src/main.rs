@@ -1,4 +1,5 @@
 #![allow(clippy::many_single_char_names)]
+#![deny(clippy::disallowed_type)]
 
 use std::cmp::Ordering::Equal;
 use std::cmp::max_by;
