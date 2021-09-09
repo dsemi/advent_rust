@@ -1,8 +1,8 @@
 use regex::Regex;
 use std::cmp::max;
 
-fn partitions<F: FnMut(&mut [i32])>(n: usize, t: i32, f: &mut F) {
-    fn fun<F: FnMut(&mut [i32])>(n: usize, t: i32, buf: &mut [i32], f: &mut F) {
+fn partitions<F: FnMut(&[i32])>(n: usize, t: i32, f: &mut F) {
+    fn fun<F: FnMut(&[i32])>(n: usize, t: i32, buf: &mut [i32], f: &mut F) {
         if n == 0 {
             buf[n] = t;
             f(buf);
