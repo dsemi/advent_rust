@@ -28,30 +28,33 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
             key += 1;
             key - 1
         });
-        result[d[p1]][d[p2]] = n;
+        result[d[p1]][d[p2]] += n;
+        result[d[p2]][d[p1]] += n;
     }
     result
 }
 
-fn max_happiness(d: Vec<Vec<i32>>) -> Option<i32> {
+fn max_happiness(d: Vec<Vec<i32>>, p2: bool) -> Option<i32> {
     (0..d.len())
         .permutations(d.len())
-        .map(|mut perm| {
-            perm.push(perm[0]);
-            perm.windows(2).map(|p| d[p[0]][p[1]] + d[p[1]][p[0]]).sum()
+        .map(|perm| {
+            let mut curr = if !p2 {
+                d[perm[0]][perm[d.len()-1]]
+            } else {
+                0
+            };
+            for i in 1..d.len() {
+                curr += d[perm[i]][perm[i - 1]];
+            }
+            curr
         })
         .max()
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    max_happiness(parse_happiness(input))
+    max_happiness(parse_happiness(input), false)
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    let mut d = parse_happiness(input);
-    for e in d.iter_mut() {
-        e.push(0);
-    }
-    d.push(vec![0; d[0].len()]);
-    max_happiness(d)
+    max_happiness(parse_happiness(input), true)
 }
