@@ -1,3 +1,4 @@
+use num::integer::lcm;
 use std::cmp::min;
 
 pub fn part1(input: &str) -> String {
@@ -32,24 +33,70 @@ pub fn part1(input: &str) -> String {
         .collect()
 }
 
+const PASCAL_PERIOD: usize = 16000;
+
+// Move into const when const_eval_limit stabilizes
+const fn make_pascal() -> [i32; PASCAL_PERIOD] {
+    let mut pascal = [0; PASCAL_PERIOD];
+    let mut i = 0;
+    let mut v = 1;
+    while i < PASCAL_PERIOD {
+        pascal[i] = v;
+        i += 1;
+        v = (v + 1) % 10;
+    }
+    let mut p = 2;
+    while p < 100 {
+        pascal[0] = 1;
+        let mut index = 1;
+        while index < PASCAL_PERIOD {
+            pascal[index] = (pascal[index - 1] + pascal[index]) % 10;
+            index += 1;
+        }
+        p += 1;
+    }
+    pascal
+}
+
 pub fn part2(input: &str) -> String {
     let offset: usize = input[..7].parse().unwrap();
-    let ns: Vec<usize> = input
+    let ns: Vec<i32> = input
         .chars()
-        .map(|x| x.to_digit(10).unwrap() as usize)
+        .map(|x| x.to_digit(10).unwrap() as i32)
         .collect();
-    let mut ds: Vec<usize> = (1..=10000).flat_map(|_| ns.iter()).copied().collect();
-    assert!(offset > ds.len() / 2, "Offset is not large enough");
-    ds = ds[offset..].to_vec();
-    for _ in 0..100 {
-        for i in (1..ds.len()).rev() {
-            ds[i - 1] += ds[i];
-            ds[i] %= 10;
-        }
-        ds[0] %= 10;
-    }
-    ds[..8]
-        .iter()
-        .map(|x| std::char::from_digit(*x as u32, 10).unwrap())
+    assert!(offset > ns.len() * 10000 / 2, "Offset is not large enough");
+    let pascal_diag = make_pascal();
+
+    let n_len = ns.len();
+    let ds: Vec<i32> = ns
+        .into_iter()
+        .cycle()
+        .skip(offset % n_len)
+        .take(n_len)
+        .collect();
+    let joint_cycle = lcm(PASCAL_PERIOD, n_len);
+    let tot_len = n_len * 10000 - offset;
+    let num_cycles = tot_len / joint_cycle;
+
+    (0..8)
+        .map(|i| {
+            let sum_first: i32 = ds
+                .iter()
+                .cycle()
+                .skip(i)
+                .take(joint_cycle)
+                .enumerate()
+                .map(|(idx, dig)| pascal_diag[idx % PASCAL_PERIOD] * *dig)
+                .sum();
+            let sum_last: i32 = ds
+                .iter()
+                .cycle()
+                .take(tot_len)
+                .skip(i + num_cycles * joint_cycle)
+                .enumerate()
+                .map(|(idx, dig)| pascal_diag[idx % PASCAL_PERIOD] * *dig)
+                .sum();
+            ((sum_first * num_cycles as i32 + sum_last) % 10).to_string()
+        })
         .collect()
 }
