@@ -1,6 +1,3 @@
-use lazy_static::lazy_static;
-
-use crate::utils::Coord;
 use crate::year2017::day22::NodeState::*;
 
 #[derive(Clone, Eq, PartialEq)]
@@ -11,38 +8,40 @@ enum NodeState {
     Flagged,
 }
 
-fn turn(d: &mut Coord<i32>, v: &NodeState) {
-    lazy_static! {
-        static ref LEFT: Coord<i32> = Coord::new(0, 1);
-        static ref RIGHT: Coord<i32> = Coord::new(0, -1);
-    }
+fn turn(d: u8, v: &NodeState) -> u8 {
     match v {
-        Cleaned => *d *= *LEFT,
-        Weakened => (),
-        Infected => *d *= *RIGHT,
-        Flagged => *d *= *RIGHT * *RIGHT,
+        Cleaned => (d + 3) % 4,
+        Weakened => d,
+        Infected => (d + 1) % 4,
+        Flagged => (d + 2) % 4,
     }
 }
 
 fn count_infections(input: &str, bursts: usize, next: fn(&NodeState) -> NodeState) -> usize {
-    let mut grid: Vec<Vec<NodeState>> = vec![vec![Cleaned; 10001]; 10001];
-    for (row, r) in input.lines().zip(4988..5013) {
-        for (v, c) in row.chars().zip(4988..5013) {
+    const GRID_SIZE: usize = 1024;
+    const MID: usize = GRID_SIZE / 2;
+    let mut grid: Vec<NodeState> = vec![Cleaned; GRID_SIZE * GRID_SIZE];
+    for (row, r) in input.lines().zip(MID - 12..=MID + 12) {
+        for (v, c) in row.chars().zip(MID - 12..=MID + 12) {
             if v == '#' {
-                grid[r][c] = Infected;
+                grid[r * GRID_SIZE + c] = Infected;
             }
         }
     }
-    let mut pos = Coord::new(5000, 5000);
-    let mut dir = Coord::new(-1, 0);
+    let mut pos = MID * GRID_SIZE + MID;
+    let mut dir = 3;
     let mut result = 0;
     for _ in 0..bursts {
-        let val = &grid[pos.x as usize][pos.y as usize];
-        turn(&mut dir, val);
-        let val2 = next(val);
-        result += (val2 == Infected) as usize;
-        grid[pos.x as usize][pos.y as usize] = val2;
-        pos += dir;
+        dir = turn(dir, &grid[pos]);
+        grid[pos] = next(&grid[pos]);
+        result += (grid[pos] == Infected) as usize;
+        match dir {
+            0 => pos += 1,
+            1 => pos += GRID_SIZE,
+            2 => pos -= 1,
+            3 => pos -= GRID_SIZE,
+            _ => panic!("Invalid dir: {}", dir),
+        }
     }
     result
 }
