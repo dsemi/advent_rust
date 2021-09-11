@@ -11,14 +11,14 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let step: usize = input.parse().unwrap();
-    let (mut i, mut idx_of0, mut val_aft0) = (0, 0, 0);
-    for v in 1..=50_000_000 {
-        i = (i + step) % v + 1;
-        if i <= idx_of0 {
-            idx_of0 += 1;
-        } else if i == idx_of0 + 1 {
-            val_aft0 = v;
+    let (mut pos, mut n, mut val_aft0) = (0, 0, 0);
+    while n < 50_000_000 {
+        if pos == 1 {
+            val_aft0 = n;
         }
+        let skip = (n - pos) / step + 1;
+        n += skip;
+        pos = (pos + skip * (step + 1) - 1) % n + 1;
     }
     val_aft0
 }
