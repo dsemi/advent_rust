@@ -47,7 +47,7 @@ impl Iterator for Prog {
                     _ => (),
                 }
             }
-            let ans = self.eval(self.instrs[self.reg[self.ip] as usize]);
+            let ans = self.eval(self.instrs[self.reg[self.ip] as usize], true);
             self.reg[self.ip] += 1;
             if ans.is_some() {
                 return ans;

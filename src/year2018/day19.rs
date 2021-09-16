@@ -1,4 +1,5 @@
 use crate::year2018::day19::Op::*;
+use crate::utils::*;
 
 #[derive(Clone, Copy)]
 pub enum Op {
@@ -76,7 +77,8 @@ impl Prog {
         }
     }
 
-    pub fn eval(&mut self, instr: Instr) -> Option<i64> {
+    // Not sure if there's a better way than just deconstructing the assembly
+    pub fn eval(&mut self, instr: Instr, d21: bool) -> Option<i64> {
         let Instr(op, a, b, c) = instr;
         match op {
             Addr => self.reg[c as usize] = self.reg[a as usize] + self.reg[b as usize],
@@ -96,7 +98,11 @@ impl Prog {
             Eqri => self.reg[c as usize] = (self.reg[a as usize] == b) as i64,
             Eqrr => {
                 self.reg[c as usize] = (self.reg[a as usize] == self.reg[b as usize]) as i64;
-                return Some(self.reg[a as usize]);
+                if d21 {
+                    return Some(self.reg[a as usize]);
+                } else {
+                    return Some(self.reg[b as usize]);
+                }
             }
         }
         None
@@ -104,19 +110,23 @@ impl Prog {
 
     fn run(&mut self) -> i64 {
         while self.reg[self.ip] >= 0 && self.reg[self.ip] < self.instrs.len() as i64 {
-            self.eval(self.instrs[self.reg[self.ip] as usize]);
+            if let Some(v) = self.eval(self.instrs[self.reg[self.ip] as usize], false) {
+                return v;
+            }
             self.reg[self.ip] += 1;
         }
-        self.reg[0]
+        panic!("No answer found");
     }
 }
 
-pub fn part1(input: &str) -> i64 {
-    Prog::parse_instrs(input).run()
+pub fn part1(input: &str) -> u64 {
+    let n = Prog::parse_instrs(input).run() as u64;
+    prime_factors(n).map(|(p, a)| (p.pow(a + 1) - 1) / (p - 1)).product()
 }
 
-// Not sure if there's a better way than just deconstructing the assembly
-pub fn part2(_input: &str) -> i64 {
-    let n = 10_551_361;
-    (1..=n).filter_map(|d| (n % d == 0).then(|| d)).sum()
+pub fn part2(input: &str) -> u64 {
+    let mut prog = Prog::parse_instrs(input);
+    prog.reg[0] = 1;
+    let n = prog.run() as u64;
+    prime_factors(n).map(|(p, a)| (p.pow(a + 1) - 1) / (p - 1)).product()
 }

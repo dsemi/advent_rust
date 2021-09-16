@@ -503,3 +503,42 @@ pub fn chinese_remainder(an: Vec<(i64, i64)>) -> i64 {
     }
     sum.rem_euclid(prod)
 }
+
+pub struct PrimeFactors<I: Iterator<Item = u64>> {
+    n: u64,
+    fs: I,
+}
+
+impl<I: Iterator<Item = u64>> Iterator for PrimeFactors<I> {
+    type Item = (u64, u32);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.n == 1 {
+                return None;
+            }
+            if let Some(f) = self.fs.next() {
+                let mut cnt = 0;
+                while self.n % f == 0 {
+                    cnt += 1;
+                    self.n /= f;
+                }
+                if cnt > 0 {
+                    return Some((f, cnt));
+                }
+            } else {
+                let n = self.n;
+                self.n = 1;
+                return Some((n, 1));
+            }
+        }
+    }
+}
+
+pub fn prime_factors(n: u64) -> PrimeFactors<impl Iterator<Item = u64>> {
+    let sqrt = (n as f64).sqrt() as u64;
+    PrimeFactors {
+        n,
+        fs: std::iter::once(2).chain((3..=sqrt).step_by(2)),
+    }
+}
