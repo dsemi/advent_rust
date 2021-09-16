@@ -23,8 +23,8 @@ fn parse_pipes(input: &str) -> Vec<Pipe> {
 
 fn build<T: Copy + Ord>(
     used: &mut Vec<bool>,
-    a_s: &Vec<Vec<&Pipe>>,
-    b_s: &Vec<Vec<&Pipe>>,
+    a_s: &[Vec<&Pipe>],
+    b_s: &[Vec<&Pipe>],
     step: fn(T, &Pipe) -> T,
     port: u32,
     curr: T,
