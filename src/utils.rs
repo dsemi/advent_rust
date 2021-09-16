@@ -132,13 +132,13 @@ struct State<T> {
     elem: T,
 }
 
-impl <T: Eq> Ord for State<T> {
+impl<T: Eq> Ord for State<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.dist.cmp(&other.dist)
     }
 }
 
-impl <T: Eq> PartialOrd for State<T> {
+impl<T: Eq> PartialOrd for State<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -157,7 +157,7 @@ where
     T: Hash,
     F: FnMut(&T) -> I,
     I: IntoIterator<Item = (usize, T), IntoIter = I2>,
-    I2: Iterator<Item = (usize, T)>
+    I2: Iterator<Item = (usize, T)>,
 {
     let mut queue = BinaryHeap::new();
     queue.push(Reverse(State {
@@ -171,14 +171,14 @@ where
     }
 }
 
-impl <T, F, I, I2> Iterator for Dijkstra<T, F>
+impl<T, F, I, I2> Iterator for Dijkstra<T, F>
 where
     T: Clone,
     T: Eq,
     T: Hash,
     F: FnMut(&T) -> I,
     I: IntoIterator<Item = (usize, T), IntoIter = I2>,
-    I2: Iterator<Item = (usize, T)>
+    I2: Iterator<Item = (usize, T)>,
 {
     type Item = (usize, T);
 
@@ -193,10 +193,7 @@ where
                 let shortest = self.dists.entry(st2.clone()).or_insert(dist + 1);
                 if dist < *shortest {
                     *shortest = dist;
-                    self.queue.push(Reverse(State {
-                        dist,
-                        elem: st2,
-                    }));
+                    self.queue.push(Reverse(State { dist, elem: st2 }));
                 }
             }
         }
@@ -532,6 +529,12 @@ impl<I: Iterator<Item = u64>> Iterator for PrimeFactors<I> {
                 return Some((n, 1));
             }
         }
+    }
+}
+
+impl<I: Iterator<Item = u64>> PrimeFactors<I> {
+    pub fn sum_divisors(self) -> u64 {
+        self.map(|(p, a)| (p.pow(a + 1) - 1) / (p - 1)).product()
     }
 }
 

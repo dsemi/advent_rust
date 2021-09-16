@@ -121,12 +121,12 @@ impl Prog {
 
 pub fn part1(input: &str) -> u64 {
     let n = Prog::parse_instrs(input).run() as u64;
-    prime_factors(n).map(|(p, a)| (p.pow(a + 1) - 1) / (p - 1)).product()
+    prime_factors(n).sum_divisors()
 }
 
 pub fn part2(input: &str) -> u64 {
     let mut prog = Prog::parse_instrs(input);
     prog.reg[0] = 1;
     let n = prog.run() as u64;
-    prime_factors(n).map(|(p, a)| (p.pow(a + 1) - 1) / (p - 1)).product()
+    prime_factors(n).sum_divisors()
 }
