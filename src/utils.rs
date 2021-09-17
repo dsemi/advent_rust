@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use ahash::AHashSet;
 use itertools::Itertools;
-use num::Num;
+use num::{Num, Signed};
 use num_traits::cast::FromPrimitive;
 use std::cmp::Ordering;
 use std::cmp::Reverse;
@@ -386,9 +386,8 @@ pub fn adjacents(coord: Coord<i64>) -> impl Iterator<Item = Coord<i64>> {
         .filter_map(move |(x, y)| (x != 0 || y != 0).then(|| Coord::new(coord.x + x, coord.y + y)))
 }
 
-pub fn dist(a: &Coord<i32>, b: &Coord<i32>) -> i32 {
-    let c = a - b;
-    c.x.abs() + c.y.abs()
+pub fn dist<T: Copy + Num + Signed>(a: &Coord<T>, b: &Coord<T>) -> T {
+    (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]

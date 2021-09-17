@@ -1,8 +1,9 @@
-use counter::Counter;
-use itertools::Itertools;
+use ahash::AHashSet;
 use std::cmp::{max, min};
+use std::collections::VecDeque;
 
 use crate::utils::*;
+use crate::year2018::day06::Tile::*;
 
 fn parse_coords(input: &str) -> Vec<Coord<i32>> {
     input
@@ -14,54 +15,127 @@ fn parse_coords(input: &str) -> Vec<Coord<i32>> {
         .collect()
 }
 
-fn all_within(xs: &[Coord<i32>], buffer: i32) -> impl Iterator<Item = Coord<i32>> {
-    let (mut x0, mut y0, mut x1, mut y1) = (i32::MAX, i32::MAX, i32::MIN, i32::MIN);
+struct Pos {
+    id: usize,
+    dist: usize,
+    pos: Coord<usize>,
+}
+
+#[derive(Clone)]
+enum Tile {
+    Empty,
+    Tied,
+    Taken((usize, usize)),
+}
+
+fn bounding_box(xs: &[Coord<i32>]) -> (Coord<usize>, Coord<usize>) {
+    let (mut x0, mut y0, mut x1, mut y1) = (usize::MAX, usize::MAX, 0, 0);
     for x in xs {
-        x0 = min(x0, x.x);
-        y0 = min(y0, x.y);
-        x1 = max(x1, x.x);
-        y1 = max(y1, x.y);
+        x0 = min(x0, x.x as usize);
+        y0 = min(y0, x.y as usize);
+        x1 = max(x1, x.x as usize);
+        y1 = max(y1, x.y as usize);
     }
-    x0 -= buffer;
-    y0 -= buffer;
-    x1 += buffer;
-    y1 += buffer;
-    (x0..x1 + 1).flat_map(move |x| (y0..y1 + 1).map(move |y| Coord::new(x, y)))
+    (Coord::new(x0, y0), Coord::new(x1 + 1, y1 + 1))
 }
 
 pub fn part1(input: &str) -> Option<usize> {
     let coords = parse_coords(input);
-    let mut ns = Vec::new();
-    for i in &[0, 10] {
-        let t = all_within(&coords, *i)
-            .filter_map(|coord| {
-                let dists = coords
-                    .iter()
-                    .map(|x| (dist(&coord, x), x))
-                    .collect::<Vec<_>>();
-                let d = dists.iter().min().unwrap();
-                (dists.iter().filter(|x| x.0 == d.0).count() == 1).then(|| d.1)
-            })
-            .collect::<Counter<_>>();
-        ns.push(
-            t.into_iter()
-                .sorted()
-                .map(|x| x.1)
-                .copied()
-                .collect::<Vec<_>>(),
-        );
+    let (minp, mut maxp) = bounding_box(&coords);
+    maxp -= minp;
+    let mut grid = vec![vec![Empty; maxp.x]; maxp.y];
+    let mut areas = vec![0; coords.len()];
+    let mut frontier = coords
+        .into_iter()
+        .enumerate()
+        .map(|(i, c)| Pos {
+            id: i,
+            dist: 0,
+            pos: Coord::new(c.x as usize - minp.x, c.y as usize - minp.y),
+        })
+        .collect::<VecDeque<_>>();
+    while let Some(p) = frontier.pop_front() {
+        match grid[p.pos.y][p.pos.x] {
+            Taken((id, d)) => {
+                if d == p.dist && id != p.id {
+                    areas[id] -= 1;
+                    grid[p.pos.y][p.pos.x] = Tied;
+                }
+            }
+            Tied => (),
+            Empty => {
+                areas[p.id] += 1;
+                grid[p.pos.y][p.pos.x] = Taken((p.id, p.dist));
+                if p.pos.x > 0 {
+                    frontier.push_back(Pos {
+                        id: p.id,
+                        dist: p.dist + 1,
+                        pos: p.pos - Coord::new(1, 0),
+                    });
+                }
+                if p.pos.y > 0 {
+                    frontier.push_back(Pos {
+                        id: p.id,
+                        dist: p.dist + 1,
+                        pos: p.pos - Coord::new(0, 1),
+                    });
+                }
+                if p.pos.x < maxp.x - 1 {
+                    frontier.push_back(Pos {
+                        id: p.id,
+                        dist: p.dist + 1,
+                        pos: p.pos + Coord::new(1, 0),
+                    });
+                }
+                if p.pos.y < maxp.y - 1 {
+                    frontier.push_back(Pos {
+                        id: p.id,
+                        dist: p.dist + 1,
+                        pos: p.pos + Coord::new(0, 1),
+                    });
+                }
+            }
+        }
     }
-    ns[0]
-        .iter()
-        .zip(ns[1].iter())
-        .map(|(a, b)| if a == b { *a } else { 0 })
-        .max()
+    for y in [0, maxp.y - 1] {
+        for x in 0..maxp.x {
+            if let Taken((id, _)) = grid[y][x] {
+                areas[id] = 0;
+            }
+        }
+    }
+    for x in [0, maxp.x - 1] {
+        for y in 0..maxp.y {
+            if let Taken((id, _)) = grid[y][x] {
+                areas[id] = 0;
+            }
+        }
+    }
+
+    areas.into_iter().max()
 }
 
 pub fn part2(input: &str) -> usize {
     let n = 10_000;
     let coords = parse_coords(input);
-    all_within(&coords, (n / coords.len()) as i32)
-        .filter(|x| coords.iter().map(|y| dist(x, y)).sum::<i32>() < n as i32)
-        .count()
+    let avg_coord = Coord::new(
+        coords.iter().map(|c| c.x).sum::<i32>() / coords.len() as i32,
+        coords.iter().map(|c| c.y).sum::<i32>() / coords.len() as i32,
+    );
+    let mut region_size = 0;
+    let mut frontier = vec![avg_coord].into_iter().collect::<VecDeque<_>>();
+    let mut visited = AHashSet::new();
+    while let Some(p) = frontier.pop_front() {
+        if !visited.insert(p) {
+            continue;
+        }
+        if coords.iter().map(|c| dist(&p, c)).sum::<i32>() < n {
+            region_size += 1;
+            frontier.push_back(p - Coord::new(1, 0));
+            frontier.push_back(p - Coord::new(0, 1));
+            frontier.push_back(p + Coord::new(1, 0));
+            frontier.push_back(p + Coord::new(0, 1));
+        }
+    }
+    region_size
 }
