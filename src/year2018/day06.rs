@@ -97,18 +97,14 @@ pub fn part1(input: &str) -> Option<usize> {
             }
         }
     }
-    for y in [0, maxp.y - 1] {
-        for x in 0..maxp.x {
-            if let Taken((id, _)) = grid[y][x] {
-                areas[id] = 0;
-            }
+    for (x, y) in (0..maxp.x).flat_map(|x| [(x, 0), (x, maxp.y - 1)]) {
+        if let Taken((id, _)) = grid[y][x] {
+            areas[id] = 0;
         }
     }
-    for x in [0, maxp.x - 1] {
-        for y in 0..maxp.y {
-            if let Taken((id, _)) = grid[y][x] {
-                areas[id] = 0;
-            }
+    for (x, y) in (0..maxp.y).flat_map(|y| [(0, y), (maxp.x - 1, y)]) {
+        if let Taken((id, _)) = grid[y][x] {
+            areas[id] = 0;
         }
     }
 
