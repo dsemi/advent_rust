@@ -405,6 +405,22 @@ where
     pub fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
     }
+
+    pub fn scale(&self, n: T) -> Self {
+        Self {
+            x: self.x * n,
+            y: self.y * n,
+            z: self.z * n,
+        }
+    }
+
+    pub fn div(&self, n: T) -> Self {
+        Self {
+            x: self.x / n,
+            y: self.y / n,
+            z: self.z / n,
+        }
+    }
 }
 
 impl<T: Add<Output = T>> Add for Coord3<T> {
