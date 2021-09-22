@@ -405,22 +405,6 @@ where
     pub fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
     }
-
-    pub fn scale(&self, n: T) -> Self {
-        Self {
-            x: self.x * n,
-            y: self.y * n,
-            z: self.z * n,
-        }
-    }
-
-    pub fn div(&self, n: T) -> Self {
-        Self {
-            x: self.x / n,
-            y: self.y / n,
-            z: self.z / n,
-        }
-    }
 }
 
 impl<T: Add<Output = T>> Add for Coord3<T> {
@@ -542,5 +526,31 @@ pub fn prime_factors(n: u64) -> PrimeFactors<impl Iterator<Item = u64>> {
     PrimeFactors {
         n,
         fs: std::iter::once(2).chain((3..=sqrt).step_by(2)),
+    }
+}
+
+pub struct Cache<'a, A, R> {
+    cache: AHashMap<A, R>,
+    func: &'a dyn Fn(&mut Self, A) -> R,
+}
+
+impl<'a, A, R> Cache<'a, A, R>
+where
+    A: Copy + Eq + Hash,
+    R: Copy,
+{
+    pub fn from(func: &'a dyn Fn(&mut Self, A) -> R) -> Self {
+        Self {
+            cache: AHashMap::new(),
+            func,
+        }
+    }
+
+    pub fn get(&mut self, arg: A) -> R {
+        if !self.cache.contains_key(&arg) {
+            let v = (self.func)(self, arg);
+            self.cache.insert(arg, v);
+        }
+        self.cache[&arg]
     }
 }

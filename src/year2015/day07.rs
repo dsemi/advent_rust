@@ -1,23 +1,19 @@
 use ahash::AHashMap;
-use std::iter::once;
+
+use crate::utils::Cache;
 
 struct Node<'a>(&'a dyn Fn(u16, u16) -> u16, &'a str, &'a str);
 
 type Network<'a> = AHashMap<&'a str, Node<'a>>;
 
-fn val<'a>(graph: &Network<'a>, cache: &mut AHashMap<&'a str, u16>, signal: &'a str) -> u16 {
-    signal.parse().ok().unwrap_or_else(|| {
-        if !cache.contains_key(&signal) {
-            let Node(f, a, b) = graph[&signal];
-            let v = f(val(graph, cache, a), val(graph, cache, b));
-            cache.insert(signal, v);
-        }
-        cache[&signal]
-    })
-}
-
-fn lookup<'a>(graph: Network<'a>, signal: &'a str, mut cache: AHashMap<&'a str, u16>) -> u16 {
-    val(&graph, &mut cache, signal)
+fn lookup<'a>(graph: Network<'a>, signal: &'a str) -> u16 {
+    let func = |cache: &mut Cache<&'a str, u16>, sig: &'a str| {
+        sig.parse().unwrap_or_else(|_| {
+            let Node(f, a, b) = graph[&sig];
+            f(cache.get(a), cache.get(b))
+        })
+    };
+    Cache::from(&func).get(signal)
 }
 
 fn parse_cmds(input: &str) -> Network<'_> {
@@ -40,9 +36,11 @@ fn parse_cmds(input: &str) -> Network<'_> {
 }
 
 pub fn part1(input: &str) -> u16 {
-    lookup(parse_cmds(input), "a", AHashMap::new())
+    lookup(parse_cmds(input), "a")
 }
 
 pub fn part2(input: &str) -> u16 {
-    lookup(parse_cmds(input), "a", once(("b", part1(input))).collect())
+    let mut inp = input.to_string();
+    inp.push_str(&format!("\n{} -> b", part1(input)));
+    lookup(parse_cmds(&inp), "a")
 }
