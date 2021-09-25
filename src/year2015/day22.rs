@@ -93,8 +93,7 @@ fn parse_boss(input: &str) -> Game {
 fn min_cost_to_win(s: Game, hard: bool) -> Option<i32> {
     let mut states = vec![s];
     let mut result = None;
-    while !states.is_empty() {
-        let mut state = states.pop().unwrap();
+    while let Some(mut state) = states.pop() {
         if hard {
             state.player_health -= 1;
             if state.player_health <= 0 {
