@@ -1,5 +1,5 @@
 use ahash::AHashMap;
-use genawaiter::{rc::gen, yield_};
+use genawaiter::stack::{let_gen_using, Co};
 
 use crate::utils::Coord;
 use crate::year2018::day13::Turn::*;
@@ -81,35 +81,36 @@ fn parse_tracks(input: &str) -> Tracks {
 }
 
 impl Tracks {
-    fn tick(&mut self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        gen!({
-            while self.carts.len() > 1 {
-                let mut ps = self.carts.keys().copied().collect::<Vec<_>>();
-                ps.sort_unstable();
-                for p in ps {
-                    if let Some(mut cart) = self.carts.remove(&p) {
-                        move_cart(&mut cart, &self.grid);
-                        if self.carts.contains_key(&cart.pos) {
-                            self.carts.remove(&cart.pos);
-                            yield_!((cart.pos.y, cart.pos.x));
-                        } else {
-                            self.carts.insert(cart.pos, cart);
-                        }
+    async fn tick(&mut self, co: Co<'_, (i32, i32)>) {
+        while self.carts.len() > 1 {
+            let mut ps = self.carts.keys().copied().collect::<Vec<_>>();
+            ps.sort_unstable();
+            for p in ps {
+                if let Some(mut cart) = self.carts.remove(&p) {
+                    move_cart(&mut cart, &self.grid);
+                    if self.carts.contains_key(&cart.pos) {
+                        self.carts.remove(&cart.pos);
+                        co.yield_((cart.pos.y, cart.pos.x)).await;
+                    } else {
+                        self.carts.insert(cart.pos, cart);
                     }
                 }
             }
-            for p in self.carts.drain() {
-                yield_!((p.0.y, p.0.x));
-            }
-        })
-        .into_iter()
+        }
+        for p in self.carts.drain() {
+            co.yield_((p.0.y, p.0.x)).await;
+        }
     }
 }
 
 pub fn part1(input: &str) -> Option<(i32, i32)> {
-    parse_tracks(input).tick().next()
+    let mut tracks = parse_tracks(input);
+    let_gen_using!(gen, |co| tracks.tick(co));
+    gen.into_iter().next()
 }
 
 pub fn part2(input: &str) -> Option<(i32, i32)> {
-    parse_tracks(input).tick().last()
+    let mut tracks = parse_tracks(input);
+    let_gen_using!(gen, |co| tracks.tick(co));
+    gen.into_iter().last()
 }

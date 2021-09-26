@@ -1,4 +1,4 @@
-use genawaiter::rc::{Co, Gen};
+use genawaiter::stack::{let_gen_using, Co};
 use genawaiter::GeneratorState;
 use num_traits::FromPrimitive;
 
@@ -15,7 +15,7 @@ enum Tile {
 
 struct Draw((i64, i64), Tile);
 
-async fn run(mut prog: intcode::Program, co: Co<Draw, Option<i64>>) -> i64 {
+async fn run(mut prog: intcode::Program, co: Co<'_, Draw, Option<i64>>) -> i64 {
     let mut i = 0;
     let mut buf = [0; 3];
     let mut score = 0;
@@ -43,7 +43,7 @@ async fn run(mut prog: intcode::Program, co: Co<Draw, Option<i64>>) -> i64 {
 
 pub fn part1(input: &str) -> usize {
     let mut result = 0;
-    let mut gen = Gen::new(|co| run(intcode::new(input), co));
+    let_gen_using!(gen, |co| run(intcode::new(input), co));
     while let GeneratorState::Yielded(instr) = gen.resume_with(None) {
         result += matches!(instr, Draw(_, Tile::Block)) as usize;
     }
@@ -55,7 +55,7 @@ pub fn part2(input: &str) -> i64 {
     prog[0] = 2;
     let mut paddle_x = 0;
     let mut inp = None;
-    let mut gen = Gen::new(|co| run(prog, co));
+    let_gen_using!(gen, |co| run(prog, co));
     loop {
         match gen.resume_with(inp.take()) {
             GeneratorState::Yielded(Draw((ball_x, _), Tile::Ball)) => {
