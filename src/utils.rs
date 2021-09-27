@@ -601,7 +601,7 @@ impl StreamingIterator for Partitions {
                 return;
             } else {
                 for x in 0..=t {
-                    self.stack.push((n-1, x, t-x))
+                    self.stack.push((n - 1, x, t - x))
                 }
             }
         }
