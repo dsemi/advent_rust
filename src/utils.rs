@@ -10,6 +10,7 @@ use std::collections::VecDeque;
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, BitAnd, Mul, MulAssign, Neg, Sub, SubAssign};
+use streaming_iterator::StreamingIterator;
 
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where
@@ -568,5 +569,50 @@ where
             self.cache.insert(arg, v);
         }
         self.cache[&arg]
+    }
+}
+
+pub struct Partitions {
+    buf: Vec<i32>,
+    stack: Vec<(usize, i32, i32)>,
+    done: bool,
+}
+
+impl Partitions {
+    pub fn new(len: usize, tot: i32) -> Self {
+        Self {
+            buf: vec![0; len],
+            stack: vec![(len, 0, tot)],
+            done: false,
+        }
+    }
+}
+
+impl StreamingIterator for Partitions {
+    type Item = [i32];
+
+    fn advance(&mut self) {
+        while let Some((n, y, t)) = self.stack.pop() {
+            if n < self.buf.len() {
+                self.buf[n] = y;
+            }
+            if n == 1 {
+                self.buf[0] = t;
+                return;
+            } else {
+                for x in 0..=t {
+                    self.stack.push((n-1, x, t-x))
+                }
+            }
+        }
+        self.done = true;
+    }
+
+    fn get(&self) -> Option<&Self::Item> {
+        if self.done {
+            None
+        } else {
+            Some(&self.buf)
+        }
     }
 }

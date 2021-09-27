@@ -28,6 +28,7 @@ dependencies = [
  "rust-crypto",
  "safe_arch",
  "scan_fmt",
+ "streaming-iterator",
  "syn",
  "take-until",
 ]
@@ -1327,6 +1328,12 @@ dependencies = [
  "redox_syscall",
  "winapi 0.3.9",
 ]
+
+[[package]]
+name = "streaming-iterator"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "303235c177994a476226b80d076bd333b7b560fb05bd242a10609d11b07f81f5"
 
 [[package]]
 name = "syn"
