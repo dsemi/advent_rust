@@ -575,15 +575,15 @@ where
 pub struct Partitions {
     buf: Vec<i32>,
     stack: Vec<(usize, i32, i32)>,
-    done: bool,
+    in_progress: bool,
 }
 
 impl Partitions {
     pub fn new(len: usize, tot: i32) -> Self {
         Self {
-            buf: vec![0; len],
+            buf: vec![0; len + 1],
             stack: vec![(len, 0, tot)],
-            done: false,
+            in_progress: true,
         }
     }
 }
@@ -593,26 +593,19 @@ impl StreamingIterator for Partitions {
 
     fn advance(&mut self) {
         while let Some((n, y, t)) = self.stack.pop() {
-            if n < self.buf.len() {
-                self.buf[n] = y;
-            }
+            self.buf[n] = y;
             if n == 1 {
                 self.buf[0] = t;
                 return;
-            } else {
-                for x in 0..=t {
-                    self.stack.push((n - 1, x, t - x))
-                }
+            }
+            for x in 0..=t {
+                self.stack.push((n - 1, x, t - x))
             }
         }
-        self.done = true;
+        self.in_progress = false;
     }
 
     fn get(&self) -> Option<&Self::Item> {
-        if self.done {
-            None
-        } else {
-            Some(&self.buf)
-        }
+        self.in_progress.then(|| &self.buf[..self.buf.len() - 1])
     }
 }
