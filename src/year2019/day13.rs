@@ -16,23 +16,16 @@ enum Tile {
 struct Draw((i64, i64), Tile);
 
 async fn run(mut prog: intcode::Program, co: Co<'_, Draw, Option<i64>>) -> i64 {
-    let mut i = 0;
-    let mut buf = [0; 3];
     let mut score = 0;
     while !prog.done {
         prog.run();
-        for v in prog.output.drain(..) {
-            buf[i] = v;
-            i += 1;
-            if i == 3 {
-                i = 0;
-                match buf {
-                    [-1, 0, scr] => score = scr,
-                    [x, y, tile] => {
-                        let tile = FromPrimitive::from_i64(tile).unwrap();
-                        if let Some(x) = co.yield_(Draw((x, y), tile)).await {
-                            prog.input.push_back(x);
-                        }
+        while let Some(buf) = prog.recv::<3>() {
+            match buf {
+                [-1, 0, scr] => score = scr,
+                [x, y, tile] => {
+                    let tile = FromPrimitive::from_i64(tile).unwrap();
+                    if let Some(x) = co.yield_(Draw((x, y), tile)).await {
+                        prog.input.push_back(x);
                     }
                 }
             }

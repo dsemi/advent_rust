@@ -42,7 +42,7 @@ impl Network {
                 .iter_mut()
                 .filter_map(|comp| {
                     comp.run();
-                    comp.recv(3).map(|ns| Packet {
+                    comp.recv::<3>().map(|ns| Packet {
                         address: ns[0],
                         x: ns[1],
                         y: ns[2],

@@ -89,8 +89,14 @@ impl Program {
         }
     }
 
-    pub fn recv(&mut self, n: usize) -> Option<Vec<i64>> {
-        (self.output.len() >= n).then(|| (0..n).map(|_| self.output.pop_front().unwrap()).collect())
+    pub fn recv<const N: usize>(&mut self) -> Option<[i64; N]> {
+        (self.output.len() >= N).then(|| {
+            let mut result = [0; N];
+            for r in result.iter_mut() {
+                *r = self.output.pop_front().unwrap();
+            }
+            result
+        })
     }
 
     pub fn run(&mut self) {
