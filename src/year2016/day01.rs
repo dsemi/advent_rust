@@ -18,9 +18,8 @@ fn path(input: &str) -> impl Iterator<Item = Coord<i32>> + '_ {
         .scan((Coord::new(0, 0), Coord::new(0, 1)), |state, x| {
             (*state).1 *= x;
             (*state).0 += state.1;
-            Some(*state)
+            Some(state.0)
         })
-        .map(|x| x.0)
 }
 
 pub fn part1(input: &str) -> i32 {

@@ -39,25 +39,29 @@ fn val(s: &str) -> Val {
     }
 }
 
-fn parse_instrs(input: &str) -> Vec<Instr> {
-    input
-        .lines()
-        .map(
-            |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                ["snd", v] => Snd(val(v)),
-                ["set", r, v] => Set(reg(r), val(v)),
-                ["add", r, v] => Add(reg(r), val(v)),
-                ["mul", r, v] => Mul(reg(r), val(v)),
-                ["mod", r, v] => Mod(reg(r), val(v)),
-                ["rcv", r] => Rcv(reg(r)),
-                ["jgz", a, b] => Jgz(val(a), val(b)),
-                _ => panic!("Parse error: {}", line),
-            },
-        )
-        .collect()
-}
-
 impl Sim {
+    fn parse(input: &str) -> Self {
+        Self {
+            line: 0,
+            reg: [0; 26],
+            instrs: input
+                .lines()
+                .map(
+                    |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
+                        ["snd", v] => Snd(val(v)),
+                        ["set", r, v] => Set(reg(r), val(v)),
+                        ["add", r, v] => Add(reg(r), val(v)),
+                        ["mul", r, v] => Mul(reg(r), val(v)),
+                        ["mod", r, v] => Mod(reg(r), val(v)),
+                        ["rcv", r] => Rcv(reg(r)),
+                        ["jgz", a, b] => Jgz(val(a), val(b)),
+                        _ => panic!("Parse error: {}", line),
+                    },
+                )
+                .collect(),
+        }
+    }
+
     fn run<F1, F2>(&mut self, mut send: F1, mut recv: F2)
     where
         F1: FnMut(i64),
@@ -93,22 +97,14 @@ impl Sim {
 }
 
 pub fn part1(input: &str) -> i64 {
-    let mut s = Sim {
-        line: 0,
-        reg: [0; 26],
-        instrs: parse_instrs(input),
-    };
+    let mut s = Sim::parse(input);
     let v = Cell::new(0);
     s.run(|x| v.set(x), || (v.get() == 0).then(|| v.get()));
     v.get()
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut s0 = Sim {
-        line: 0,
-        reg: [0; 26],
-        instrs: parse_instrs(input),
-    };
+    let mut s0 = Sim::parse(input);
     let mut s1 = s0.clone();
     s1.reg['p' as usize - 'a' as usize] = 1;
     let mut q0 = VecDeque::new();

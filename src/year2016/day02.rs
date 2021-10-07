@@ -40,8 +40,8 @@ pub fn part1(input: &str) -> String {
     run(
         input,
         "1 2 3\n\
-                4 5 6\n\
-                7 8 9",
+         4 5 6\n\
+         7 8 9",
     )
 }
 
@@ -49,9 +49,9 @@ pub fn part2(input: &str) -> String {
     run(
         input,
         ". . 1 . .\n\
-                . 2 3 4 .\n\
-                5 6 7 8 9\n\
-                . A B C .\n\
-                . . D . .",
+         . 2 3 4 .\n\
+         5 6 7 8 9\n\
+         . A B C .\n\
+         . . D . .",
     )
 }

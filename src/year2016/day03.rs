@@ -10,7 +10,9 @@ fn parse(input: &str) -> Vec<Vec<u32>> {
 }
 
 fn valid(sides: &[u32]) -> bool {
-    *sides.iter().max().unwrap() < sides.iter().sum::<u32>() - *sides.iter().max().unwrap()
+    sides[0] + sides[1] > sides[2]
+        && sides[0] + sides[2] > sides[1]
+        && sides[1] + sides[2] > sides[0]
 }
 
 pub fn part1(input: &str) -> usize {
@@ -18,16 +20,9 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let ts = parse(input);
-    let mut v: Vec<Vec<u32>> = Vec::new();
-    for i in 0..ts[0].len() {
-        v.push(ts.iter().map(|v| v[i]).collect());
-    }
-    v.into_iter()
-        .map(|row| {
-            row.chunks(3)
-                .filter(|chunk| valid(chunk))
-                .count()
-        })
+    let t = &parse(input);
+    (0..t.len())
+        .step_by(3)
+        .flat_map(|i| (0..3).map(move |j| valid(&[t[i][j], t[i + 1][j], t[i + 2][j]]) as usize))
         .sum()
 }
