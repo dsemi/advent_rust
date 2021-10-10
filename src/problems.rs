@@ -1,4 +1,5 @@
 use advent::{detect_problems, make_problems};
+use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use std::env;
 use std::fmt::Debug;
@@ -6,23 +7,40 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+use std::thread;
+
+const RATE_LIMIT: Duration = Duration::from_secs(5);
 
 pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
     let path = format!("inputs/{}/input{}.txt", year, day);
     let input_file = Path::new(&path);
     if !input_file.exists() && download {
         println!("Downloading input for Year {} Day {}", year, day);
+        lazy_static! {
+            static ref LAST: Arc<Mutex<Option<Instant>>> = Arc::new(Mutex::new(None));
+        }
+        let mut last = LAST.lock().unwrap();
+        let now = Instant::now();
+        if last.is_some() && last.unwrap() + RATE_LIMIT > now {
+            thread::sleep(last.unwrap() + RATE_LIMIT - now);
+        }
+        *last = Some(Instant::now());
         let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
         let client = Client::new();
         let response = client
             .get(&url)
             .header("Cookie", env::var("AOC_SESSION").unwrap())
             .send()
-            .unwrap()
+            .expect("Problem input fetch failed");
+        let content = response
+            .error_for_status()
+            .expect("Bad HTTP response")
             .bytes()
             .unwrap();
         let mut f = File::create(input_file).unwrap();
-        f.write_all(&response).expect("File failed to write");
+        f.write_all(&content).expect("File failed to write");
     }
     fs::read_to_string(input_file)
         .expect("Error reading the file")
@@ -82,7 +100,7 @@ where
 macro_rules! make_prob {
     ($y:ident, $d:ident) => {
         (wrap(&crate::$y::$d::part1), wrap(&crate::$y::$d::part2))
-    }
+    };
 }
 
 detect_problems!();
