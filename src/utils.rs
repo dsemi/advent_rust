@@ -609,3 +609,16 @@ impl StreamingIterator for Partitions {
         self.in_progress.then(|| &self.buf[..self.buf.len() - 1])
     }
 }
+
+pub trait ResultExt<T> {
+    fn collapse(self) -> T;
+}
+
+impl<T> ResultExt<T> for Result<T, T> {
+    fn collapse(self) -> T {
+        match self {
+            Ok(v) => v,
+            Err(v) => v,
+        }
+    }
+}

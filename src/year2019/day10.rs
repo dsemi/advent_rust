@@ -3,9 +3,9 @@ use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use std::collections::BTreeMap;
 
-type Coord = (i32, i32);
+use crate::utils::*;
 
-fn parse_coords(input: &str) -> Vec<Coord> {
+fn parse_coords(input: &str) -> Vec<Coord<i32>> {
     input
         .lines()
         .enumerate()
@@ -13,14 +13,10 @@ fn parse_coords(input: &str) -> Vec<Coord> {
             line.chars()
                 .enumerate()
                 .filter(|&(_, v)| v == '#')
-                .map(|(x, _)| (x as i32, y as i32))
+                .map(|(x, _)| Coord::new(x as i32, y as i32))
                 .collect::<Vec<_>>()
         })
         .collect()
-}
-
-fn dist(a: &Coord, b: &Coord) -> i32 {
-    (b.0 - a.0).abs() + (b.1 - a.1).abs()
 }
 
 #[derive(Eq, PartialEq)]
@@ -30,8 +26,8 @@ struct Angle {
 }
 
 impl Angle {
-    fn new(a: &Coord, b: &Coord) -> Self {
-        let (x, y) = (b.0 - a.0, b.1 - a.1);
+    fn new(a: &Coord<i32>, b: &Coord<i32>) -> Self {
+        let (x, y) = (b.x - a.x, b.y - a.y);
         let gcd = (x.abs() as u32).gcd(y.abs() as u32) as i32;
         Self {
             x: x / gcd,
@@ -61,22 +57,21 @@ impl Ord for Angle {
     }
 }
 
-fn visibilities(pt: &Coord, pts: &[Coord]) -> Vec<Vec<Coord>> {
-    let mut m: BTreeMap<Angle, Vec<Coord>> = BTreeMap::new();
+fn visibilities(pt: &Coord<i32>, pts: &[Coord<i32>]) -> Vec<Vec<Coord<i32>>> {
+    let mut m: BTreeMap<Angle, Vec<Coord<i32>>> = BTreeMap::new();
     for p in pts.iter() {
         if p != pt {
             let e = m.entry(Angle::new(pt, p)).or_insert_with(Vec::new);
-            let idx = match e.binary_search_by_key(&dist(pt, p), |x| dist(pt, x)) {
-                Ok(i) => i,
-                Err(i) => i,
-            };
+            let idx = e
+                .binary_search_by_key(&dist(pt, p), |x| dist(pt, x))
+                .collapse();
             e.insert(idx, *p);
         }
     }
     m.into_values().collect()
 }
 
-fn max_detected(asts: Vec<Coord>) -> Vec<Vec<Coord>> {
+fn max_detected(asts: Vec<Coord<i32>>) -> Vec<Vec<Coord<i32>>> {
     asts.iter()
         .map(|ast| visibilities(ast, &asts))
         .max_by_key(|x| x.len())
@@ -92,6 +87,6 @@ pub fn part2(input: &str) -> Option<i32> {
         .into_iter()
         .map(|x| x.into_iter())
         .cycle()
-        .filter_map(|mut pts| pts.next().map(|(a, b)| 100 * a + b))
+        .filter_map(|mut pts| pts.next().map(|c| 100 * c.x + c.y))
         .nth(199)
 }

@@ -20,26 +20,25 @@ fn dist(a: Coord4, b: Coord4) -> i64 {
 }
 
 fn constellations(mut pts: Vec<Coord4>) -> Vec<Vec<Coord4>> {
-    if pts.is_empty() {
-        return vec![];
+    let mut result = Vec::new();
+    while let Some(neighb) = pts.pop() {
+        let mut neighbs = vec![neighb];
+        let mut changed = true;
+        while changed {
+            changed = false;
+            // drain_filter when it's stable
+            pts.retain(|p| {
+                if neighbs.iter().any(|x| dist(*x, *p) <= 3) {
+                    changed = true;
+                    neighbs.push(*p);
+                    false
+                } else {
+                    true
+                }
+            });
+        }
+        result.push(neighbs);
     }
-    let mut neighbs = vec![pts.pop().unwrap()];
-    let mut changed = true;
-    while changed {
-        changed = false;
-        // drain_filter when it's stable
-        pts.retain(|p| {
-            if neighbs.iter().any(|x| dist(*x, *p) <= 3) {
-                changed = true;
-                neighbs.push(*p);
-                false
-            } else {
-                true
-            }
-        });
-    }
-    let mut result = constellations(pts);
-    result.push(neighbs);
     result
 }
 
