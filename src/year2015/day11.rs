@@ -40,26 +40,18 @@ fn is_valid(s: &str) -> bool {
     cnt >= 2
 }
 
-unsafe fn next_valid_pw(s: &mut str) {
-    increment(s);
-    while !is_valid(s) {
-        increment(s);
+unsafe fn next_valid_pw(mut s: String) -> String {
+    increment(&mut s);
+    while !is_valid(&s) {
+        increment(&mut s);
     }
+    s
 }
 
 pub fn part1(input: &str) -> String {
-    let mut s = input.to_string();
-    unsafe {
-        next_valid_pw(&mut s);
-    }
-    s
+    unsafe { next_valid_pw(input.to_string()) }
 }
 
 pub fn part2(input: &str) -> String {
-    let mut s = input.to_string();
-    unsafe {
-        next_valid_pw(&mut s);
-        next_valid_pw(&mut s);
-    }
-    s
+    unsafe { next_valid_pw(next_valid_pw(input.to_string())) }
 }

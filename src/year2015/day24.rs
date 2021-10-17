@@ -1,14 +1,15 @@
-use itertools::Itertools;
+use streaming_iterator::StreamingIterator;
+
+use crate::utils::Combinations;
 
 fn quantum_entanglement(n: i64, s: &str) -> i64 {
     let wts: Vec<i64> = s.lines().map(|x| x.parse().unwrap()).collect();
     let group_size: i64 = wts.iter().copied().sum::<i64>() / n;
     let mut i = 1;
     loop {
-        let min_qe = wts.iter()
-            .combinations(i)
+        let min_qe = Combinations::new(&wts, i)
             .filter(|combo| combo.iter().copied().sum::<i64>() == group_size)
-            .map(|combo| combo.into_iter().product())
+            .map_deref(|combo| combo.into_iter().copied().product())
             .min();
         if let Some(m) = min_qe {
             return m;

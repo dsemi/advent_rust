@@ -610,6 +610,43 @@ impl StreamingIterator for Partitions {
     }
 }
 
+pub struct Combinations<'a, T> {
+    buf: Vec<&'a T>,
+    stack: Vec<(&'a [T], &'a T, usize)>,
+    in_progress: bool,
+}
+
+impl<'a, T> Combinations<'a, T> {
+    pub fn new(input: &'a [T], len: usize) -> Self {
+        Self {
+            buf: vec![&input[0]; len + 1],
+            stack: vec![(input, &input[0], len)],
+            in_progress: true,
+        }
+    }
+}
+
+impl<'a, T> StreamingIterator for Combinations<'a, T> {
+    type Item = [&'a T];
+
+    fn advance(&mut self) {
+        while let Some((xs, v, n)) = self.stack.pop() {
+            self.buf[n] = v;
+            if n == 0 {
+                return;
+            }
+            for i in 0..xs.len() {
+                self.stack.push((&xs[i + 1..], &xs[i], n - 1))
+            }
+        }
+        self.in_progress = false;
+    }
+
+    fn get(&self) -> Option<&Self::Item> {
+        self.in_progress.then(|| &self.buf[..self.buf.len() - 1])
+    }
+}
+
 pub trait ResultExt<T> {
     fn collapse(self) -> T;
 }

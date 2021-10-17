@@ -21,7 +21,7 @@ struct Game {
 
 lazy_static! {
     static ref SPELLS: Vec<Spell> = vec![
-        Spell { // MagicMissile
+        Spell { // Magic Missile
             cost: 53,
             effect: |state| state.boss_health -= 4,
             active: |_| false,
