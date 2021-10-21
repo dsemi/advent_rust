@@ -2,7 +2,6 @@ use advent::{detect_problems, make_problems};
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use std::env;
-use std::fmt::Debug;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
@@ -65,12 +64,6 @@ macro_rules! make_ptypes {
 make_ptypes!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, String);
 
 impl<T: PType> PType for Option<T> {
-    fn to(&self) -> String {
-        self.as_ref().unwrap().to()
-    }
-}
-
-impl<T: PType, E: Debug> PType for Result<T, E> {
     fn to(&self) -> String {
         self.as_ref().unwrap().to()
     }

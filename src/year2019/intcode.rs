@@ -152,21 +152,19 @@ impl Program {
             }
         }
     }
-}
 
-pub fn run_no_io(a: i64, b: i64, mut prog: Program) -> i64 {
-    prog[1] = a;
-    prog[2] = b;
-    prog.run();
-    assert!(prog.done);
-    prog[0]
-}
-
-pub fn run_with_input(inp: Vec<i64>, mut prog: Program) -> Vec<i64> {
-    for v in inp.into_iter() {
-        prog.input.push_back(v);
+    pub fn run_no_io(mut self, a: i64, b: i64) -> i64 {
+        self[1] = a;
+        self[2] = b;
+        self.run();
+        assert!(self.done);
+        self[0]
     }
-    prog.run();
-    assert!(prog.done);
-    prog.output.iter().copied().collect()
+
+    pub fn run_with_input(mut self, inp: &[i64]) -> impl Iterator<Item = i64> {
+        self.input.extend(inp);
+        self.run();
+        assert!(self.done);
+        self.output.into_iter()
+    }
 }
