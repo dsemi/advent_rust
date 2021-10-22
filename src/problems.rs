@@ -6,9 +6,9 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::sync::Mutex;
 use std::thread;
+use std::time::{Duration, Instant};
 
 const RATE_LIMIT: Duration = Duration::from_secs(5);
 
@@ -18,7 +18,7 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
     if !input_file.exists() && download {
         println!("Downloading input for Year {} Day {}", year, day);
         lazy_static! {
-            static ref LAST: Arc<Mutex<Option<Instant>>> = Arc::new(Mutex::new(None));
+            static ref LAST: Mutex<Option<Instant>> = Mutex::new(None);
         }
         let mut last = LAST.lock().unwrap();
         let now = Instant::now();
