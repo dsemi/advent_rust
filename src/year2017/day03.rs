@@ -8,10 +8,7 @@ fn mid_pt(x: i64, y: i64) -> i64 {
 }
 
 fn corners() -> impl Iterator<Item = i64> {
-    (1..).flat_map(|i| vec![i; 2]).scan(1, |state, x| {
-        *state += x;
-        Some(*state)
-    })
+    (1..).flat_map(|i| vec![i; 2]).good_scan(1, |a, b| *a + b)
 }
 
 pub fn part1(input: &str) -> i64 {

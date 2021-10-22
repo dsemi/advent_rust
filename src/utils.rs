@@ -8,6 +8,7 @@ use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::VecDeque;
 use std::hash::Hash;
+use std::iter::Fuse;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, BitAnd, Mul, MulAssign, Neg, Sub, SubAssign};
 use streaming_iterator::StreamingIterator;
@@ -659,3 +660,42 @@ impl<T> ResultExt<T> for Result<T, T> {
         }
     }
 }
+
+pub struct GoodScan<I, V, F> {
+    iter: Fuse<I>,
+    state: Option<V>,
+    f: F,
+}
+
+impl<I, V, F> Iterator for GoodScan<I, V, F>
+where
+    I: Iterator,
+    F: FnMut(&V, I::Item) -> V,
+{
+    type Item = V;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.iter.next() {
+            None => self.state.take(),
+            Some(v) => self
+                .state
+                .replace((self.f)(self.state.as_ref().unwrap(), v)),
+        }
+    }
+}
+
+pub trait IteratorExt: Iterator {
+    fn good_scan<V, F>(self, initial_state: V, f: F) -> GoodScan<Self, V, F>
+    where
+        Self: Sized,
+        F: FnMut(&V, Self::Item) -> V,
+    {
+        GoodScan {
+            iter: self.fuse(),
+            state: Some(initial_state),
+            f: f,
+        }
+    }
+}
+
+impl<T: ?Sized> IteratorExt for T where T: Iterator {}

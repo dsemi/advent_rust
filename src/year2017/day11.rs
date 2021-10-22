@@ -1,40 +1,24 @@
-use std::ops::Add;
+use crate::utils::*;
 
-#[derive(Clone, Copy)]
-struct Coord3(i64, i64, i64);
-
-impl Add for Coord3 {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        let Coord3(x1, y1, z1) = self;
-        let Coord3(x2, y2, z2) = other;
-        Coord3(x1 + x2, y1 + y2, z1 + z2)
-    }
+fn dist_from_origin(pos: Coord3<i64>) -> i64 {
+    [pos.x, pos.y, pos.z].iter().map(|v| v.abs()).max().unwrap()
 }
 
-fn dist_from_origin(pos: Coord3) -> i64 {
-    let Coord3(x, y, z) = pos;
-    [x, y, z].iter().map(|v| v.abs()).max().unwrap()
-}
-
-fn ap(d: &str, p: Coord3) -> Coord3 {
-    match d {
-        "n" => Coord3(0, 1, -1) + p,
-        "ne" => Coord3(1, 0, -1) + p,
-        "se" => Coord3(1, -1, 0) + p,
-        "s" => Coord3(0, -1, 1) + p,
-        "sw" => Coord3(-1, 0, 1) + p,
-        "nw" => Coord3(-1, 1, 0) + p,
+fn ap(p: &Coord3<i64>, d: &str) -> Coord3<i64> {
+    let x = match d {
+        "n" => Coord3::new(0, 1, -1),
+        "ne" => Coord3::new(1, 0, -1),
+        "se" => Coord3::new(1, -1, 0),
+        "s" => Coord3::new(0, -1, 1),
+        "sw" => Coord3::new(-1, 0, 1),
+        "nw" => Coord3::new(-1, 1, 0),
         _ => panic!("Parse error: {}", d),
-    }
+    };
+    *p + x
 }
 
-fn path(input: &str) -> impl Iterator<Item = Coord3> + '_ {
-    input.split(',').scan(Coord3(0, 0, 0), |acc, x| {
-        *acc = ap(x, *acc);
-        Some(*acc)
-    })
+fn path(input: &str) -> impl Iterator<Item = Coord3<i64>> + '_ {
+    input.split(',').good_scan(Coord3::new(0, 0, 0), ap)
 }
 
 pub fn part1(input: &str) -> Option<i64> {
