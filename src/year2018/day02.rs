@@ -19,28 +19,17 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> Option<String> {
     let ids = input.lines().collect::<Vec<_>>();
-    (0..ids.len())
-        .flat_map(|a| {
-            std::iter::repeat(a)
-                .zip(a + 1..ids.len())
-                .map(|(i, j)| (ids[i], ids[j]))
-        })
-        .filter_map(|(b1, b2)| {
-            let mut diff = 0;
-            for (a, b) in b1.chars().zip(b2.chars()) {
-                if a != b {
-                    diff += 1;
-                }
-                if diff > 1 {
-                    return None;
-                }
+    for (i, b1) in ids.iter().enumerate() {
+        for b2 in ids[i+1..].iter() {
+            let common = b1
+                .chars()
+                .zip(b2.chars())
+                .filter_map(|(a, b)| (a == b).then(|| a))
+                .collect::<String>();
+            if common.len() + 1 == b1.len() {
+                return Some(common)
             }
-            Some(
-                b1.chars()
-                    .zip(b2.chars())
-                    .filter_map(|(a, b)| (a == b).then(|| a))
-                    .collect(),
-            )
-        })
-        .next()
+        }
+    }
+    None
 }
