@@ -693,7 +693,7 @@ pub trait IteratorExt: Iterator {
         GoodScan {
             iter: self.fuse(),
             state: Some(initial_state),
-            f: f,
+            f,
         }
     }
 }

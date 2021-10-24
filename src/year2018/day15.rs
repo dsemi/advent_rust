@@ -23,12 +23,11 @@ fn parse_graph(input: &str) -> Vec<Vec<(char, i32)>> {
         .collect()
 }
 
-fn neighbors(coord: &Coord<i32>) -> Vec<Coord<i32>> {
+fn neighbors(coord: &Coord<i32>) -> impl Iterator<Item = Coord<i32>> + '_ {
     // reading order
     vec![(-1, 0), (0, -1), (0, 1), (1, 0)]
         .into_iter()
         .map(|(x, y)| Coord::new(x, y) + *coord)
-        .collect()
 }
 
 fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> Option<Coord<i32>> {
@@ -39,7 +38,7 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> 
     frontier.push_back(coord);
     let mut result = None;
     while let Some(mut pos) = frontier.pop_front() {
-        let neighbs = neighbors(&pos);
+        let neighbs = neighbors(&pos).collect::<Vec<_>>();
         if neighbs
             .iter()
             .any(|n| grid[n.x as usize][n.y as usize].0 == enemy)
@@ -97,22 +96,11 @@ fn run_round(grid: &mut Vec<Vec<(char, i32)>>, elf_power: i32, allow_elf_death: 
             grid[p.x as usize][p.y as usize] = v;
             pos = p;
         }
-        let targets = neighbors(&pos)
-            .into_iter()
+        if let Some(t_pos) = neighbors(&pos)
             .filter(|&n| grid[n.x as usize][n.y as usize].0 == enemy)
-            .collect::<Vec<_>>();
-        if !targets.is_empty() {
+            .min_by_key(|n| grid[n.x as usize][n.y as usize])
+        {
             let pwr = if v.0 == 'E' { elf_power } else { 3 };
-            let t_pos = targets
-                .into_iter()
-                .reduce(|a, b| {
-                    if grid[b.x as usize][b.y as usize] < grid[a.x as usize][a.y as usize] {
-                        b
-                    } else {
-                        a
-                    }
-                })
-                .unwrap();
             let (t, hp) = grid[t_pos.x as usize][t_pos.y as usize];
             if hp <= pwr {
                 if !allow_elf_death && t == 'E' {

@@ -49,10 +49,10 @@ pub fn part1(input: &str) -> i64 {
 }
 
 fn flip(prog: &mut [Instr], i: usize) {
-    prog[i] = match &prog[i] {
-        Jmp(n) => Nop(*n),
-        Nop(n) => Jmp(*n),
-        x => *x,
+    prog[i] = match prog[i] {
+        Jmp(n) => Nop(n),
+        Nop(n) => Jmp(n),
+        x => x,
     };
 }
 
