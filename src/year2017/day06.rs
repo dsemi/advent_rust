@@ -1,4 +1,5 @@
 use ahash::AHashMap;
+use std::cmp::Reverse;
 
 fn redistribute_until_cycle(input: &str) -> (usize, usize) {
     let mut ns: Vec<usize> = input
@@ -12,11 +13,10 @@ fn redistribute_until_cycle(input: &str) -> (usize, usize) {
             return (c, c - m[&ns]);
         }
         m.insert(ns.clone(), c);
-        let (j, val) = ns
+        let (j, &val) = ns
             .iter()
-            .copied()
             .enumerate()
-            .reduce(|(i1, x1), (i2, x2)| if x2 > x1 { (i2, x2) } else { (i1, x1) })
+            .max_by_key(|&(i, x)| (x, Reverse(i)))
             .unwrap();
         ns[j] = 0;
         for k in j + 1..=j + val {

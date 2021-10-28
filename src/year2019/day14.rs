@@ -30,8 +30,7 @@ fn num_ore(reactions: &Reactions, n: i64) -> i64 {
         k: &'a str,
         c: i64,
     ) {
-        if reactions.contains_key(&k) {
-            let (n, chems) = &reactions[&k];
+        if let Some((n, chems)) = reactions.get(&k) {
             let (q, r) = div_mod_floor(c, *n);
             for (a, chem) in chems.iter() {
                 let amt = a * if r != 0 { q + 1 } else { q };

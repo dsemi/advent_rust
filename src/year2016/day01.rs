@@ -22,18 +22,13 @@ fn path(input: &str) -> impl Iterator<Item = Coord<i32>> + '_ {
         })
 }
 
-pub fn part1(input: &str) -> i32 {
-    let pos = path(input).last().unwrap();
-    pos.x.abs() + pos.y.abs()
+pub fn part1(input: &str) -> Option<i32> {
+    path(input).last().map(|pos| pos.x.abs() + pos.y.abs())
 }
 
-pub fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> Option<i32> {
     let mut s = AHashSet::new();
-    for pos in path(input) {
-        if s.contains(&pos) {
-            return pos.x.abs() + pos.y.abs();
-        }
-        s.insert(pos);
-    }
-    -1
+    path(input)
+        .filter_map(|pos| (!s.insert(pos)).then(|| pos.x.abs() + pos.y.abs()))
+        .next()
 }

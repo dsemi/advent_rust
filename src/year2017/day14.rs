@@ -76,10 +76,9 @@ fn region_containing(arr: &AHashSet<(i32, i32)>, c: (i32, i32)) -> AHashSet<(i32
     let mut xs = vec![c];
     let mut result = AHashSet::new();
     while let Some(x) = xs.pop() {
-        if !arr.contains(&x) || result.contains(&x) {
+        if !arr.contains(&x) || !result.insert(x) {
             continue;
         }
-        result.insert(x);
         xs.extend(adjacents(x));
     }
     result

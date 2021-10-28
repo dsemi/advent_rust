@@ -30,10 +30,9 @@ fn run_prog(prog: &[Instr]) -> (i64, bool) {
     let mut acc = 0;
     let mut i = 0;
     while 0 <= i && i < prog.len() as i64 {
-        if visited.contains(&i) {
+        if !visited.insert(i) {
             return (acc, false)
         }
-        visited.insert(i);
         match prog[i as usize] {
             Acc(n) => acc += n,
             Jmp(n) => i += n - 1,

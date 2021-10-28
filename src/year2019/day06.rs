@@ -29,10 +29,10 @@ pub fn part1(input: &str) -> usize {
 
 fn path_from_com<'a>(t: &'a AHashMap<&str, &str>, key: &'a str) -> Vec<&'a str> {
     let mut result = Vec::new();
-    let mut k = key;
-    while t.contains_key(k) {
-        k = t[k];
+    let mut v = t.get(key);
+    while let Some(&k) = v {
         result.push(k);
+        v = t.get(k);
     }
     result.reverse();
     result

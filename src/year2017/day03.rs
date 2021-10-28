@@ -4,7 +4,7 @@ use take_until::TakeUntilExt;
 use crate::utils::*;
 
 fn mid_pt(x: i64, y: i64) -> i64 {
-    (x - y) / 2 + y
+    (x + y) / 2
 }
 
 fn corners() -> impl Iterator<Item = i64> {

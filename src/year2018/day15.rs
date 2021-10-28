@@ -43,15 +43,14 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> 
             .iter()
             .any(|n| grid[n.x as usize][n.y as usize].0 == enemy)
         {
-            while path.contains_key(&pos) {
+            while let Some(&next) = path.get(&pos) {
                 result = Some(pos);
-                pos = path[&pos];
+                pos = next;
             }
             break;
         }
         for n in neighbs {
-            if grid[n.x as usize][n.y as usize].0 == '.' && !visited.contains(&n) {
-                visited.insert(n);
+            if grid[n.x as usize][n.y as usize].0 == '.' && visited.insert(n) {
                 path.insert(n, pos);
                 frontier.push_back(n);
             }

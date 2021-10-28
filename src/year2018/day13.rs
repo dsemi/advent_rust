@@ -1,5 +1,6 @@
 use ahash::AHashMap;
 use genawaiter::stack::{let_gen_using, Co};
+use std::collections::hash_map::Entry::Occupied;
 
 use crate::utils::Coord;
 use crate::year2018::day13::Turn::*;
@@ -88,8 +89,8 @@ impl Tracks {
             for p in ps {
                 if let Some(mut cart) = self.carts.remove(&p) {
                     move_cart(&mut cart, &self.grid);
-                    if self.carts.contains_key(&cart.pos) {
-                        self.carts.remove(&cart.pos);
+                    if let Occupied(e) = self.carts.entry(cart.pos) {
+                        e.remove();
                         co.yield_((cart.pos.y, cart.pos.x)).await;
                     } else {
                         self.carts.insert(cart.pos, cart);
