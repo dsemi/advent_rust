@@ -44,10 +44,10 @@ fn run_part(f: Box<dyn Fn(&str) -> String>, input: &str) -> (f64, String) {
 }
 
 fn run_problem(year: i64, day: i64) -> f64 {
+    let (part1, part2) = problems::get_prob(year, day);
     let contents = problems::get_file_input(year, day, true);
 
     println!("Day {}", day);
-    let (part1, part2) = problems::get_prob(year, day);
     let (t1, ans) = run_part(part1, &contents);
     println!(
         "Part 1: {:>32}  Elapsed time {} seconds",
