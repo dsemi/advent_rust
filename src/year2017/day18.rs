@@ -26,6 +26,7 @@ struct Sim {
     line: i64,
     reg: [i64; 26],
     instrs: Vec<Instr>,
+    sends: usize,
 }
 
 fn reg(s: &str) -> usize {
@@ -59,6 +60,7 @@ impl Sim {
                     },
                 )
                 .collect(),
+            sends: 0,
         }
     }
 
@@ -69,7 +71,10 @@ impl Sim {
     {
         while let Some(instr) = self.instrs.get(self.line as usize) {
             match instr {
-                Snd(v) => send(self.val(v)),
+                Snd(v) => {
+                    self.sends += 1;
+                    send(self.val(v))
+                }
                 Set(r, v) => self.reg[*r] = self.val(v),
                 Add(r, v) => self.reg[*r] += self.val(v),
                 Mul(r, v) => self.reg[*r] *= self.val(v),
@@ -109,18 +114,11 @@ pub fn part2(input: &str) -> usize {
     s1.reg['p' as usize - 'a' as usize] = 1;
     let mut q0 = VecDeque::new();
     let mut q1 = VecDeque::new();
-    let mut p1_sends = 0;
     loop {
         s0.run(|x| q0.push_back(x), || q1.pop_front());
-        s1.run(
-            |x| {
-                p1_sends += 1;
-                q1.push_back(x)
-            },
-            || q0.pop_front(),
-        );
+        s1.run(|x| q1.push_back(x), || q0.pop_front());
         if q0.is_empty() && q1.is_empty() {
-            return p1_sends;
+            return s1.sends;
         }
     }
 }
