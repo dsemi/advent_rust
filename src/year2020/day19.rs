@@ -1,73 +1,56 @@
-use crate::year2020::day19::Rule::Multi;
-use crate::year2020::day19::Rule::Single;
+use itertools::Itertools;
 
-#[derive(Debug)]
+use crate::year2020::day19::Rule::*;
+
 enum Rule {
     Single(u8),
     Multi(Vec<Vec<usize>>),
 }
 
 fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
-    let parts: Vec<&str> = s.split("\n\n").collect();
-    let mut rules: Vec<(usize, Rule)> = Vec::new();
-    for line in parts[0].lines() {
-        let ps: Vec<&str> = line.split(": ").collect();
-        let v = if ps[1].starts_with('"') {
-            Single(ps[1].chars().nth(1).unwrap() as u8)
-        } else {
-            Multi(
-                ps[1]
-                    .split(" | ")
-                    .map(|part| part.split(' ').map(|x| x.parse().unwrap()).collect())
-                    .collect(),
-            )
-        };
-        rules.push((ps[0].parse().unwrap(), v));
-    }
-    rules.sort_unstable_by_key(|x| x.0);
-    for (i, v) in rules.iter().enumerate() {
-        assert!(i == v.0);
-    }
+    let (rules, messages) = s.split_once("\n\n").unwrap();
     (
-        rules.into_iter().map(|x| x.1).collect(),
-        parts[1].lines().collect(),
+        rules
+            .lines()
+            .map(|line| {
+                let (idx, content) = line.split_once(": ").unwrap();
+                (
+                    idx.parse::<usize>().unwrap(),
+                    if content.starts_with('"') {
+                        Single(content.chars().nth(1).unwrap() as u8)
+                    } else {
+                        Multi(
+                            content
+                                .split(" | ")
+                                .map(|part| part.split(' ').map(|x| x.parse().unwrap()).collect())
+                                .collect(),
+                        )
+                    },
+                )
+            })
+            .sorted_unstable_by_key(|x| x.0)
+            .map(|x| x.1)
+            .collect(),
+        messages.lines().collect(),
     )
 }
 
 fn count_matches(rules: Vec<Rule>, messages: Vec<&str>) -> usize {
-    fn go<'a>(rules: &'a [Rule], rule: &Rule, s: &'a [u8]) -> Vec<&'a [u8]> {
-        if s.is_empty() {
-            return vec![];
+    fn check(rules: &[Rule], s: &[u8], seq: &[usize]) -> bool {
+        if s.is_empty() || seq.is_empty() {
+            return s.is_empty() && seq.is_empty();
         }
-        match rule {
-            Single(c) => {
-                if s[0] == *c {
-                    vec![&s[1..]]
-                } else {
-                    vec![]
-                }
-            }
-            // Need vec b/c option could partially succeed down the wrong path and not
-            // backtrack properly.
+        match &rules[seq[0]] {
+            Single(c) => &s[0] == c && check(rules, &s[1..], &seq[1..]),
             Multi(rss) => rss
                 .iter()
-                .flat_map(|rs| {
-                    rs.iter().fold(vec![s], |acc, r| {
-                        acc.into_iter()
-                            .flat_map(|x| go(rules, &rules[*r], x))
-                            .collect()
-                    })
-                })
-                .collect(),
+                .any(|rs| check(rules, s, &[rs, &seq[1..]].concat())),
         }
     }
+
     messages
         .into_iter()
-        .filter(|&message| {
-            go(&rules, &rules[0], message.as_bytes())
-                .into_iter()
-                .any(|x| x.is_empty())
-        })
+        .filter(|&message| check(&rules, message.as_bytes(), &[0]))
         .count()
 }
 
