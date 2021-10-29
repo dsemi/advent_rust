@@ -1,8 +1,8 @@
 #![allow(clippy::many_single_char_names)]
 #![deny(clippy::disallowed_type)]
 
-use std::cmp::Ordering::Equal;
 use std::cmp::max_by;
+use std::cmp::Ordering::Equal;
 use std::env;
 use std::time::Instant;
 
@@ -44,24 +44,28 @@ fn run_part(f: Box<dyn Fn(&str) -> String>, input: &str) -> (f64, String) {
 }
 
 fn run_problem(year: i64, day: i64) -> f64 {
-    let (part1, part2) = problems::get_prob(year, day);
-    let contents = problems::get_file_input(year, day, true);
+    if let Some((part1, part2)) = problems::get_prob(year, day) {
+        let contents = problems::get_file_input(year, day, true);
 
-    println!("Day {}", day);
-    let (t1, ans) = run_part(part1, &contents);
-    println!(
-        "Part 1: {:>32}  Elapsed time {} seconds",
-        ans,
-        colorize_time(t1)
-    );
-    let (t2, ans) = run_part(part2, &contents);
-    println!(
-        "Part 2: {:>32}  Elapsed time {} seconds",
-        ans,
-        colorize_time(t2)
-    );
-    println!();
-    t1 + t2
+        println!("Day {}", day);
+        let (t1, ans) = run_part(part1, &contents);
+        println!(
+            "Part 1: {:>32}  Elapsed time {} seconds",
+            ans,
+            colorize_time(t1)
+        );
+        let (t2, ans) = run_part(part2, &contents);
+        println!(
+            "Part 2: {:>32}  Elapsed time {} seconds",
+            ans,
+            colorize_time(t2)
+        );
+        println!();
+        t1 + t2
+    } else {
+        println!("{} Day {} not implemented", year, day);
+        0.0
+    }
 }
 
 fn parse_day(daystr: &str) -> Vec<i64> {
@@ -85,7 +89,9 @@ fn main() {
     let mut max_day = (0.0, 0);
     for &day in days.iter() {
         let t = run_problem(year, day);
-        max_day = max_by(max_day, (t, day), |a, b| a.0.partial_cmp(&b.0).unwrap_or(Equal));
+        max_day = max_by(max_day, (t, day), |a, b| {
+            a.0.partial_cmp(&b.0).unwrap_or(Equal)
+        });
         total += t;
     }
     println!("Max: Day {:2} {:48.3} seconds", max_day.1, max_day.0);

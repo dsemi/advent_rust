@@ -51,21 +51,21 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
                 .parse::<proc_macro2::TokenStream>()
                 .unwrap();
             day_matches.extend(quote! {
-                #day => make_prob!(#year_ident, #day_ident),
+                #day => Some(make_prob!(#year_ident, #day_ident)),
             });
         }
         year_matches.extend(quote! {
             #year => match day {
                 #day_matches
-                _ => panic!("bad day"),
+                _ => None,
             },
         });
     }
     let result = quote! {
-        pub fn get_prob(year: i64, day: i64) -> (Output, Output) {
+        pub fn get_prob(year: i64, day: i64) -> Option<(Output, Output)> {
             match year {
                 #year_matches
-                _ => panic!("bad year"),
+                _ => None,
             }
         }
     };
@@ -109,7 +109,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
                 #[test]
                 fn #fn_name() {
                     let input = get_file_input(#year, #day, false);
-                    let (part1, part2) = get_prob(#year, #day);
+                    let (part1, part2) = get_prob(#year, #day).unwrap();
                     if let Some((ex1, ex2)) = get_expected_solutions(#year, #day) {
                         assert_eq!(ex1, part1(&input));
                         assert_eq!(ex2, part2(&input));
