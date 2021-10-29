@@ -1,4 +1,4 @@
-use gcd::Gcd;
+use num::integer::gcd;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use std::collections::BTreeMap;
@@ -28,7 +28,7 @@ struct Angle {
 impl Angle {
     fn new(a: &Coord<i32>, b: &Coord<i32>) -> Self {
         let (x, y) = (b.x - a.x, b.y - a.y);
-        let gcd = (x.abs() as u32).gcd(y.abs() as u32) as i32;
+        let gcd = gcd(x.abs(), y.abs());
         Self {
             x: x / gcd,
             y: y / gcd,

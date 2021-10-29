@@ -1,4 +1,4 @@
-use gcd::Gcd;
+use num::integer::lcm;
 
 #[derive(Clone, Eq, PartialEq)]
 struct Moon {
@@ -73,5 +73,5 @@ pub fn part2(input: &str) -> Option<u64> {
                     .collect(),
             )
         })
-        .reduce(|a, b| a * b / a.gcd(b))
+        .reduce(lcm)
 }
