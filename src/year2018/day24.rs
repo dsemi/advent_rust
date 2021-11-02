@@ -1,70 +1,27 @@
-use regex::Regex;
+use nom::branch::alt;
+use nom::bytes::complete::{tag, take_till, take_while};
+use nom::character::complete::digit1;
+use nom::combinator::{map_res, opt, recognize};
+use nom::multi::{separated_list0, separated_list1};
+use nom::sequence::{delimited, preceded, separated_pair, terminated};
+use nom::IResult;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Clone)]
-struct Group {
+struct Group<'a> {
     num: usize,
-    name: String,
+    name: &'a str,
     units: i32,
     hit_pts: i32,
     dmg: i32,
-    element: String,
+    element: &'a str,
     initiative: i32,
-    weaknesses: Vec<String>,
-    immunities: Vec<String>,
+    weaknesses: Vec<&'a str>,
+    immunities: Vec<&'a str>,
 }
 
-fn parse_armies(input: &str) -> Vec<Option<Group>> {
-    input
-        .split("\n\n")
-        .flat_map(|a| {
-            let mut gen = a.lines();
-            let name = gen.next().unwrap();
-            let re = Regex::new(r"(\d+) units each with (\d+) hit points(?: \((.+)\))? with an attack that does (\d+) (\w+) damage at initiative (\d+)").unwrap();
-            gen.map(move |line| {
-                let cap = re.captures(line).unwrap();
-                let units = cap[1].parse().unwrap();
-                let hp = cap[2].parse().unwrap();
-                let mods = cap.get(3);
-                let dmg = cap[4].parse().unwrap();
-                let element = cap[5].to_string();
-                let initiative = cap[6].parse().unwrap();
-                let mut group = Group {
-                    num: 0,
-                    name: name[..name.len() - 1].to_string(),
-                    units,
-                    hit_pts: hp,
-                    dmg,
-                    element,
-                    initiative,
-                    weaknesses: Vec::new(),
-                    immunities: Vec::new(),
-                };
-                if let Some(mds) = mods {
-                    for x in mds.as_str().split("; ") {
-                        let (m, elems) = x.split_once(" to ").unwrap();
-                        if m == "weak" {
-                            group
-                                .weaknesses
-                                .extend(elems.split(", ").map(|x| x.to_string()));
-                        } else {
-                            group
-                                .immunities
-                                .extend(elems.split(", ").map(|x| x.to_string()));
-                        }
-                    }
-                }
-                group
-            })
-        })
-        .enumerate()
-        .map(|(n, mut g)| {
-            g.num = n;
-            Some(g)
-        })
-        .collect()
-}
-
-impl Group {
+impl Group<'_> {
     fn eff_pwr(&self) -> i32 {
         self.units * self.dmg
     }
@@ -78,6 +35,61 @@ impl Group {
             self.eff_pwr()
         }
     }
+}
+
+fn int(i: &str) -> IResult<&str, i32> {
+    map_res(recognize(digit1), |s: &str| s.parse())(i)
+}
+
+lazy_static! {
+    static ref C: AtomicUsize = AtomicUsize::new(0);
+}
+
+fn units<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
+    let (i, units) = int(i)?;
+    let (i, hit_pts) = delimited(tag(" units each with "), int, tag(" hit points "))(i)?;
+    let (i, attributes) = opt(delimited(
+        tag("("),
+        separated_list0(
+            tag("; "),
+            separated_pair(
+                alt((tag("weak"), tag("immune"))),
+                tag(" to "),
+                separated_list1(tag(", "), take_while(|c: char| c.is_ascii_alphabetic())),
+            ),
+        ),
+        tag(") "),
+    ))(i)?;
+    let (weaknesses, immunities) = attributes
+        .unwrap_or_default()
+        .into_iter()
+        .partition::<Vec<(&str, Vec<&str>)>, _>(|x| x.0 == "weak");
+    let (i, dmg) = delimited(tag("with an attack that does "), int, tag(" "))(i)?;
+    let (i, element) = take_while(|c: char| c.is_ascii_alphabetic())(i)?;
+    let (i, initiative) = preceded(tag(" damage at initiative "), int)(i)?;
+    let group = Group {
+        num: C.fetch_add(1, Relaxed),
+        name,
+        units,
+        hit_pts,
+        dmg,
+        element,
+        initiative,
+        weaknesses: weaknesses.into_iter().flat_map(|x| x.1).collect(),
+        immunities: immunities.into_iter().flat_map(|x| x.1).collect(),
+    };
+    Ok((i, Some(group)))
+}
+
+fn army(i: &str) -> IResult<&str, Vec<Option<Group>>> {
+    let (i, name) = terminated(take_till(|c: char| c == ':'), tag(":\n"))(i)?;
+    separated_list1(tag("\n"), |i| units(i, name))(i)
+}
+
+fn armies(i: &str) -> IResult<&str, Vec<Option<Group>>> {
+    C.store(0, Relaxed);
+    let (i, (a, b)) = separated_pair(army, tag("\n\n"), army)(i)?;
+    Ok((i, [a, b].concat()))
 }
 
 fn select_target(groups: &[Option<Group>], attacked: &mut u32, grp: &Group) -> Option<usize> {
@@ -131,8 +143,8 @@ fn battle(groups: &mut Vec<Option<Group>>) -> bool {
     let mut changed = true;
     while changed {
         let mut gen = groups.iter().flatten();
-        let name = &gen.next().unwrap().name;
-        if gen.all(|g| &g.name == name) {
+        let name = gen.next().unwrap().name;
+        if gen.all(|g| g.name == name) {
             return true;
         }
         let atks = target_selection(groups);
@@ -142,13 +154,13 @@ fn battle(groups: &mut Vec<Option<Group>>) -> bool {
 }
 
 pub fn part1(input: &str) -> i32 {
-    let mut groups = parse_armies(input);
+    let mut groups = armies(input).unwrap().1;
     battle(&mut groups);
     groups.iter().flatten().map(|g| g.units).sum()
 }
 
 pub fn part2(input: &str) -> i32 {
-    let gps = parse_armies(input);
+    let gps = armies(input).unwrap().1;
     for n in 0.. {
         let mut groups = gps.clone();
         for g in groups.iter_mut().flatten() {
