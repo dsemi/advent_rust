@@ -83,10 +83,7 @@ impl<T: PType, S: PType, U: PType> PType for (T, S, U) {
 
 type Output = Box<dyn Fn(&str) -> String>;
 
-fn wrap<T>(f: &'static dyn Fn(&str) -> T) -> Output
-where
-    T: PType,
-{
+fn wrap<T: PType>(f: &'static dyn Fn(&str) -> T) -> Output {
     Box::new(move |x| f(x).to())
 }
 
@@ -104,17 +101,12 @@ make_problems!();
 mod tests {
     use crate::problems::{get_file_input, get_prob};
     use advent::make_tests;
-    use std::fs;
-    use std::path::Path;
 
-    #[allow(dead_code)]
+    const EXP: &'static str = include_str!("../test/expectedAnswers.json");
+
     fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
         lazy_static! {
-            static ref DICT: json::JsonValue = json::parse(
-                &fs::read_to_string(Path::new("test/expectedAnswers.json"))
-                    .expect("Error reading json file")
-            )
-            .unwrap();
+            static ref DICT: json::JsonValue = json::parse(EXP).unwrap();
         }
         match &DICT[year.to_string()][day.to_string()] {
             json::JsonValue::Array(v) => {
