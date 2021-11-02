@@ -1,13 +1,13 @@
 fn react(s: &str) -> usize {
     let mut chs: Vec<char> = Vec::new();
     for c in s.chars() {
-        if !chs.is_empty()
-            && chs[chs.len() - 1] != c
-            && chs[chs.len() - 1].to_ascii_lowercase() == c.to_ascii_lowercase()
-        {
-            chs.pop();
-        } else {
-            chs.push(c);
+        match chs.last() {
+            Some(x) if *x != c && x.to_ascii_lowercase() == c.to_ascii_lowercase() => {
+                chs.pop();
+            }
+            _ => {
+                chs.push(c);
+            }
         }
     }
     chs.len()

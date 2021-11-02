@@ -42,9 +42,7 @@ where
                 guard = guard_num;
                 st = 0;
                 last_m = 0;
-                if !result.contains_key(&guard) {
-                    result.insert(guard, vec![0; 60]);
-                }
+                result.entry(guard).or_insert(vec![0; 60]);
             }
             SleepToggle(minute) => {
                 for i in last_m..minute {

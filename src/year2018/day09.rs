@@ -26,7 +26,7 @@ fn play(n: usize, s: usize) -> Option<usize> {
         let e = m.entry(p % n).or_insert(0);
         *e += p + v;
     }
-    m.values().copied().max()
+    m.into_iter().map(|x| x.1).max()
 }
 
 pub fn part1(input: &str) -> Option<usize> {

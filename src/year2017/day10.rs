@@ -1,4 +1,4 @@
-fn reverse<T>(v: &mut Vec<T>, mut lo: usize, mut hi: usize) {
+fn reverse<T>(v: &mut [T], mut lo: usize, mut hi: usize) {
     let len = v.len();
     while lo < hi {
         v.swap(lo % len, hi % len);

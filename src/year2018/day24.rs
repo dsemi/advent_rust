@@ -56,8 +56,8 @@ fn parse_armies(input: &str) -> Vec<Option<Group>> {
                 group
             })
         })
-        .zip(0..)
-        .map(|(mut g, n)| {
+        .enumerate()
+        .map(|(n, mut g)| {
             g.num = n;
             Some(g)
         })

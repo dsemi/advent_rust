@@ -24,10 +24,10 @@ fn run_cmd<'a>(reg: &mut AHashMap<&'a str, i64>, line: &'a str) -> i64 {
 
 pub fn part1(input: &str) -> Option<i64> {
     let mut tbl = AHashMap::new();
-    input.lines().for_each(|line| {
+    for line in input.lines() {
         run_cmd(&mut tbl, line);
-    });
-    tbl.values().copied().max()
+    }
+    tbl.into_iter().map(|x| x.1).max()
 }
 
 pub fn part2(input: &str) -> Option<i64> {
