@@ -42,7 +42,7 @@ where
                 guard = guard_num;
                 st = 0;
                 last_m = 0;
-                result.entry(guard).or_insert(vec![0; 60]);
+                result.entry(guard).or_insert_with(|| vec![0; 60]);
             }
             SleepToggle(minute) => {
                 for i in last_m..minute {
