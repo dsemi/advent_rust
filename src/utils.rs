@@ -1,16 +1,19 @@
-use ahash::AHashMap;
-use ahash::AHashSet;
+use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
+use nom::bytes::complete::tag;
+use nom::character::complete::digit1;
+use nom::combinator::{map_res, opt, recognize};
+use nom::sequence::tuple;
+use nom::IResult;
+use num::traits::abs;
 use num::{Num, Signed};
 use num_traits::cast::FromPrimitive;
-use std::cmp::Ordering;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
-use std::collections::VecDeque;
+use std::cmp::{Ordering, Reverse};
+use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
-use std::iter::Fuse;
-use std::iter::Sum;
+use std::iter::{Fuse, Sum};
 use std::ops::{Add, AddAssign, BitAnd, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::str::FromStr;
 use streaming_iterator::StreamingIterator;
 
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
@@ -403,6 +406,7 @@ impl<T> Coord3<T>
 where
     T: Copy,
     T: Num,
+    T: Signed,
 {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
@@ -422,6 +426,18 @@ where
             y: self.y / n,
             z: self.z / n,
         }
+    }
+
+    pub fn abs(&self) -> Self {
+        Self {
+            x: abs(self.x),
+            y: abs(self.y),
+            z: abs(self.z),
+        }
+    }
+
+    pub fn sum(&self) -> T {
+        self.x + self.y + self.z
     }
 }
 
@@ -699,3 +715,9 @@ pub trait IteratorExt: Iterator {
 }
 
 impl<T: ?Sized> IteratorExt for T where T: Iterator {}
+
+pub fn int<T: FromStr>(i: &str) -> IResult<&str, T> {
+    map_res(recognize(tuple((opt(tag("-")), digit1))), |s: &str| {
+        s.parse()
+    })(i)
+}

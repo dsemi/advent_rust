@@ -1,12 +1,8 @@
 use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
-use nom::combinator::{map_res, recognize};
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 
-fn int(i: &str) -> IResult<&str, usize> {
-    map_res(recognize(digit1), |s: &str| s.parse())(i)
-}
+use crate::utils::int;
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {
     delimited(tag("("), separated_pair(int, tag("x"), int), tag(")"))(i)

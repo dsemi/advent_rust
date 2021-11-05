@@ -32,7 +32,7 @@ fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    parse_particles(input).position_min_by_key(|p| p.acc.x.abs() + p.acc.y.abs() + p.acc.z.abs())
+    parse_particles(input).position_min_by_key(|p| p.acc.abs().sum())
 }
 
 pub fn part2(input: &str) -> usize {

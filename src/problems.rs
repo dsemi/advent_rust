@@ -27,13 +27,11 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
         }
         *last = Some(Instant::now());
         let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
-        let client = Client::new();
-        let response = client
+        let content = Client::new()
             .get(&url)
             .header("Cookie", env::var("AOC_SESSION").unwrap())
             .send()
-            .expect("Problem input fetch failed");
-        let content = response
+            .expect("Problem input fetch failed")
             .error_for_status()
             .expect("Bad HTTP response")
             .bytes()

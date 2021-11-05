@@ -1,12 +1,13 @@
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while};
-use nom::character::complete::digit1;
-use nom::combinator::{map_res, opt, recognize};
+use nom::combinator::opt;
 use nom::multi::{separated_list0, separated_list1};
 use nom::sequence::{delimited, preceded, separated_pair, terminated};
 use nom::IResult;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
+
+use crate::utils::int;
 
 #[derive(Clone)]
 struct Group<'a> {
@@ -35,10 +36,6 @@ impl Group<'_> {
             self.eff_pwr()
         }
     }
-}
-
-fn int(i: &str) -> IResult<&str, i32> {
-    map_res(recognize(digit1), |s: &str| s.parse())(i)
 }
 
 lazy_static! {
