@@ -25,15 +25,13 @@ fn constellations(mut pts: Vec<Coord4>) -> Vec<Vec<Coord4>> {
         let mut neighbs = vec![neighb];
         let mut changed = true;
         while std::mem::replace(&mut changed, false) {
-            // drain_filter when it's stable
             pts.retain(|p| {
-                if neighbs.iter().any(|x| dist(*x, *p) <= 3) {
+                let b = neighbs.iter().any(|x| dist(*x, *p) <= 3);
+                if b {
                     changed = true;
                     neighbs.push(*p);
-                    false
-                } else {
-                    true
                 }
+                !b
             });
         }
         result.push(neighbs);
