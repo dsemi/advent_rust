@@ -16,13 +16,14 @@ extern crate scan_fmt;
 #[macro_use]
 mod utils;
 // mod md5;
-mod problems;
 mod year2015;
 mod year2016;
 mod year2017;
 mod year2018;
 mod year2019;
 mod year2020;
+// Needs to be after the year modules.
+mod problems;
 
 fn colorize_time(n: f64) -> String {
     let color = if n < 0.5 {

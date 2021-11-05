@@ -1,4 +1,4 @@
-use advent::{detect_problems, make_problems};
+use advent::make_problems;
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use std::env;
@@ -90,8 +90,6 @@ macro_rules! make_prob {
         (wrap(&crate::$y::$d::part1), wrap(&crate::$y::$d::part2))
     };
 }
-
-detect_problems!();
 
 make_problems!();
 
