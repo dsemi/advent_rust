@@ -1,3 +1,5 @@
+use scan_fmt::scan_fmt as scanf;
+
 struct Claim {
     num: usize,
     x0: usize,
@@ -10,7 +12,7 @@ fn parse_claims(input: &str) -> Vec<Claim> {
     input
         .lines()
         .map(|line| {
-            let (n, x, y, w, h) = scan_fmt!(
+            let (n, x, y, w, h) = scanf!(
                 line,
                 "#{} @ {},{}: {}x{}",
                 usize,

@@ -1,4 +1,5 @@
 use ahash::{AHashMap, AHashSet};
+use scan_fmt::scan_fmt as scanf;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
@@ -13,7 +14,7 @@ fn parse_steps(input: &str, workers: usize) -> Scheduler {
     let mut preds = AHashMap::new();
     let mut succs = AHashMap::new();
     for line in input.lines() {
-        let (a, b) = scan_fmt!(
+        let (a, b) = scanf!(
             line,
             "Step {} must be finished before step {} can begin",
             char,

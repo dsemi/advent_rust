@@ -1,4 +1,5 @@
 use ahash::AHashSet;
+use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 use crate::utils::Coord;
@@ -12,7 +13,7 @@ fn parse_objects(input: &str) -> Vec<Obj> {
     input
         .lines()
         .map(|line| {
-            let (x0, y0, x1, y1) = scan_fmt!(
+            let (x0, y0, x1, y1) = scanf!(
                 line,
                 "position=<{},{}> velocity=<{},{}>",
                 i32,

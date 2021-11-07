@@ -1,10 +1,12 @@
+use scan_fmt::scan_fmt as scanf;
+
 use crate::utils::*;
 
 fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
     input
         .lines()
         .map(|line| {
-            let (speed, fly_time, rest_time) = scan_fmt!(
+            let (speed, fly_time, rest_time) = scanf!(
                 line,
                 "{*} can fly {} km/s for {} seconds, but then must rest for {} seconds.",
                 i32,

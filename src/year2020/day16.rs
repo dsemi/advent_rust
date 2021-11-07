@@ -1,4 +1,5 @@
 use ahash::AHashSet;
+use scan_fmt::scan_fmt as scanf;
 
 struct Input {
     rules: Vec<(String, i64, i64, i64, i64)>,
@@ -10,7 +11,7 @@ fn parse_rules(s: &str) -> Input {
     let parts: Vec<&str> = s.split("\n\n").collect();
     let rules: Vec<(String, i64, i64, i64, i64)> = parts[0]
         .lines()
-        .map(|line| scan_fmt!(line, "{[^:]}: {}-{} or {}-{}", String, i64, i64, i64, i64).unwrap())
+        .map(|line| scanf!(line, "{[^:]}: {}-{} or {}-{}", String, i64, i64, i64, i64).unwrap())
         .collect();
     let yours: Vec<i64> = parts[1]
         .lines()

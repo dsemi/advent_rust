@@ -5,7 +5,7 @@ extern crate proc_macro;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
-use scan_fmt::scan_fmt;
+use scan_fmt::scan_fmt as scanf;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
@@ -59,9 +59,9 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
     let mut map = PROBS.lock().unwrap();
     for entry in fs::read_dir(d.value()).unwrap().map(|x| x.unwrap().path()) {
         let path = entry.to_str().unwrap();
-        if let Ok((year, day)) = scan_fmt!(path, "src/year{}/day{}.rs", i64, i64) {
+        if let Ok((year, day)) = scanf!(path, "src/year{}/day{}.rs", i64, i64) {
             let m: proc_macro2::TokenStream = format!("day{:02}", day).parse().unwrap();
-            let day = scan_fmt!(&m.to_string(), "day{}", i64).unwrap();
+            let day = scanf!(&m.to_string(), "day{}", i64).unwrap();
             map.entry(year).or_insert_with(BTreeSet::new).insert(day);
             mods.extend(quote! {
                 pub mod #m;

@@ -1,8 +1,9 @@
 use ahash::AHashMap;
+use scan_fmt::scan_fmt as scanf;
 use std::collections::VecDeque;
 
 fn parse(input: &str) -> (usize, usize) {
-    scan_fmt!(
+    scanf!(
         input,
         "{} players; last marble is worth {} points",
         usize,

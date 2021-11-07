@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while};
 use nom::combinator::opt;

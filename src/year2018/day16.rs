@@ -1,3 +1,4 @@
+use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::year2018::day16::Op::*;

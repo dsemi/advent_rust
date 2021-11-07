@@ -1,4 +1,5 @@
 use ahash::AHashMap;
+use scan_fmt::scan_fmt as scanf;
 
 struct Cmd {
     mask: Vec<(u64, char)>,
@@ -20,7 +21,7 @@ fn parse_cmds(s: &str) -> Vec<Cmd> {
                 .map(|(i, x)| (35 - i as u64, x))
                 .collect();
         } else {
-            let (r, v) = scan_fmt!(line, "mem[{}] = {}", u64, u64).unwrap();
+            let (r, v) = scanf!(line, "mem[{}] = {}", u64, u64).unwrap();
             res.push(Cmd {
                 mask: mask.clone(),
                 r,

@@ -1,10 +1,12 @@
+use scan_fmt::scan_fmt as scanf;
+
 use crate::utils::*;
 
 fn parse_discs(input: &str) -> Vec<(i64, i64)> {
     input
         .lines()
         .map(|line| {
-            let (disc_num, modulo, pos) = scan_fmt!(
+            let (disc_num, modulo, pos) = scanf!(
                 line,
                 "Disc #{} has {} positions; at time=0, it is at position {}.",
                 i64,

@@ -1,4 +1,5 @@
 use num::integer::lcm;
+use scan_fmt::scan_fmt as scanf;
 
 #[derive(Clone, Eq, PartialEq)]
 struct Moon {
@@ -10,7 +11,7 @@ fn parse_moons(input: &str) -> Vec<Moon> {
     input
         .lines()
         .map(|line| {
-            let (x, y, z) = scan_fmt!(line, "<x={}, y={}, z={}>", i64, i64, i64).unwrap();
+            let (x, y, z) = scanf!(line, "<x={}, y={}, z={}>", i64, i64, i64).unwrap();
             Moon {
                 pos: vec![x, y, z],
                 vel: vec![0, 0, 0],

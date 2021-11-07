@@ -1,22 +1,23 @@
 use ahash::AHashSet;
+use scan_fmt::scan_fmt as scanf;
 
 const W: usize = 50;
 const H: usize = 6;
 
 fn process_instr(grid: &mut AHashSet<(usize, usize)>, line: &str) {
-    if let Ok((a, b)) = scan_fmt!(line, "rect {}x{}", usize, usize) {
+    if let Ok((a, b)) = scanf!(line, "rect {}x{}", usize, usize) {
         for c in 0..a {
             for r in 0..b {
                 grid.insert((r, c));
             }
         }
-    } else if let Ok((a, b)) = scan_fmt!(line, "rotate row y={} by {}", usize, usize) {
+    } else if let Ok((a, b)) = scanf!(line, "rotate row y={} by {}", usize, usize) {
         *grid = grid
             .iter()
             .map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c }))
             .collect();
     } else {
-        let (a, b) = scan_fmt!(line, "rotate column x={} by {}", usize, usize).unwrap();
+        let (a, b) = scanf!(line, "rotate column x={} by {}", usize, usize).unwrap();
         *grid = grid
             .iter()
             .map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c))

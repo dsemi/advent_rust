@@ -1,4 +1,5 @@
 use ahash::{AHashMap, AHashSet};
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{max, min};
 
@@ -84,5 +85,7 @@ pub fn part2(input: &str) -> usize {
         }
         std::mem::swap(&mut grid, &mut grid2);
     }
-    grid.into_iter().map(|row| row.into_iter().filter(|x| *x).count()).sum()
+    grid.into_iter()
+        .map(|row| row.into_iter().filter(|x| *x).count())
+        .sum()
 }

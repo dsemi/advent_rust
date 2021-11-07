@@ -1,3 +1,5 @@
+use scan_fmt::scan_fmt as scanf;
+
 #[derive(Clone, Copy)]
 struct LinearTrans {
     a: i64,
@@ -85,14 +87,14 @@ fn parse_techs(input: &str, modulus: i64) -> LinearTrans {
                     b: modulus - 1,
                     modulus,
                 }
-            } else if let Ok(n) = scan_fmt!(line, "cut {}", i64) {
+            } else if let Ok(n) = scanf!(line, "cut {}", i64) {
                 LinearTrans {
                     a: 1,
                     b: (-n).rem_euclid(modulus),
                     modulus,
                 }
             } else {
-                let n = scan_fmt!(line, "deal with increment {}", i64).unwrap();
+                let n = scanf!(line, "deal with increment {}", i64).unwrap();
                 LinearTrans {
                     a: n.rem_euclid(modulus),
                     b: 0,

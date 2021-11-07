@@ -1,4 +1,5 @@
 use itertools::iterate;
+use scan_fmt::scan_fmt as scanf;
 
 struct Ground {
     grid: Vec<Vec<char>>,
@@ -11,7 +12,7 @@ fn parse_scans(input: &str) -> Ground {
     let mut clay = Vec::new();
     for line in input.lines() {
         let (c1, v1, _c2, v2a, v2b) =
-            scan_fmt!(line, "{}={}, {}={}..{}", char, i32, char, i32, i32).unwrap();
+            scanf!(line, "{}={}, {}={}..{}", char, i32, char, i32, i32).unwrap();
         let (xs, ys) = if c1 == 'x' {
             (vec![v1], (v2a..=v2b).collect())
         } else {

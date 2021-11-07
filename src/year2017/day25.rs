@@ -1,3 +1,4 @@
+use scan_fmt::scan_fmt as scanf;
 use std::collections::VecDeque;
 
 enum Dir {
@@ -13,9 +14,9 @@ struct Rule {
 
 fn parse_branch<'a, I: Iterator<Item = &'a str>>(gen: &mut I, idx: usize) -> Option<Rule> {
     assert!(gen.next()? == format!("  If the current value is {}:", idx));
-    let write = scan_fmt!(gen.next()?, "    - Write the value {}.", usize).unwrap();
-    let dir = scan_fmt!(gen.next()?, "    - Move one slot to the {/left|right/}.", String).unwrap();
-    let state = scan_fmt!(gen.next()?, "    - Continue with state {}.", char).unwrap();
+    let write = scanf!(gen.next()?, "    - Write the value {}.", usize).unwrap();
+    let dir = scanf!(gen.next()?, "    - Move one slot to the {}.", String).unwrap();
+    let state = scanf!(gen.next()?, "    - Continue with state {}.", char).unwrap();
     Some(Rule {
         write,
         dir: if dir == "left" { Dir::L } else { Dir::R },
@@ -25,7 +26,7 @@ fn parse_branch<'a, I: Iterator<Item = &'a str>>(gen: &mut I, idx: usize) -> Opt
 
 fn parse_state(input: &str) -> Option<[Rule; 2]> {
     let mut gen = input.lines();
-    scan_fmt!(gen.next()?, "In state {}:", char).unwrap();
+    scanf!(gen.next()?, "In state {}:", char).unwrap();
     let rule1 = parse_branch(&mut gen, 0)?;
     let rule2 = parse_branch(&mut gen, 1)?;
     Some([rule1, rule2])
@@ -33,7 +34,7 @@ fn parse_state(input: &str) -> Option<[Rule; 2]> {
 
 fn parse_rules(input: &str) -> (usize, usize, Vec<[Rule; 2]>) {
     let mut gen = input.split("\n\n");
-    let (start, n) = scan_fmt!(
+    let (start, n) = scanf!(
         gen.next().unwrap(),
         "Begin in state {}.\nPerform a diagnostic checksum after {} steps.",
         char,

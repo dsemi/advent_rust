@@ -1,3 +1,5 @@
+use scan_fmt::scan_fmt as scanf;
+
 fn run_commands(
     input: &str,
     off: fn(&mut [u32]),
@@ -6,7 +8,7 @@ fn run_commands(
 ) -> u32 {
     let mut grid = vec![0; 1000000];
     for line in input.lines() {
-        let (cmdstr, x0, y0, x1, y1) = scan_fmt!(
+        let (cmdstr, x0, y0, x1, y1) = scanf!(
             line,
             "{[^0-9]}{},{} through {},{}",
             String,

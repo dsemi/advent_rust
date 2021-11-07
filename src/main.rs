@@ -7,13 +7,6 @@ use std::env;
 use std::time::Instant;
 
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate num_derive;
-#[macro_use]
-extern crate scan_fmt;
-
-#[macro_use]
 mod utils;
 // mod md5;
 mod year2015;

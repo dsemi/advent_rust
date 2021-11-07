@@ -1,3 +1,4 @@
+use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 use crate::utils::Coord3;
@@ -25,7 +26,7 @@ fn parse_nanobots(input: &str) -> Vec<Nanobot> {
     input
         .lines()
         .map(|line| {
-            let (x, y, z, r) = scan_fmt!(line, "pos=<{},{},{}>, r={}", i64, i64, i64, i64).unwrap();
+            let (x, y, z, r) = scanf!(line, "pos=<{},{},{}>, r={}", i64, i64, i64, i64).unwrap();
             Nanobot {
                 pos: Coord3::new(x, y, z),
                 radius: r,
