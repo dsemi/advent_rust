@@ -1,3 +1,5 @@
+use scan_fmt::scan_fmt as scanf;
+
 fn rot_chr_idx(i: usize) -> usize {
     if i >= 4 {
         i + 2
@@ -11,78 +13,50 @@ fn move_p<T>(s: &mut Vec<T>, i: usize, j: usize) {
     s.insert(j, c);
 }
 
-fn run_program(input: String, instrs: Vec<&str>, invert: bool) -> String {
+fn run_program<'a, I: Iterator<Item = &'a str>>(input: String, instrs: I, invert: bool) -> String {
     let mut mem: Vec<char> = input.chars().collect();
     for line in instrs {
-        match line.split_whitespace().collect::<Vec<_>>()[..] {
-            ["swap", "position", x, "with", "position", y] => {
-                mem.swap(x.parse().unwrap(), y.parse().unwrap());
+        if let Ok((x, y)) = scanf!(line, "swap position {} with position {}", usize, usize) {
+            mem.swap(x, y);
+        } else if let Ok((a, b)) = scanf!(line, "swap letter {} with letter {}", char, char) {
+            let x = mem.iter().position(|x| *x == a).unwrap();
+            let y = mem.iter().position(|x| *x == b).unwrap();
+            mem.swap(x, y);
+        } else if let Ok((d, x)) = scanf!(line, "rotate {} {}", String, usize) {
+            if invert && d == "right" || !invert && d == "left" {
+                mem.rotate_left(x);
+            } else {
+                mem.rotate_right(x);
             }
-            ["swap", "letter", a, "with", "letter", b] => {
-                let x = mem
-                    .iter()
-                    .position(|x| *x == a.chars().next().unwrap())
-                    .unwrap();
-                let y = mem
-                    .iter()
-                    .position(|x| *x == b.chars().next().unwrap())
-                    .unwrap();
-                mem.swap(x, y);
-            }
-            ["rotate", "right", x, _] => {
-                if invert {
-                    mem.rotate_left(x.parse().unwrap());
-                } else {
-                    mem.rotate_right(x.parse().unwrap());
-                }
-            }
-            ["rotate", "left", x, _] => {
-                if invert {
-                    mem.rotate_right(x.parse().unwrap());
-                } else {
-                    mem.rotate_left(x.parse().unwrap());
-                }
-            }
-            ["rotate", "based", "on", "position", "of", "letter", c] => {
-                let ch = c.chars().next().unwrap();
-                if invert {
-                    for i in 0.. {
-                        if rot_chr_idx(mem.iter().position(|x| *x == ch).unwrap()) == i {
-                            break;
-                        }
-                        mem.rotate_left(1);
+        } else if let Ok(c) = scanf!(line, "rotate based on position of letter {}", char) {
+            if invert {
+                for i in 0.. {
+                    if rot_chr_idx(mem.iter().position(|x| *x == c).unwrap()) == i {
+                        break;
                     }
-                } else {
-                    let i = (mem.len()
-                        - rot_chr_idx(
-                            mem.iter()
-                                .position(|x| *x == ch)
-                                .unwrap(),
-                        ))
+                    mem.rotate_left(1);
+                }
+            } else {
+                let i = (mem.len() - rot_chr_idx(mem.iter().position(|x| *x == c).unwrap()))
                     .rem_euclid(mem.len());
-                    mem.rotate_left(i);
-                }
+                mem.rotate_left(i);
             }
-            ["reverse", "positions", x, "through", y] => {
-                mem[x.parse().unwrap()..y.parse::<usize>().unwrap()+1].reverse();
-            },
-            ["move", "position", x, "to", "position", y] => {
-                if invert {
-                    move_p(&mut mem, y.parse().unwrap(), x.parse().unwrap());
-                } else {
-                    move_p(&mut mem, x.parse().unwrap(), y.parse().unwrap());
-                }
-            }
-            _ => panic!("Parse error: {}", line),
+        } else if let Ok((x, y)) = scanf!(line, "reverse positions {} through {}", usize, usize) {
+            mem[x..=y].reverse();
+        } else if let Ok((x, y)) = scanf!(line, "move position {} to position {}", usize, usize) {
+            let (i, j) = if invert { (y, x) } else { (x, y) };
+            move_p(&mut mem, i, j);
+        } else {
+            panic!("Parse error: {}", line);
         }
     }
     mem.into_iter().collect()
 }
 
 pub fn part1(input: &str) -> String {
-    run_program("abcdefgh".to_owned(), input.lines().collect(), false)
+    run_program("abcdefgh".to_owned(), input.lines(), false)
 }
 
 pub fn part2(input: &str) -> String {
-    run_program("fbgdceah".to_owned(), input.lines().rev().collect(), true)
+    run_program("fbgdceah".to_owned(), input.lines().rev(), true)
 }
