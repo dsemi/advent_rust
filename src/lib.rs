@@ -1,7 +1,6 @@
 #![allow(clippy::many_single_char_names)]
 #![deny(clippy::disallowed_type)]
 
-extern crate proc_macro;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;

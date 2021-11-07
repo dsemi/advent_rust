@@ -8,10 +8,6 @@ use nom::IResult;
 
 use crate::utils::int;
 
-fn int32(x: &str) -> IResult<&str, i32> {
-    int(x)
-}
-
 fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
     let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
         .into_iter()
@@ -20,9 +16,9 @@ fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
         let (i, field) = terminated(take_while(|c: char| c.is_ascii_alphabetic()), tag(":"))(inp)?;
         let i = if validate {
             match field {
-                "byr" => verify(int32, |n| 1920 <= *n && *n <= 2002)(i)?.0,
-                "iyr" => verify(int32, |n| 2010 <= *n && *n <= 2020)(i)?.0,
-                "eyr" => verify(int32, |n| 2020 <= *n && *n <= 2030)(i)?.0,
+                "byr" => verify(|x| int::<i32>(x), |n| 1920 <= *n && *n <= 2002)(i)?.0,
+                "iyr" => verify(|x| int::<i32>(x), |n| 2010 <= *n && *n <= 2020)(i)?.0,
+                "eyr" => verify(|x| int::<i32>(x), |n| 2020 <= *n && *n <= 2030)(i)?.0,
                 "hgt" => {
                     verify(pair(int, alt((tag("cm"), tag("in")))), |(h, u)| match *u {
                         "cm" => 150 <= *h && *h <= 193,

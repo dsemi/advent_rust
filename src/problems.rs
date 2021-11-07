@@ -95,8 +95,10 @@ make_problems!();
 
 #[cfg(test)]
 mod tests {
-    use crate::problems::{get_file_input, get_prob};
     use advent::make_tests;
+    use lazy_static::lazy_static;
+
+    use crate::problems::{get_file_input, get_prob};
 
     const EXP: &'static str = include_str!("../test/expectedAnswers.json");
 
