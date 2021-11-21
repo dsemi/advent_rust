@@ -1,15 +1,14 @@
-use ahash::AHashMap;
-use ahash::AHashSet;
+use ahash::{AHashMap, AHashSet};
 
 fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
     s.lines()
         .map(|line| {
-            let (outer_bag, inner_bags) = line[..line.len() - 1].split_once(" contain ").unwrap();
+            let (outer_bag, inner_bags) = line.split_once(" bags contain ").unwrap();
             (
-                outer_bag.rsplit_once(' ').unwrap().0,
+                outer_bag,
                 inner_bags
                     .split(", ")
-                    .filter(|&bag| bag != "no other bags")
+                    .filter(|&bag| bag != "no other bags.")
                     .map(|bag| {
                         let (n, name) = bag.rsplit_once(' ').unwrap().0.split_once(' ').unwrap();
                         (n.parse().unwrap(), name)
