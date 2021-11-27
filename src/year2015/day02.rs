@@ -1,21 +1,20 @@
-fn process(input: &str, f: fn(i64, i64, i64) -> i64) -> i64 {
+use scan_fmt::scan_fmt as scanf;
+
+fn process(input: &str, f: fn((i32, i32, i32)) -> i32) -> i32 {
     input
         .lines()
-        .map(|line| {
-            let v: Vec<i64> = line.split('x').map(|x| x.parse().unwrap()).collect();
-            f(v[0], v[1], v[2])
-        })
+        .map(|line| f(scanf!(line, "{}x{}x{}", i32, i32, i32).unwrap()))
         .sum()
 }
 
-pub fn part1(input: &str) -> i64 {
-    process(input, |l, w, h| {
-        2 * l * w + 2 * w * h + 2 * h * l + [l * w, l * h, w * h].iter().min().unwrap()
+pub fn part1(input: &str) -> i32 {
+    process(input, |(l, w, h)| {
+        2 * (l * w + l * h + w * h) + [l * w, l * h, w * h].iter().min().unwrap()
     })
 }
 
-pub fn part2(input: &str) -> i64 {
-    process(input, |l, w, h| {
+pub fn part2(input: &str) -> i32 {
+    process(input, |(l, w, h)| {
         l * w * h + 2 * [l + w, l + h, w + h].iter().min().unwrap()
     })
 }
