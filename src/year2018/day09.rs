@@ -1,4 +1,3 @@
-use ahash::AHashMap;
 use scan_fmt::scan_fmt as scanf;
 use std::collections::VecDeque;
 
@@ -13,7 +12,7 @@ fn parse(input: &str) -> (usize, usize) {
 }
 
 fn play(n: usize, s: usize) -> Option<usize> {
-    let mut m = AHashMap::new();
+    let mut m = vec![0; n];
     let mut arr = vec![0].into_iter().collect::<VecDeque<_>>();
     for p in 1..=s {
         if p % 23 != 0 {
@@ -24,10 +23,9 @@ fn play(n: usize, s: usize) -> Option<usize> {
         arr.rotate_right(7);
         let v = arr.pop_back().unwrap();
         arr.rotate_left(1);
-        let e = m.entry(p % n).or_insert(0);
-        *e += p + v;
+        m[p % n] += p + v;
     }
-    m.into_iter().map(|x| x.1).max()
+    m.into_iter().max()
 }
 
 pub fn part1(input: &str) -> Option<usize> {
