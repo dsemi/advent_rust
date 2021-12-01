@@ -2,8 +2,7 @@ use streaming_iterator::StreamingIterator;
 
 use crate::utils::Combinations;
 
-fn all_combos(input: &str) -> impl Iterator<Item = usize> {
-    let xs: Vec<i32> = input.lines().map(|x| x.parse().unwrap()).collect();
+fn all_combos(xs: Vec<i32>) -> impl Iterator<Item = usize> {
     (1..=xs.len()).map(move |n| {
         Combinations::new(&xs, n)
             .filter(|combo| combo.iter().copied().sum::<i32>() == 150)
@@ -11,10 +10,10 @@ fn all_combos(input: &str) -> impl Iterator<Item = usize> {
     })
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: Vec<i32>) -> usize {
     all_combos(input).sum()
 }
 
-pub fn part2(input: &str) -> Option<usize> {
+pub fn part2(input: Vec<i32>) -> Option<usize> {
     all_combos(input).find(|v| v > &0)
 }

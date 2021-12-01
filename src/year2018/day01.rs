@@ -2,15 +2,13 @@ use ahash::AHashSet;
 
 use crate::utils::*;
 
-pub fn part1(input: &str) -> i64 {
-    input.lines().map(|x| x.parse::<i64>().unwrap()).sum()
+pub fn part1(ns: Vec<i64>) -> i64 {
+    ns.into_iter().sum()
 }
 
-pub fn part2(input: &str) -> Option<i64> {
+pub fn part2(ns: Vec<i64>) -> Option<i64> {
     let mut s = AHashSet::new();
-    input
-        .lines()
-        .map(|x| x.parse::<i64>().unwrap())
+    ns.into_iter()
         .cycle()
         .good_scan(0, |st, x| *st + x)
         .find(|&x| !s.insert(x))

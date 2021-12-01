@@ -21,13 +21,11 @@ fn solve(goal: u64, prime_index: i32) -> u64 {
     best
 }
 
-pub fn part1(input: &str) -> u64 {
-    let n: u64 = input.parse().unwrap();
+pub fn part1(n: u64) -> u64 {
     solve(n / 10, PRIMES.len() as i32 - 1)
 }
 
-pub fn part2(input: &str) -> Option<usize> {
-    let n: u32 = input.parse().unwrap();
+pub fn part2(n: u32) -> Option<usize> {
     let mut vec = vec![0; 1000000];
     for i in 1..vec.len() {
         for j in (i..vec.len()).step_by(i).take(50) {

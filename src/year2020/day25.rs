@@ -1,8 +1,7 @@
 use ahash::AHashMap;
 use mod_exp::mod_exp;
 
-pub fn part1(input: &str) -> Option<i64> {
-    let parts: Vec<i64> = input.lines().map(|x| x.parse().unwrap()).collect();
+pub fn part1(parts: Vec<i64>) -> Option<i64> {
     let (card, door) = (parts[0], parts[1]);
     let md = 20201227;
     let m = (md as f64).sqrt().ceil() as i64;

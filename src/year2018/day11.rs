@@ -1,5 +1,4 @@
-fn make_sat(input: &str) -> Vec<Vec<i64>> {
-    let serial_num: i64 = input.parse().unwrap();
+fn make_sat(serial_num: i64) -> Vec<Vec<i64>> {
     let mut grid: Vec<Vec<i64>> = vec![vec![0; 301]; 301];
     for (y, row) in grid.iter_mut().enumerate().skip(1) {
         for (x, e) in row.iter_mut().enumerate().skip(1) {
@@ -43,13 +42,13 @@ fn max_cell(size: usize, sat: &[Vec<i64>]) -> (usize, usize, i64) {
         .unwrap()
 }
 
-pub fn part1(input: &str) -> (usize, usize) {
+pub fn part1(input: i64) -> (usize, usize) {
     let sat = make_sat(input);
     let (x, y, _) = max_cell(3, &sat);
     (x, y)
 }
 
-pub fn part2(input: &str) -> (usize, usize, usize) {
+pub fn part2(input: i64) -> (usize, usize, usize) {
     let sat = make_sat(input);
     (1..300)
         .map(|i| {

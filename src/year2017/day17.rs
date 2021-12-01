@@ -1,5 +1,4 @@
-pub fn part1(input: &str) -> usize {
-    let step: usize = input.parse().unwrap();
+pub fn part1(step: usize) -> usize {
     let mut list = vec![0];
     let mut idx = 0;
     for v in 1..=2017 {
@@ -9,8 +8,7 @@ pub fn part1(input: &str) -> usize {
     list[idx + 1]
 }
 
-pub fn part2(input: &str) -> usize {
-    let step: usize = input.parse().unwrap();
+pub fn part2(step: usize) -> usize {
     let (mut pos, mut n, mut val_aft0) = (0, 0, 0);
     while n < 50_000_000 {
         if pos == 1 {

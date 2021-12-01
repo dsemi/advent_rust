@@ -16,17 +16,15 @@ fn neighbors(n: i32, pos: Coord<i32>) -> Vec<Coord<i32>> {
     .collect()
 }
 
-pub fn part1(input: &str) -> Option<usize> {
+pub fn part1(n: i32) -> Option<usize> {
     let target = Coord::new(31, 39);
-    let n = input.parse().unwrap();
     bfs(Coord::new(1, 1), move |p| neighbors(n, *p))
         .filter(|x| x.1 == target)
         .map(|x| x.0)
         .next()
 }
 
-pub fn part2(input: &str) -> usize {
-    let n = input.parse().unwrap();
+pub fn part2(n: i32) -> usize {
     bfs(Coord::new(1, 1), |p| neighbors(n, *p))
         .take_while(|x| x.0 <= 50)
         .count()

@@ -11,8 +11,7 @@ fn corners() -> impl Iterator<Item = i64> {
     (1..).flat_map(|i| vec![i; 2]).good_scan(1, |a, b| *a + b)
 }
 
-pub fn part1(input: &str) -> i64 {
-    let n = input.parse().unwrap();
+pub fn part1(n: i64) -> i64 {
     let ns: Vec<i64> = corners().take_until(|&c| c >= n).collect();
     let a = ns[ns.len() - 1];
     let b = ns[ns.len() - 2];
@@ -44,7 +43,6 @@ fn spiral_path() -> impl Iterator<Item = i64> {
         })
 }
 
-pub fn part2(input: &str) -> Option<i64> {
-    let n = input.parse().unwrap();
+pub fn part2(n: i64) -> Option<i64> {
     spiral_path().find(|&x| x > n)
 }

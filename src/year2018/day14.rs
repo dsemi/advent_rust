@@ -39,8 +39,7 @@ impl Iterator for Step {
     }
 }
 
-pub fn part1(input: &str) -> String {
-    let n = input.parse().unwrap();
+pub fn part1(n: usize) -> String {
     Step::new().skip(n).take(10).collect()
 }
 

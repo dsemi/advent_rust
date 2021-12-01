@@ -1,6 +1,7 @@
 use advent::make_problems;
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
+use std::collections::BTreeSet;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -103,9 +104,13 @@ make_pinputs!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize);
 
 impl<'a, T: PInput<'a>> PInput<'a> for Vec<T> {
     fn un<'b: 'a>(s: &'b str) -> Self {
-        s.split(&['\n', ',', ' '][..])
-            .map(|x| PInput::un(x))
-            .collect()
+        s.split_whitespace().map(|x| PInput::un(x)).collect()
+    }
+}
+
+impl<'a, T: PInput<'a> + std::cmp::Ord> PInput<'a> for BTreeSet<T> {
+    fn un<'b: 'a>(s: &'b str) -> Self {
+        s.split_whitespace().map(|x| PInput::un(x)).collect()
     }
 }
 

@@ -1,11 +1,7 @@
 use ahash::AHashMap;
 use std::cmp::Reverse;
 
-fn redistribute_until_cycle(input: &str) -> (usize, usize) {
-    let mut ns: Vec<usize> = input
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
+fn redistribute_until_cycle(mut ns: Vec<usize>) -> (usize, usize) {
     let len = ns.len();
     let mut m: AHashMap<Vec<usize>, usize> = AHashMap::new();
     for c in 0.. {
@@ -26,10 +22,10 @@ fn redistribute_until_cycle(input: &str) -> (usize, usize) {
     (0, 0)
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: Vec<usize>) -> usize {
     redistribute_until_cycle(input).0
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: Vec<usize>) -> usize {
     redistribute_until_cycle(input).1
 }
