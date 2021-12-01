@@ -6,11 +6,11 @@ fn count_increasing<I: Iterator<Item = i32>>(ns: I) -> usize {
 }
 
 pub fn part1(input: &str) -> usize {
-    count_decreasing(input.lines().map(|x| x.parse().unwrap()))
+    count_increasing(input.lines().map(|x| x.parse().unwrap()))
 }
 
 pub fn part2(input: &str) -> usize {
-    count_decreasing(
+    count_increasing(
         input
             .lines()
             .map(|x| x.parse().unwrap())
