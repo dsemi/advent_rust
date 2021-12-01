@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use std::collections::BTreeSet;
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
@@ -13,7 +14,7 @@ use std::time::{Duration, Instant};
 
 const RATE_LIMIT: Duration = Duration::from_secs(5);
 
-pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
+pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, impl Error> {
     let path = format!("inputs/{}/input{}.txt", year, day);
     let input_file = Path::new(&path);
     if !input_file.exists() && download {
@@ -37,13 +38,12 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
             .expect("Bad HTTP response")
             .bytes()
             .unwrap();
+        let parent = input_file.parent().unwrap();
+        fs::create_dir_all(parent).expect("Parent folder failed to create");
         let mut f = File::create(input_file).unwrap();
         f.write_all(&content).expect("File failed to write");
     }
-    fs::read_to_string(input_file)
-        .expect("Error reading the file")
-        .trim_end()
-        .to_string()
+    fs::read_to_string(input_file).map(|f| f.trim_end().to_string())
 }
 
 trait POutput {
@@ -137,21 +137,22 @@ make_problems!();
 mod tests {
     use advent::make_tests;
     use lazy_static::lazy_static;
+    use std::error::Error;
 
     use crate::problems::{get_file_input, get_prob};
 
     const EXP: &'static str = include_str!("../test/expectedAnswers.json");
 
-    fn get_expected_solutions(year: i64, day: i64) -> Option<(String, String)> {
+    fn get_expected_solutions(year: i64, day: i64) -> Result<(String, String), String> {
         lazy_static! {
             static ref DICT: json::JsonValue = json::parse(EXP).unwrap();
         }
         match &DICT[year.to_string()][day.to_string()] {
             json::JsonValue::Array(v) => {
                 let solns = v.iter().map(|x| x.as_str().unwrap()).collect::<Vec<_>>();
-                Some((solns[0].to_string(), solns[1].to_string()))
+                Ok((solns[0].to_string(), solns[1].to_string()))
             }
-            _ => None,
+            _ => Err(String::from("Expected solution not found")),
         }
     }
 

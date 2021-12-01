@@ -1,5 +1,5 @@
-fn solve(ns: Vec<i32>, off: usize) -> usize {
-    ns.iter().zip(&ns[off..]).filter(|(a, b)| a < b).count()
+fn solve(ns: Vec<i32>, offset: usize) -> usize {
+    ns.iter().zip(&ns[offset..]).filter(|(a, b)| a < b).count()
 }
 
 pub fn part1(input: Vec<i32>) -> usize {

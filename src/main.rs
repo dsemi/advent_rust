@@ -40,7 +40,7 @@ fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64,
 
 fn run_problem(year: i64, day: i64) -> f64 {
     if let Some(f) = problems::get_prob(year, day) {
-        let contents = problems::get_file_input(year, day, true);
+        let contents = problems::get_file_input(year, day, true).unwrap();
 
         let (part1, part2) = f();
         println!("Day {}", day);

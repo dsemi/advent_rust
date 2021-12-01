@@ -81,13 +81,13 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
                 format!("test_{0}_{1:02}", year, day).parse().unwrap();
             result.extend(quote! {
                 #[test]
-                fn #fn_name() {
-                    let input = get_file_input(#year, #day, false);
+                fn #fn_name() -> Result<(), Box<dyn Error>> {
+                    let input = get_file_input(#year, #day, false)?;
                     let (part1, part2) = get_prob(#year, #day).unwrap()();
-                    if let Some((ex1, ex2)) = get_expected_solutions(#year, #day) {
-                        assert_eq!(ex1, part1(&input));
-                        assert_eq!(ex2, part2(&input));
-                    }
+                    let (ex1, ex2) = get_expected_solutions(#year, #day)?;
+                    assert_eq!(ex1, part1(&input));
+                    assert_eq!(ex2, part2(&input));
+                    Ok(())
                 }
             });
         }
