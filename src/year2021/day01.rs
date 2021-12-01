@@ -1,4 +1,4 @@
-fn count_decreasing<I: Iterator<Item = i32>>(ns: I) -> usize {
+fn count_increasing<I: Iterator<Item = i32>>(ns: I) -> usize {
     ns.collect::<Vec<i32>>()
         .windows(2)
         .filter(|w| w[0] < w[1])
