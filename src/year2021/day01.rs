@@ -1,21 +1,21 @@
-fn count_increasing<I: Iterator<Item = i32>>(ns: I) -> usize {
-    ns.collect::<Vec<i32>>()
-        .windows(2)
-        .filter(|w| w[0] < w[1])
+use itertools::Itertools;
+
+pub fn part1(input: &str) -> usize {
+    input
+        .lines()
+        .map(|x| x.parse::<i32>().unwrap())
+        .tuple_windows()
+        .filter(|(a, b)| a < b)
         .count()
 }
 
-pub fn part1(input: &str) -> usize {
-    count_increasing(input.lines().map(|x| x.parse().unwrap()))
-}
-
 pub fn part2(input: &str) -> usize {
-    count_increasing(
-        input
-            .lines()
-            .map(|x| x.parse().unwrap())
-            .collect::<Vec<i32>>()
-            .windows(3)
-            .map(|w| w.iter().sum()),
-    )
+    input
+        .lines()
+        .map(|x| x.parse::<i32>().unwrap())
+        .tuple_windows::<(_, _, _)>()
+        .map(|(a, b, c)| a + b + c)
+        .tuple_windows()
+        .filter(|(a, b)| a < b)
+        .count()
 }
