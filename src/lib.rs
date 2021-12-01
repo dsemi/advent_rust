@@ -40,7 +40,7 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
         });
     }
     let result = quote! {
-        pub fn get_prob(year: i64, day: i64) -> Option<(Output, Output)> {
+        pub fn get_prob<'a>(year: i64, day: i64) -> Option<fn() -> (Part<'a>, Part<'a>)> {
             match year {
                 #year_matches
                 _ => None,
@@ -83,7 +83,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
                 #[test]
                 fn #fn_name() {
                     let input = get_file_input(#year, #day, false);
-                    let (part1, part2) = get_prob(#year, #day).unwrap();
+                    let (part1, part2) = get_prob(#year, #day).unwrap()();
                     if let Some((ex1, ex2)) = get_expected_solutions(#year, #day) {
                         assert_eq!(ex1, part1(&input));
                         assert_eq!(ex2, part2(&input));

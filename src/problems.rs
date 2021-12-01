@@ -45,13 +45,13 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> String {
         .to_string()
 }
 
-trait PType {
+trait POutput {
     fn to(&self) -> String;
 }
 
-macro_rules! make_ptypes {
+macro_rules! make_poutputs {
     ($($typ:ty),*) => ($(
-        impl PType for $typ {
+        impl POutput for $typ {
             fn to(&self) -> String {
                 self.to_string()
             }
@@ -59,35 +59,70 @@ macro_rules! make_ptypes {
     )*)
 }
 
-make_ptypes!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, String);
+make_poutputs!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, String);
 
-impl<T: PType> PType for Option<T> {
+impl<T: POutput> POutput for Option<T> {
     fn to(&self) -> String {
         self.as_ref().unwrap().to()
     }
 }
 
-impl<T: PType, S: PType> PType for (T, S) {
+impl<T: POutput, S: POutput> POutput for (T, S) {
     fn to(&self) -> String {
         format!("{},{}", self.0.to(), self.1.to())
     }
 }
 
-impl<T: PType, S: PType, U: PType> PType for (T, S, U) {
+impl<T: POutput, S: POutput, U: POutput> POutput for (T, S, U) {
     fn to(&self) -> String {
         format!("{},{},{}", self.0.to(), self.1.to(), self.2.to())
     }
 }
 
-type Output = Box<dyn Fn(&str) -> String>;
+trait PInput<'a> {
+    fn un<'b: 'a>(s: &'b str) -> Self;
+}
 
-fn wrap<T: PType>(f: &'static dyn Fn(&str) -> T) -> Output {
-    Box::new(move |x| f(x).to())
+impl<'a> PInput<'a> for &'a str {
+    fn un<'b: 'a>(s: &'b str) -> Self {
+        s
+    }
+}
+
+macro_rules! make_pinputs {
+    ($($typ:ty),*) => ($(
+        impl<'a> PInput<'a> for $typ {
+            fn un<'b: 'a>(s: &'b str) -> Self {
+                s.parse().unwrap()
+            }
+        }
+    )*)
+}
+
+make_pinputs!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize);
+
+impl<'a, T: PInput<'a>> PInput<'a> for Vec<T> {
+    fn un<'b: 'a>(s: &'b str) -> Self {
+        s.split(&['\n', ',', ' '][..])
+            .map(|x| PInput::un(x))
+            .collect()
+    }
+}
+
+type Part<'a> = Box<dyn Fn(&'a str) -> String>;
+
+fn wrap<'a, S, T, F>(f: F) -> Part<'a>
+where
+    S: PInput<'a>,
+    T: POutput,
+    F: 'static + Fn(S) -> T,
+{
+    Box::new(move |x: &'a str| f(PInput::un(x)).to())
 }
 
 macro_rules! make_prob {
     ($y:ident, $d:ident) => {
-        (wrap(&crate::$y::$d::part1), wrap(&crate::$y::$d::part2))
+        || (wrap(crate::$y::$d::part1), wrap(crate::$y::$d::part2))
     };
 }
 

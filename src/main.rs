@@ -30,7 +30,7 @@ fn colorize_time(n: f64) -> String {
     format!("{}{:.3}{}", color, n, "\x1b[0m")
 }
 
-fn run_part(f: Box<dyn Fn(&str) -> String>, input: &str) -> (f64, String) {
+fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64, String) {
     let start = Instant::now();
     let ans = f(input);
     let elapsed = start.elapsed();
@@ -39,9 +39,10 @@ fn run_part(f: Box<dyn Fn(&str) -> String>, input: &str) -> (f64, String) {
 }
 
 fn run_problem(year: i64, day: i64) -> f64 {
-    if let Some((part1, part2)) = problems::get_prob(year, day) {
+    if let Some(f) = problems::get_prob(year, day) {
         let contents = problems::get_file_input(year, day, true);
 
+        let (part1, part2) = f();
         println!("Day {}", day);
         let (t1, ans) = run_part(part1, &contents);
         println!(
