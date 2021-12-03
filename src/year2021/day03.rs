@@ -1,38 +1,25 @@
-use counter::Counter;
-
-fn count_bits(ns: &[&str], pos: usize, least: bool) -> u8 {
-    ns.iter()
-        .map(|n| n.as_bytes()[pos])
-        .collect::<Counter<_>>()
-        .most_common_tiebreaker(|&a, &b| b.cmp(&a))[least as usize]
-        .0
+fn most_freq_bit(ns: &[&[u8]], i: usize) -> u8 {
+    (ns.iter().filter(|n| n[i] == b'1').count() >= (ns.len() + 1) / 2) as u8
 }
 
-fn bit_freqs(ns: &[&str], least: bool) -> i32 {
-    i32::from_str_radix(
-        &(0..ns[0].len())
-            .map(|i| count_bits(&ns, i, least) as char)
-            .collect::<String>(),
-        2,
-    )
-    .unwrap()
+pub fn part1(ns: Vec<&[u8]>) -> u32 {
+    let gamma = (0..ns[0].len())
+        .map(|i| most_freq_bit(&ns, i) as u32)
+        .fold(0, |a, b| a << 1 | b);
+    gamma * ((1 << ns[0].len()) - 1 ^ gamma)
 }
 
-pub fn part1(ns: Vec<&str>) -> i32 {
-    bit_freqs(&ns, false) * bit_freqs(&ns, true)
+fn most_matched(ns: &[&[u8]], pred: fn(u8, u8) -> bool) -> u32 {
+    let mut ns = ns.to_owned();
+    for i in 0..ns[0].len() {
+        let c = most_freq_bit(&ns, i) + b'0';
+        if ns.len() > 1 {
+            ns.retain(|n| pred(n[i], c));
+        }
+    }
+    ns[0].iter().fold(0, |a, &b| a << 1 | (b - b'0') as u32)
 }
 
-fn most_matched(ns: &Vec<&str>, least: bool) -> Option<i32> {
-    let mut ns = ns.clone();
-    (0..ns[0].len())
-        .filter_map(|i| {
-            let c = count_bits(&ns, i, least);
-            ns.retain(|n| n.as_bytes()[i] == c);
-            (ns.len() == 1).then(|| i32::from_str_radix(&ns[0], 2).unwrap())
-        })
-        .next()
-}
-
-pub fn part2(ns: Vec<&str>) -> Option<i32> {
-    Some(most_matched(&ns, false)? * most_matched(&ns, true)?)
+pub fn part2(ns: Vec<&[u8]>) -> u32 {
+    most_matched(&ns, |a, b| a == b) * most_matched(&ns, |a, b| a != b)
 }

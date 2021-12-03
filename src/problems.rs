@@ -90,6 +90,12 @@ impl<'a> PInput<'a> for &'a str {
     }
 }
 
+impl<'a> PInput<'a> for &'a [u8] {
+    fn un<'b: 'a>(s: &'b str) -> Self {
+        s.as_bytes()
+    }
+}
+
 macro_rules! make_pinputs {
     ($($typ:ty),*) => ($(
         impl<'a> PInput<'a> for $typ {
