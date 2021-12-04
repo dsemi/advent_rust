@@ -22,7 +22,7 @@ fn winner_scores(input: &str) -> impl Iterator<Item = u32> + '_ {
     nums.split(',').flat_map(move |n| {
         let n = n.parse().unwrap();
         called.insert(n);
-        // drain_filter
+        // drain_filter (can also mutate w/ drain_filter, removes need for HashSet)
         let mut winners = vec![];
         boards.retain(|b| {
             if is_winner(b, &called) {
