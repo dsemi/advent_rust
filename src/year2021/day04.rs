@@ -1,5 +1,4 @@
 use ahash::AHashSet;
-use genawaiter::stack::{let_gen_using, Co};
 
 fn is_winner(brd: &[Vec<u32>], ns: &AHashSet<u32>) -> bool {
     (0..brd.len()).any(|i| {
@@ -8,9 +7,9 @@ fn is_winner(brd: &[Vec<u32>], ns: &AHashSet<u32>) -> bool {
     })
 }
 
-async fn winner_scores(input: &str, co: Co<'_, u32>) {
+fn winner_scores(input: &str) -> impl Iterator<Item = u32> + '_ {
     let (nums, board_str) = input.split_once("\n\n").unwrap();
-    let boards: Vec<Vec<Vec<u32>>> = board_str
+    let mut boards: Vec<Vec<Vec<u32>>> = board_str
         .split("\n\n")
         .map(|board| {
             board
@@ -19,36 +18,33 @@ async fn winner_scores(input: &str, co: Co<'_, u32>) {
                 .collect()
         })
         .collect();
-    let mut won = vec![false; boards.len()];
     let mut called = AHashSet::new();
-    for n in nums.split(',').map(|n| n.parse().unwrap()) {
+    nums.split(',').flat_map(move |n| {
+        let n = n.parse().unwrap();
         called.insert(n);
-        for (i, board) in boards.iter().enumerate() {
-            if !won[i] && is_winner(board, &called) {
-                won[i] = true;
-                co.yield_(
-                    board
-                        .iter()
+        // drain_filter
+        let mut winners = vec![];
+        boards.retain(|b| {
+            if is_winner(b, &called) {
+                winners.push(
+                    b.iter()
                         .flatten()
                         .filter(|n| !called.contains(n))
                         .sum::<u32>()
                         * n,
-                )
-                .await;
-                if won.iter().all(|&v| v) {
-                    return;
-                }
+                );
+                return false;
             }
-        }
-    }
+            true
+        });
+        winners
+    })
 }
 
 pub fn part1(input: &str) -> Option<u32> {
-    let_gen_using!(gen, |co| winner_scores(input, co));
-    gen.into_iter().next()
+    winner_scores(input).next()
 }
 
 pub fn part2(input: &str) -> Option<u32> {
-    let_gen_using!(gen, |co| winner_scores(input, co));
-    gen.into_iter().last()
+    winner_scores(input).last()
 }

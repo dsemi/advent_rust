@@ -26,12 +26,12 @@ fn constellations(mut pts: Vec<Coord4>) -> Vec<Vec<Coord4>> {
         let mut changed = true;
         while std::mem::replace(&mut changed, false) {
             pts.retain(|p| {
-                let b = neighbs.iter().any(|x| dist(*x, *p) <= 3);
-                if b {
+                if neighbs.iter().any(|x| dist(*x, *p) <= 3) {
                     changed = true;
                     neighbs.push(*p);
+                    return false;
                 }
-                !b
+                true
             });
         }
         result.push(neighbs);
