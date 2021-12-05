@@ -6,7 +6,7 @@ fn main() {
         let path = ent.path();
         if let Some(name) = path.file_name() {
             if let Some(s) = name.to_str() {
-                if !s.starts_with("#") && !s.starts_with(".#") && s.ends_with(".rs") {
+                if !s.starts_with('#') && !s.starts_with(".#") && s.ends_with(".rs") {
                     println!("cargo:rerun-if-changed={}", path.display());
                 }
             }
