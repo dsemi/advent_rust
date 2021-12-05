@@ -8,6 +8,7 @@ use crate::year2018::day19::Prog;
 impl Iterator for Prog {
     type Item = i64;
 
+    #[rustfmt::skip]
     fn next(&mut self) -> Option<i64> {
         while self.reg[self.ip] >= 0 && self.reg[self.ip] < self.instrs.len() as i64 {
             if self.reg[self.ip] + 9 <= self.instrs.len() as i64 {
