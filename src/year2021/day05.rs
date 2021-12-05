@@ -1,16 +1,13 @@
-use scan_fmt::scan_fmt as scanf;
-use std::cmp::{max, min};
-
 use crate::utils::Coord;
+use scan_fmt::scan_fmt as scanf;
+use std::cmp::max;
 
 fn parse(input: &str) -> (i32, i32, Vec<(Coord<i32>, Coord<i32>)>) {
     let lines = input
         .lines()
         .map(|line| {
             let (x0, y0, x1, y1) = scanf!(line, "{},{} -> {},{}", i32, i32, i32, i32).unwrap();
-            let c0 = Coord::new(x0, y0);
-            let c1 = Coord::new(x1, y1);
-            (min(c0, c1), max(c0, c1))
+            (Coord::new(x0, y0), Coord::new(x1, y1))
         })
         .collect::<Vec<_>>();
     (
@@ -28,10 +25,9 @@ fn solve(input: &str, p2: bool) -> usize {
             continue;
         }
         let d = (c1 - c0).signum();
-        grid[c0.x as usize][c0.y as usize] += 1;
-        while c0 != c1 {
-            c0 += d;
+        while c0 != c1 + d {
             grid[c0.x as usize][c0.y as usize] += 1;
+            c0 += d;
         }
     }
     grid.into_iter().flatten().filter(|&v| v > 1).count()
