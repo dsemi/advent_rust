@@ -267,6 +267,19 @@ where
     }
 }
 
+impl<T> Coord<T>
+where
+    T: Copy,
+    T: Signed,
+{
+    pub fn signum(&self) -> Self {
+        Self {
+            x: num::signum(self.x),
+            y: num::signum(self.y),
+        }
+    }
+}
+
 impl<T: Add<Output = T>> Add for Coord<T> {
     type Output = Self;
 
