@@ -1,7 +1,6 @@
+use crate::utils::*;
 use ahash::{AHashMap, AHashSet};
 use counter::Counter;
-
-use crate::utils::*;
 
 pub fn part1(input: &str) -> String {
     let inp: Vec<Vec<&str>> = transpose(

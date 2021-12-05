@@ -1,7 +1,6 @@
+use crate::year2019::intcode;
 use itertools::Itertools;
 use std::collections::VecDeque;
-
-use crate::year2019::intcode;
 
 fn chain(p: &intcode::Program, phases: Vec<i64>, cycle: bool) -> Vec<i64> {
     let mut progs = Vec::new();

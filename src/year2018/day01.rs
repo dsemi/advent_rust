@@ -1,6 +1,5 @@
-use ahash::AHashSet;
-
 use crate::utils::*;
+use ahash::AHashSet;
 
 pub fn part1(ns: Vec<i64>) -> i64 {
     ns.into_iter().sum()

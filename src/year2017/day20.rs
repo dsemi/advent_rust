@@ -1,8 +1,7 @@
+use crate::utils::Coord3;
 use counter::Counter;
 use itertools::Itertools;
 use regex::Regex;
-
-use crate::utils::Coord3;
 
 struct Particle {
     pos: Coord3<i64>,

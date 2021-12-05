@@ -1,6 +1,5 @@
-use std::cmp::max;
-
 use crate::year2019::intcode;
+use std::cmp::max;
 
 fn is_pulled(prog: &intcode::Program, x: i64, y: i64) -> bool {
     let mut prog = prog.clone();

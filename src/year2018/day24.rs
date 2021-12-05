@@ -1,3 +1,4 @@
+use crate::utils::int;
 use lazy_static::lazy_static;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while};
@@ -7,8 +8,6 @@ use nom::sequence::{delimited, preceded, separated_pair, terminated};
 use nom::IResult;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::Relaxed;
-
-use crate::utils::int;
 
 #[derive(Clone)]
 struct Group<'a> {

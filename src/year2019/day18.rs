@@ -1,6 +1,5 @@
-use ahash::AHashMap;
-
 use crate::utils::*;
+use ahash::AHashMap;
 
 fn conv(c: char) -> u32 {
     1 << (c as u32 - 'a' as u32)

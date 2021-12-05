@@ -1,6 +1,5 @@
-use scan_fmt::scan_fmt as scanf;
-
 use crate::utils::*;
+use scan_fmt::scan_fmt as scanf;
 
 fn parse_discs(input: &str) -> Vec<(i64, i64)> {
     input

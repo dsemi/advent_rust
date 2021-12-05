@@ -1,6 +1,5 @@
-use ahash::AHashSet;
-
 use crate::utils::*;
+use ahash::AHashSet;
 
 fn locations(inp: impl Iterator<Item = char>) -> AHashSet<Coord<i64>> {
     inp.good_scan(Coord::new(0, 0), |loc, c| *loc + unit_dir(c))

@@ -1,8 +1,7 @@
-use std::cell::Cell;
-use std::collections::VecDeque;
-
 use crate::year2017::day18::Instr::*;
 use crate::year2017::day18::Val::*;
+use std::cell::Cell;
+use std::collections::VecDeque;
 
 #[derive(Clone)]
 enum Val {

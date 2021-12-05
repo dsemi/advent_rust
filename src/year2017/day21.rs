@@ -1,6 +1,5 @@
-use ahash::AHashMap;
-
 use crate::utils::*;
+use ahash::AHashMap;
 
 type Grid = Vec<Vec<bool>>;
 

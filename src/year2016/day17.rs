@@ -1,7 +1,6 @@
+use crate::utils::*;
 use crypto::digest::Digest;
 use crypto::md5::Md5;
-
-use crate::utils::*;
 
 #[derive(Clone, Eq, Hash, PartialEq)]
 struct Path {

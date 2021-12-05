@@ -1,9 +1,8 @@
+use crate::utils::*;
 use num::integer::gcd;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use std::collections::BTreeMap;
-
-use crate::utils::*;
 
 fn parse_coords(input: &str) -> Vec<Coord<i32>> {
     input

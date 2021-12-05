@@ -1,9 +1,8 @@
+use crate::utils::Coord;
+use crate::year2018::day13::Turn::*;
 use ahash::AHashMap;
 use genawaiter::stack::{let_gen_using, Co};
 use std::collections::hash_map::Entry::Occupied;
-
-use crate::utils::Coord;
-use crate::year2018::day13::Turn::*;
 
 #[derive(Clone, Copy)]
 enum Turn {

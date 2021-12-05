@@ -1,7 +1,6 @@
+use crate::year2018::day04::Record::*;
 use ahash::AHashMap;
 use itertools::Itertools;
-
-use crate::year2018::day04::Record::*;
 
 enum Record {
     GuardChange(usize),
@@ -74,13 +73,7 @@ pub fn part2(input: &str) -> usize {
     let sleep_freqs = guard_sleep_freqs(parse_records(input));
     let m = sleep_freqs
         .iter()
-        .map(|(k, v)| {
-            v.iter()
-                .enumerate()
-                .map(|x| (x.1, x.0, k))
-                .max()
-                .unwrap()
-        })
+        .map(|(k, v)| v.iter().enumerate().map(|x| (x.1, x.0, k)).max().unwrap())
         .max()
         .unwrap();
     m.1 * m.2

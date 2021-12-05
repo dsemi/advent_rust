@@ -1,6 +1,5 @@
-use genawaiter::stack::{let_gen_using, Co};
-
 use crate::year2019::intcode;
+use genawaiter::stack::{let_gen_using, Co};
 
 struct Packet {
     address: i64,

@@ -1,7 +1,6 @@
-use ahash::AHashMap;
-
 use crate::utils::*;
 use crate::year2019::day20::Portal::*;
+use ahash::AHashMap;
 
 type Pos = (usize, usize);
 

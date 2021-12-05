@@ -1,8 +1,7 @@
+use crate::utils::int;
 use nom::bytes::complete::tag;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
-
-use crate::utils::int;
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {
     delimited(tag("("), separated_pair(int, tag("x"), int), tag(")"))(i)

@@ -1,3 +1,4 @@
+use crate::utils::int;
 use ahash::AHashSet;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while, take_while_m_n};
@@ -5,8 +6,6 @@ use nom::character::complete::multispace0;
 use nom::combinator::verify;
 use nom::sequence::{pair, terminated};
 use nom::IResult;
-
-use crate::utils::int;
 
 fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
     let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]

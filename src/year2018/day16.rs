@@ -1,7 +1,6 @@
+use crate::year2018::day16::Op::*;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-
-use crate::year2018::day16::Op::*;
 
 #[derive(Clone, Copy, Eq, FromPrimitive, Hash, PartialEq)]
 enum Op {

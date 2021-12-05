@@ -1,9 +1,8 @@
+use crate::utils::*;
 use ahash::AHashMap;
 use ahash::AHashSet;
 use itertools::Itertools;
 use regex::Regex;
-
-use crate::utils::*;
 
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pair {

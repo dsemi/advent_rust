@@ -1,8 +1,7 @@
+use crate::utils::Coord;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
-
-use crate::utils::Coord;
 
 struct Obj {
     pos: Coord<i32>,

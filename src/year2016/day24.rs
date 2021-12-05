@@ -1,7 +1,6 @@
+use crate::utils::*;
 use ahash::AHashMap;
 use itertools::Itertools;
-
-use crate::utils::*;
 
 type Adj = AHashMap<(char, char), usize>;
 

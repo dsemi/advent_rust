@@ -1,6 +1,5 @@
-use streaming_iterator::StreamingIterator;
-
 use crate::utils::Combinations;
+use streaming_iterator::StreamingIterator;
 
 fn quantum_entanglement(n: i64, wts: Vec<i64>) -> i64 {
     let group_size: i64 = wts.iter().copied().sum::<i64>() / n;

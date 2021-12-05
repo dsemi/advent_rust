@@ -1,8 +1,7 @@
+use crate::utils::*;
 use ahash::AHashMap;
 use regex::Regex;
 use std::cmp::max;
-
-use crate::utils::*;
 
 #[derive(Clone)]
 struct Node {

@@ -1,6 +1,5 @@
-use ahash::AHashMap;
-
 use crate::utils::Coord;
+use ahash::AHashMap;
 
 fn run(input: &str, pad: &str) -> String {
     let d: AHashMap<Coord<i32>, &str> = pad

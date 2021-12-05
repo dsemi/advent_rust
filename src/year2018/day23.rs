@@ -1,7 +1,6 @@
+use crate::utils::Coord3;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
-
-use crate::utils::Coord3;
 
 struct Nanobot {
     pos: Coord3<i64>,

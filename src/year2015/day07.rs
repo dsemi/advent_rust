@@ -1,6 +1,5 @@
-use ahash::AHashMap;
-
 use crate::utils::Cache;
+use ahash::AHashMap;
 
 struct Node<'a>(&'a dyn Fn(u16, u16) -> u16, &'a str, &'a str);
 

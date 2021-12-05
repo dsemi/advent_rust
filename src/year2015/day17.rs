@@ -1,6 +1,5 @@
-use streaming_iterator::StreamingIterator;
-
 use crate::utils::Combinations;
+use streaming_iterator::StreamingIterator;
 
 fn all_combos(xs: Vec<i32>) -> impl Iterator<Item = usize> {
     (1..=xs.len()).map(move |n| {

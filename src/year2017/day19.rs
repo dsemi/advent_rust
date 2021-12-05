@@ -1,7 +1,6 @@
+use crate::utils::*;
 use ahash::AHashMap;
 use lazy_static::lazy_static;
-
-use crate::utils::*;
 
 fn parse_grid(input: &str) -> AHashMap<Coord<i32>, char> {
     input

@@ -1,9 +1,8 @@
+use crate::year2019::intcode;
 use genawaiter::stack::{let_gen_using, Co};
 use genawaiter::GeneratorState;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-
-use crate::year2019::intcode;
 
 #[derive(FromPrimitive)]
 enum Tile {

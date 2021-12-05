@@ -1,7 +1,6 @@
+use crate::year2016::assembunny;
 use std::fs;
 use std::path::Path;
-
-use crate::year2016::assembunny;
 
 pub fn part1(input: &str) -> Option<i64> {
     let ssim = assembunny::parse_instrs(input);

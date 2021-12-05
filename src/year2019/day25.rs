@@ -1,6 +1,5 @@
-use regex::Regex;
-
 use crate::year2019::intcode;
+use regex::Regex;
 
 const INSTRS: &str = "north\n\
                       east\n\
@@ -29,7 +28,13 @@ pub fn part1(input: &str) -> String {
     for v in prog.output.drain(..) {
         s.push(v as u8 as char);
     }
-    Regex::new(r"\d+").unwrap().find_iter(&s).last().unwrap().as_str().to_string()
+    Regex::new(r"\d+")
+        .unwrap()
+        .find_iter(&s)
+        .last()
+        .unwrap()
+        .as_str()
+        .to_string()
 }
 
 pub fn part2(_input: &str) -> String {

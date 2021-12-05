@@ -1,7 +1,6 @@
+use crate::utils::*;
 use ahash::AHashMap;
 use take_until::TakeUntilExt;
-
-use crate::utils::*;
 
 fn mid_pt(x: i64, y: i64) -> i64 {
     (x + y) / 2

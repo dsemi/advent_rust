@@ -1,6 +1,5 @@
-use scan_fmt::scan_fmt as scanf;
-
 use crate::utils::*;
+use scan_fmt::scan_fmt as scanf;
 
 fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
     input

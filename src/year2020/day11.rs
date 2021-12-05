@@ -1,6 +1,5 @@
-use itertools::iterate;
-
 use crate::utils::Coord;
+use itertools::iterate;
 
 fn stabilize(s: &str, p2: bool) -> usize {
     let mut grid: Vec<Vec<char>> = s.lines().map(|row| row.chars().collect()).collect();

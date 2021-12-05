@@ -1,6 +1,5 @@
-use counter::Counter;
-
 use crate::utils::*;
+use counter::Counter;
 
 pub fn part1(input: &str) -> String {
     transpose(

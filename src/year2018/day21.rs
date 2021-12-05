@@ -1,9 +1,8 @@
-use ahash::AHashSet;
-use std::cmp::max;
-
 use crate::year2018::day19::Instr;
 use crate::year2018::day19::Op::*;
 use crate::year2018::day19::Prog;
+use ahash::AHashSet;
+use std::cmp::max;
 
 impl Iterator for Prog {
     type Item = i64;

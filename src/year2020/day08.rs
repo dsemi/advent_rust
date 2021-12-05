@@ -1,8 +1,7 @@
-use ahash::AHashSet;
-
 use crate::year2020::day08::Instr::Acc;
 use crate::year2020::day08::Instr::Jmp;
 use crate::year2020::day08::Instr::Nop;
+use ahash::AHashSet;
 
 #[derive(Clone, Copy)]
 enum Instr {
@@ -31,7 +30,7 @@ fn run_prog(prog: &[Instr]) -> (i64, bool) {
     let mut i = 0;
     while 0 <= i && i < prog.len() as i64 {
         if !visited.insert(i) {
-            return (acc, false)
+            return (acc, false);
         }
         match prog[i as usize] {
             Acc(n) => acc += n,

@@ -1,6 +1,5 @@
-use ahash::{AHashMap, AHashSet};
-
 use crate::utils::*;
+use ahash::{AHashMap, AHashSet};
 
 fn parse_pipes(input: &str) -> AHashMap<i64, Vec<i64>> {
     input

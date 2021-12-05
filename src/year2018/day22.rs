@@ -1,9 +1,8 @@
+use crate::utils::*;
+use crate::year2018::day22::Tool::*;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use std::cmp::max;
-
-use crate::utils::*;
-use crate::year2018::day22::Tool::*;
 
 #[derive(Clone, Copy, Eq, FromPrimitive, Hash, Ord, PartialEq, PartialOrd, ToPrimitive)]
 enum Tool {

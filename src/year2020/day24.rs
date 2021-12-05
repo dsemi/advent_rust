@@ -1,9 +1,8 @@
+use crate::utils::Coord;
 use ahash::{AHashMap, AHashSet};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{max, min};
-
-use crate::utils::Coord;
 
 lazy_static! {
     static ref DIRS: AHashMap<&'static str, Coord<i32>> = {

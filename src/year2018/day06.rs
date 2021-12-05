@@ -1,9 +1,8 @@
+use crate::utils::*;
+use crate::year2018::day06::Tile::*;
 use ahash::AHashSet;
 use std::cmp::{max, min};
 use std::collections::VecDeque;
-
-use crate::utils::*;
-use crate::year2018::day06::Tile::*;
 
 fn parse_coords(input: &str) -> Vec<Coord<i32>> {
     input

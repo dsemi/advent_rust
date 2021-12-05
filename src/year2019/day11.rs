@@ -1,8 +1,7 @@
-use ahash::AHashMap;
-use std::cmp::{max, min};
-
 use crate::utils::Coord;
 use crate::year2019::intcode;
+use ahash::AHashMap;
+use std::cmp::{max, min};
 
 fn run_robot(mut prog: intcode::Program, t: &mut AHashMap<Coord<i64>, i64>) {
     let mut pos = Coord::new(0, 0);

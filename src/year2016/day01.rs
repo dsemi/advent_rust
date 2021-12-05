@@ -1,7 +1,6 @@
+use crate::utils::Coord;
 use ahash::AHashSet;
 use std::iter;
-
-use crate::utils::Coord;
 
 fn path(input: &str) -> impl Iterator<Item = Coord<i32>> + '_ {
     input
