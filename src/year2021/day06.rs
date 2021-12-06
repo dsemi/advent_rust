@@ -1,8 +1,5 @@
-fn solve(input: &str, n: usize) -> u64 {
-    let mut fish = [0; 9];
-    input
-        .split(',')
-        .for_each(|n| fish[n.parse::<usize>().unwrap()] += 1);
+fn solve(s: &str, n: usize) -> u64 {
+    let mut fish: Vec<u64> = ('0'..'9').map(|i| s.matches(i).count() as u64).collect();
     (0..n).for_each(|i| fish[(i + 7) % 9] += fish[i % 9]);
     fish.into_iter().sum()
 }
