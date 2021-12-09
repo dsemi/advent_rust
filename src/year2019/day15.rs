@@ -1,11 +1,9 @@
+use super::intcode;
 use crate::utils::*;
-use crate::year2019::intcode;
 
 fn search(prog: intcode::Program) -> impl Iterator<Item = (usize, bool, intcode::Program)> {
     let start = (0, 0);
-    let frontier = vec![(0, (false, start, prog))]
-        .into_iter()
-        .collect();
+    let frontier = vec![(0, (false, start, prog))].into_iter().collect();
     let visited = vec![start].into_iter().collect();
     Bfs {
         frontier,

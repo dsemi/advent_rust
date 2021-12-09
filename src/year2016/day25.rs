@@ -1,4 +1,4 @@
-use crate::year2016::assembunny;
+use super::assembunny;
 use std::fs;
 use std::path::Path;
 
@@ -20,5 +20,5 @@ pub fn part2(_: &str) -> String {
             .trim(),
     );
     let output: String = sim.into_iter().map(|x| x as u8 as char).collect();
-    crate::year2016::day08::part2(&output)
+    super::day08::part2(&output)
 }

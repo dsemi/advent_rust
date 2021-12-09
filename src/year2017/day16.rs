@@ -1,5 +1,5 @@
-use crate::year2017::day16::Action::*;
 use ahash::AHashMap;
+use Action::*;
 
 enum Action {
     Spin(usize),

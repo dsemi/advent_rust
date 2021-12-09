@@ -11,7 +11,7 @@ pub fn part1(input: &str) -> i32 {
     ns.into_iter().map(|n| (n - med).abs()).sum()
 }
 
-fn tri(n: i32) -> i32 {
+fn g(n: i32) -> i32 {
     n * (n + 1) / 2
 }
 
@@ -19,9 +19,7 @@ pub fn part2(input: &str) -> i32 {
     let ns: Vec<i32> = input.split(',').map(|n| n.parse().unwrap()).collect();
     let mean = (ns.iter().sum::<i32>() as f32) / ns.len() as f32;
     min(
-        ns.iter()
-            .map(|n| tri((n - mean.floor() as i32).abs()))
-            .sum(),
-        ns.iter().map(|n| tri((n - mean.ceil() as i32).abs())).sum(),
+        ns.iter().map(|n| g((n - mean.floor() as i32).abs())).sum(),
+        ns.iter().map(|n| g((n - mean.ceil() as i32).abs())).sum(),
     )
 }

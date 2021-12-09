@@ -1,5 +1,5 @@
+use super::intcode;
 use crate::utils::Coord;
-use crate::year2019::intcode;
 use ahash::AHashMap;
 use std::cmp::{max, min};
 

@@ -1,6 +1,6 @@
-use crate::year2016::day10::Src::*;
 use ahash::AHashMap;
 use std::cmp::{max, min};
+use Src::*;
 
 enum Src {
     Value(i64),

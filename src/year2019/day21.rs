@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 
 const INSTRS: &str = "OR A T\n\
                       AND B T\n\

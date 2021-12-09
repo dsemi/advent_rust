@@ -1,7 +1,5 @@
-use crate::year2020::day08::Instr::Acc;
-use crate::year2020::day08::Instr::Jmp;
-use crate::year2020::day08::Instr::Nop;
 use ahash::AHashSet;
+use Instr::*;
 
 #[derive(Clone, Copy)]
 enum Instr {

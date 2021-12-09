@@ -1,5 +1,5 @@
-use crate::year2020::day19::Rule::*;
 use itertools::Itertools;
+use Rule::*;
 
 enum Rule {
     Single(u8),

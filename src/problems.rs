@@ -145,7 +145,7 @@ mod tests {
     use lazy_static::lazy_static;
     use std::error::Error;
 
-    use crate::problems::{get_file_input, get_prob};
+    use super::{get_file_input, get_prob};
 
     const EXP: &'static str = include_str!("../test/expectedAnswers.json");
 

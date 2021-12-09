@@ -1,8 +1,8 @@
 use crate::utils::*;
-use crate::year2018::day15::Outcome::*;
 use ahash::{AHashMap, AHashSet};
 use itertools::iterate;
 use std::collections::VecDeque;
+use Outcome::*;
 
 #[derive(Eq, PartialEq)]
 enum Outcome {

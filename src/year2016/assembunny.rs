@@ -1,5 +1,5 @@
-use crate::year2016::assembunny::Instr::*;
-use crate::year2016::assembunny::Value::*;
+use Instr::*;
+use Value::*;
 
 #[derive(Clone, Copy)]
 enum Value {

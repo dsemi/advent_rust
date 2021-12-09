@@ -1,5 +1,5 @@
-use crate::year2018::day19::Op::*;
 use crate::utils::*;
+use Op::*;
 
 #[derive(Clone, Copy)]
 pub enum Op {

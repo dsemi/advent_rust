@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 use genawaiter::stack::{let_gen_using, Co};
 use genawaiter::GeneratorState;
 use num_derive::FromPrimitive;

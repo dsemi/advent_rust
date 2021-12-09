@@ -1,4 +1,4 @@
-use crate::year2016::assembunny;
+use super::assembunny;
 
 pub fn part1(input: &str) -> i64 {
     let mut sim = assembunny::parse_instrs(input);

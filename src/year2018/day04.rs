@@ -1,6 +1,6 @@
-use crate::year2018::day04::Record::*;
 use ahash::AHashMap;
 use itertools::Itertools;
+use Record::*;
 
 enum Record {
     GuardChange(usize),

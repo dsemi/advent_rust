@@ -1,4 +1,4 @@
-use crate::year2017::day22::NodeState::*;
+use NodeState::*;
 
 #[derive(Clone, Eq, PartialEq)]
 enum NodeState {

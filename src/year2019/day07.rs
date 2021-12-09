@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 use itertools::Itertools;
 use std::collections::VecDeque;
 

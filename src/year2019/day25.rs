@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 use regex::Regex;
 
 const INSTRS: &str = "north\n\

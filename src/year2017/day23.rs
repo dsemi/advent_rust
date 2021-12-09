@@ -1,5 +1,5 @@
-use crate::year2017::day23::Instr::*;
-use crate::year2017::day23::Val::*;
+use Instr::*;
+use Val::*;
 
 enum Val {
     Lit(i64),

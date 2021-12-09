@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 
 pub fn part1(input: &str) -> Option<i64> {
     intcode::new(input).run_with_input(&[1]).next()

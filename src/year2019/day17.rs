@@ -1,4 +1,4 @@
-use crate::year2019::intcode;
+use super::intcode;
 
 fn parse_grid(input: Vec<i64>) -> Vec<Vec<char>> {
     let inp: String = input.into_iter().map(|x| x as u8 as char).collect();
