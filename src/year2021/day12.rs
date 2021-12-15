@@ -1,48 +1,53 @@
-use ahash::{AHashMap, AHashSet};
+use ahash::AHashMap;
 
-fn parse(input: &str) -> AHashMap<&str, Vec<&str>> {
+fn parse(input: &str) -> (Vec<Vec<usize>>, Vec<bool>) {
     let mut m = AHashMap::new();
+    m.insert("start", 0);
+    m.insert("end", 1);
+    let mut v = vec![vec![], vec![]];
+    let mut l = vec![true, true];
     for line in input.lines() {
         let (a, b) = line.split_once('-').unwrap();
-        m.entry(a).or_insert_with(Vec::new).push(b);
-        m.entry(b).or_insert_with(Vec::new).push(a);
+        let ai = *m.entry(a).or_insert_with(|| {
+            v.push(vec![]);
+            l.push(a.chars().all(|c| c.is_lowercase()));
+            v.len() - 1
+        });
+        let bi = *m.entry(b).or_insert_with(|| {
+            v.push(vec![]);
+            l.push(b.chars().all(|c| c.is_lowercase()));
+            v.len() - 1
+        });
+        v[ai].push(bi);
+        v[bi].push(ai);
     }
-    m
+    (v, l)
 }
 
-fn dfs<'a>(
-    visited: &mut AHashSet<&'a str>,
-    m: &AHashMap<&'a str, Vec<&'a str>>,
-    k: &'a str,
-    mut double: bool,
-) -> usize {
-    if k == "end" {
+fn dfs<'a>(vis: &mut [u8], l: &[bool], m: &[Vec<usize>], k: usize, mut double: bool) -> usize {
+    if k == 1 {
         return 1;
-    }
-    let mut ins = false;
-    if k.chars().next().unwrap().is_lowercase() {
-        ins = visited.insert(k);
-        if !ins {
-            if double || k == "start" {
-                return 0;
-            }
-            double = true;
+    } else if l[k] && vis[k] > 0 {
+        if double || k == 0 {
+            return 0;
         }
+        double = true;
     }
+    vis[k] += 1;
     let sum = m[k]
         .iter()
-        .map(|child| dfs(visited, m, child, double))
+        .map(|&child| dfs(vis, l, m, child, double))
         .sum();
-    if ins {
-        visited.remove(k);
-    }
+    vis[k] -= 1;
     sum
 }
 
 pub fn part1(input: &str) -> usize {
-    dfs(&mut AHashSet::new(), &parse(input), "start", true)
+    let (v, l) = parse(input);
+    dfs(&mut vec![0; v.len()], &l, &v, 0, true)
 }
 
 pub fn part2(input: &str) -> usize {
-    dfs(&mut AHashSet::new(), &parse(input), "start", false)
+    let (v, l) = parse(input);
+    dfs(&mut vec![0; v.len()], &l, &v, 0, false)
 }
