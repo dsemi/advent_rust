@@ -24,7 +24,7 @@ fn parse(input: &str) -> (Vec<Vec<usize>>, Vec<bool>) {
     (v, l)
 }
 
-fn dfs<'a>(vis: &mut [u8], l: &[bool], m: &[Vec<usize>], k: usize, mut double: bool) -> usize {
+fn dfs(vis: &mut [u8], l: &[bool], m: &[Vec<usize>], k: usize, mut double: bool) -> usize {
     if k == 1 {
         return 1;
     } else if l[k] && vis[k] > 0 {
