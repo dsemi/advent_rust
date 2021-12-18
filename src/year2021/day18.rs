@@ -45,12 +45,14 @@ impl Snailfish {
             }
             Pair(a, b) if next.is_none() && depth == 4 => {
                 if let Some(p) = prev.take() {
-                    if let Reg(v) = **a {
-                        *p += v;
+                    match **a {
+                        Reg(v) => *p += v,
+                        _ => panic!("Invalid structure"),
                     }
                 }
-                if let Reg(v) = **b {
-                    *next = Some(v);
+                match **b {
+                    Reg(v) => *next = Some(v),
+                    _ => panic!("Invalid structure"),
                 }
                 *self = Reg(0);
             }
