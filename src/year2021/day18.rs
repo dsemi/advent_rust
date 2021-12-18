@@ -3,7 +3,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
-use std::cmp::max;
+use rayon::prelude::*;
 use Snailfish::*;
 
 #[derive(Clone)]
@@ -96,17 +96,12 @@ pub fn part1(input: &str) -> u64 {
         .magnitude()
 }
 
-pub fn part2(input: &str) -> u64 {
+pub fn part2(input: &str) -> Option<u64> {
     let ns = input
         .lines()
         .map(|line| Snailfish::parse(line).unwrap().1)
         .collect::<Vec<_>>();
-    let mut m = 0;
-    for i in 0..ns.len() {
-        for j in i + 1..ns.len() {
-            m = max(m, add(ns[i].clone(), ns[j].clone()).magnitude());
-            m = max(m, add(ns[j].clone(), ns[i].clone()).magnitude());
-        }
-    }
-    m
+    ns.par_iter()
+        .flat_map(|a| ns.par_iter().map(|b| add(a.clone(), b.clone()).magnitude()))
+        .max()
 }
