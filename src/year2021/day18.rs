@@ -12,24 +12,27 @@ enum Snailfish {
     Pair(Box<Snailfish>, Box<Snailfish>),
 }
 
-impl Snailfish {
-    fn parse(i: &str) -> IResult<&str, Self> {
-        alt((
-            |i| int(i).map(|(i, n)| (i, Reg(n))),
-            |i| {
-                delimited(
-                    tag("["),
-                    separated_pair(Self::parse, tag(","), Self::parse),
-                    tag("]"),
-                )(i)
+fn parse(i: &str) -> IResult<&str, Snailfish> {
+    alt((
+        |i| int(i).map(|(i, n)| (i, Reg(n))),
+        |i| {
+            delimited(tag("["), separated_pair(parse, tag(","), parse), tag("]"))(i)
                 .map(|(i, (a, b))| (i, Pair(Box::new(a), Box::new(b))))
-            },
-        ))(i)
-    }
+        },
+    ))(i)
+}
 
+impl Snailfish {
     fn explode(&mut self) -> bool {
         let mut next = None;
         self.exp(&mut None, &mut next, 0) || next.is_some()
+    }
+
+    fn reg(&self) -> u64 {
+        match self {
+            Reg(v) => *v,
+            _ => panic!("Not a regular number"),
+        }
     }
 
     fn exp<'a>(
@@ -45,15 +48,9 @@ impl Snailfish {
             }
             Pair(a, b) if next.is_none() && depth == 4 => {
                 if let Some(p) = prev.take() {
-                    match **a {
-                        Reg(v) => *p += v,
-                        _ => panic!("Invalid structure"),
-                    }
+                    *p += a.reg();
                 }
-                match **b {
-                    Reg(v) => *next = Some(v),
-                    _ => panic!("Invalid structure"),
-                }
+                *next = Some(b.reg());
                 *self = Reg(0);
             }
             Reg(n) => *prev = Some(n),
@@ -92,7 +89,7 @@ fn add(a: Snailfish, b: Snailfish) -> Snailfish {
 pub fn part1(input: &str) -> u64 {
     input
         .lines()
-        .map(|line| Snailfish::parse(line).unwrap().1)
+        .map(|line| parse(line).unwrap().1)
         .reduce(add)
         .unwrap()
         .magnitude()
@@ -101,7 +98,7 @@ pub fn part1(input: &str) -> u64 {
 pub fn part2(input: &str) -> Option<u64> {
     let ns = input
         .lines()
-        .map(|line| Snailfish::parse(line).unwrap().1)
+        .map(|line| parse(line).unwrap().1)
         .collect::<Vec<_>>();
     ns.par_iter()
         .flat_map(|a| ns.par_iter().map(|b| add(a.clone(), b.clone()).magnitude()))
