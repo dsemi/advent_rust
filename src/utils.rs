@@ -83,7 +83,7 @@ pub fn a_star<T, F, I, I2, F2, F3, F4>(
     start: T,
 ) -> Option<Vec<T>>
 where
-    T: Copy,
+    T: Clone,
     T: Eq,
     T: Hash,
     T: Ord,
@@ -94,19 +94,19 @@ where
     F3: Fn(&T) -> usize,
     F4: Fn(&T) -> bool,
 {
-    let mut visited: AHashSet<T> = vec![start].into_iter().collect();
+    let mut visited: AHashSet<T> = vec![start.clone()].into_iter().collect();
     let mut queue: BinaryHeap<(Reverse<usize>, T)> = BinaryHeap::new();
-    queue.push((Reverse(0), start));
+    queue.push((Reverse(0), start.clone()));
     let mut came_from: AHashMap<T, T> = AHashMap::new();
-    let mut g_score: AHashMap<T, usize> = vec![(start, 0)].into_iter().collect();
-    let mut f_score: AHashMap<T, usize> = vec![(start, heur(&start))].into_iter().collect();
+    let mut g_score: AHashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
+    let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
     while let Some((_, st)) = queue.pop() {
         if goal(&st) {
-            let mut result = vec![st];
-            let mut curr = st;
-            while let Some(v) = came_from.get(&curr) {
-                result.push(*v);
-                curr = *v;
+            let mut result = vec![st.clone()];
+            let mut curr = &st;
+            while let Some(v) = came_from.get(curr) {
+                result.push(v.clone());
+                curr = v;
             }
             result.reverse();
             return Some(result);
@@ -119,10 +119,10 @@ where
                 .checked_add(dist(&st, &st2))
                 .unwrap();
             if tent_g_score < *g_score.get(&st2).unwrap_or(&usize::MAX) {
-                came_from.insert(st2, st);
-                g_score.insert(st2, tent_g_score);
-                f_score.insert(st2, tent_g_score + heur(&st2));
-                if visited.insert(st2) {
+                came_from.insert(st2.clone(), st.clone());
+                g_score.insert(st2.clone(), tent_g_score);
+                f_score.insert(st2.clone(), tent_g_score + heur(&st2));
+                if visited.insert(st2.clone()) {
                     queue.push((Reverse(f_score[&st2]), st2));
                 }
             }
