@@ -79,8 +79,8 @@ fn find_valid_transformer(from: Coord, to: Coord) -> (usize, &'static dyn Fn(Coo
     unreachable!()
 }
 
-fn solve(input: &Vec<Vec<Coord>>) -> (Vec<(usize, Coord)>, Vec<Coord>) {
-    let mut norms: Vec<(usize, Vec<(Coord, Coord, Coord)>)> = input
+fn solve(input: &[Vec<Coord>]) -> (Vec<(usize, Coord)>, Vec<Coord>) {
+    let mut norms = input
         .iter()
         .enumerate()
         .map(|(i, s)| {
@@ -98,7 +98,7 @@ fn solve(input: &Vec<Vec<Coord>>) -> (Vec<(usize, Coord)>, Vec<Coord>) {
             norm.sort_unstable();
             (i, norm)
         })
-        .collect();
+        .collect::<Vec<_>>();
     let (psidx, mut active_norms) = norms.remove(0);
     let mut full_norms = active_norms.clone();
     let mut scanner_loc = vec![(0, (0, 0, 0))];
