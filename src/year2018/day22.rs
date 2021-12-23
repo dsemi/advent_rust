@@ -84,7 +84,7 @@ pub fn part2(input: &str) -> usize {
     let (depth, target) = parse(input);
     let els = erosion_levels(depth, target);
 
-    fn neighbors(els: &[Vec<Tool>], node: &Node) -> Vec<Node> {
+    fn neighbors(els: &[Vec<Tool>], node: &Node) -> Vec<(usize, Node)> {
         vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
             .into_iter()
             .filter_map(move |d| {
@@ -97,7 +97,7 @@ pub fn part2(input: &str) -> usize {
                     && n_node.pos.y >= 0
                     && n_node.pos.y < els.len() as i32
                     && n_node.tool != els[n_node.pos.x as usize][n_node.pos.y as usize])
-                    .then(|| n_node)
+                    .then(|| (1, n_node))
             })
             .chain(
                 vec![next(&node.tool), next(&next(&node.tool))]
@@ -108,7 +108,7 @@ pub fn part2(input: &str) -> usize {
                             tool: t,
                         };
                         (n_node.tool != els[n_node.pos.x as usize][n_node.pos.y as usize])
-                            .then(|| n_node)
+                            .then(|| (7, n_node))
                     }),
             )
             .collect()
@@ -129,7 +129,6 @@ pub fn part2(input: &str) -> usize {
 
     let path = a_star(
         |n| neighbors(&els, n),
-        time,
         |n| heur(&target, n),
         |n| {
             n == &Node {

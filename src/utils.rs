@@ -75,24 +75,17 @@ where
     }
 }
 
-pub fn a_star<T, F, I, I2, F2, F3, F4>(
-    neighbors: F,
-    dist: F2,
-    heur: F3,
-    goal: F4,
-    start: T,
-) -> Option<Vec<T>>
+pub fn a_star<T, F, I, I2, F2, F3>(neighbors: F, heur: F2, goal: F3, start: T) -> Option<Vec<T>>
 where
     T: Clone,
     T: Eq,
     T: Hash,
     T: Ord,
     F: Fn(&T) -> I,
-    I: IntoIterator<Item = T, IntoIter = I2>,
-    I2: Iterator<Item = T>,
-    F2: Fn(&T, &T) -> usize,
-    F3: Fn(&T) -> usize,
-    F4: Fn(&T) -> bool,
+    I: IntoIterator<Item = (usize, T), IntoIter = I2>,
+    I2: Iterator<Item = (usize, T)>,
+    F2: Fn(&T) -> usize,
+    F3: Fn(&T) -> bool,
 {
     let mut visited: AHashSet<T> = vec![start.clone()].into_iter().collect();
     let mut queue: BinaryHeap<(Reverse<usize>, T)> = BinaryHeap::new();
@@ -112,11 +105,11 @@ where
             return Some(result);
         }
         visited.remove(&st);
-        for st2 in neighbors(&st) {
+        for (dist, st2) in neighbors(&st) {
             let tent_g_score = g_score
                 .get(&st)
                 .unwrap_or(&usize::MAX)
-                .checked_add(dist(&st, &st2))
+                .checked_add(dist)
                 .unwrap();
             if tent_g_score < *g_score.get(&st2).unwrap_or(&usize::MAX) {
                 came_from.insert(st2.clone(), st.clone());
