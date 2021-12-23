@@ -75,7 +75,12 @@ where
     }
 }
 
-pub fn a_star<T, F, I, I2, F2, F3>(neighbors: F, heur: F2, goal: F3, start: T) -> Option<Vec<T>>
+pub fn a_star<T, F, I, I2, F2, F3>(
+    neighbors: F,
+    heur: F2,
+    goal: F3,
+    start: T,
+) -> Option<Vec<(usize, T)>>
 where
     T: Clone,
     T: Eq,
@@ -95,10 +100,10 @@ where
     let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
     while let Some((_, st)) = queue.pop() {
         if goal(&st) {
-            let mut result = vec![st.clone()];
+            let mut result = vec![(g_score[&st], st.clone())];
             let mut curr = &st;
             while let Some(v) = came_from.get(curr) {
-                result.push(v.clone());
+                result.push((g_score[v], v.clone()));
                 curr = v;
             }
             result.reverse();

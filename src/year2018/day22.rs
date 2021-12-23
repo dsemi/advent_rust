@@ -119,15 +119,7 @@ pub fn part2(input: &str) -> usize {
         dist.x.abs() as usize + dist.y.abs() as usize
     }
 
-    fn time(a: &Node, b: &Node) -> usize {
-        if a.tool == b.tool {
-            1
-        } else {
-            7
-        }
-    }
-
-    let path = a_star(
+    a_star(
         |n| neighbors(&els, n),
         |n| heur(&target, n),
         |n| {
@@ -141,6 +133,8 @@ pub fn part2(input: &str) -> usize {
             tool: Torch,
         },
     )
-    .unwrap();
-    path.windows(2).map(|w| time(&w[0], &w[1])).sum()
+    .unwrap()
+    .last()
+    .unwrap()
+    .0
 }
