@@ -2,13 +2,13 @@ use ahash::AHashSet;
 use Instr::*;
 use Value::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum Value {
     Reg(usize),
     Lit(i64),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Instr {
     Inp(usize),
     Add(usize, Value),
@@ -62,12 +62,17 @@ impl Prog {
         }
     }
 
-    fn run_next(&mut self, instrs: &[Instr], inp: i64) {
+    fn run_next(&mut self, instrs: &[Instr], inp: i64) -> bool {
+        let mut a = 0;
         while self.pc < instrs.len() {
             match instrs[self.pc] {
                 Inp(r) => self.regs[r] = inp,
                 Add(r, v) => self.regs[r] += self.val(&v),
                 Mul(r, v) => self.regs[r] *= self.val(&v),
+                Div(3, Lit(v)) => {
+                    a = v;
+                    self.regs[3] /= v;
+                }
                 Div(r, v) => self.regs[r] /= self.val(&v),
                 Mod(r, v) => self.regs[r] %= self.val(&v),
                 Eql(r, v) => self.regs[r] = (self.regs[r] == self.val(&v)) as i64,
@@ -77,6 +82,8 @@ impl Prog {
                 break;
             }
         }
+        assert!(a != 0);
+        a != 26 || self.regs[1] == 0
     }
 }
 
@@ -101,7 +108,9 @@ fn dfs(
     };
     for i in ds {
         let mut p = prog.clone();
-        p.run_next(instrs, i);
+        if !p.run_next(instrs, i) {
+            continue;
+        }
         if let Some(v) = dfs(vis, instrs, p, n * 10 + i, d - 1, p2) {
             return Some(v);
         }
