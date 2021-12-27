@@ -62,7 +62,7 @@ fn neighbors(diag: &Diagram) -> Vec<(usize, Diagram)> {
                 if next.stacks[t].len() == next.lens[t] {
                     next.done[t / 2] = true;
                 }
-                neighbs.push((cost, next));
+                return vec![(cost, next)];
             }
         } else if !diag.done[i / 2] {
             let c = diag.stacks[i].last().unwrap();
@@ -91,8 +91,11 @@ fn neighbors(diag: &Diagram) -> Vec<(usize, Diagram)> {
                     cost *= 10_usize.pow(*c as u32 - 1);
                     let v = next.stacks[i].pop().unwrap();
                     next.stacks[j].push(v);
-                    if j == t && next.stacks[j].len() == next.lens[j] {
-                        next.done[j / 2] = true;
+                    if j == t {
+                        if next.stacks[j].len() == next.lens[j] {
+                            next.done[j / 2] = true;
+                        }
+                        return vec![(cost, next)];
                     }
                     if j != t && diag.stacks[j].len() < diag.lens[j] - 1 {
                         let mut next2 = next.clone();
