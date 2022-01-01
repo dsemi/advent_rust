@@ -144,20 +144,22 @@ mod tests {
     use advent::make_tests;
     use lazy_static::lazy_static;
     use std::error::Error;
+    use toml::value::Table;
+    use toml::value::Value;
 
     use super::{get_file_input, get_prob};
 
-    const EXP: &'static str = include_str!("../test/expectedAnswers.json");
+    const EXP: &'static str = include_str!("../test/expectedAnswers.toml");
 
     fn get_expected_solutions(year: i64, day: i64) -> Result<(String, String), String> {
         lazy_static! {
-            static ref DICT: json::JsonValue = json::parse(EXP).unwrap();
+            static ref DICT: Table = toml::from_str(EXP).unwrap();
         }
-        match &DICT[year.to_string()][day.to_string()] {
-            json::JsonValue::Array(v) => {
-                let solns = v.iter().map(|x| x.as_str().unwrap()).collect::<Vec<_>>();
-                Ok((solns[0].to_string(), solns[1].to_string()))
-            }
+        match &DICT[&year.to_string()][day.to_string()] {
+            Value::Table(t) => match (&t["part1"], &t["part2"]) {
+                (Value::String(a), Value::String(b)) => Ok((a.to_string(), b.to_string())),
+                _ => Err(String::from("Invalid types")),
+            },
             _ => Err(String::from("Expected solution not found")),
         }
     }
