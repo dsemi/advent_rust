@@ -38,5 +38,5 @@ pub fn part1(input: &str) -> String {
 }
 
 pub fn part2(_input: &str) -> String {
-    "".to_string()
+    " ".to_string()
 }

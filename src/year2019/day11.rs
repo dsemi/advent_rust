@@ -38,8 +38,9 @@ fn draw(points: &AHashMap<Coord<i64>, i64>) -> String {
         max_x = max(max_x, pt.x);
         max_y = max(max_y, pt.y);
     }
-    let mut chrs = vec!['\n'];
+    let mut chrs = vec![];
     for y in min_y..=max_y {
+        chrs.push('\n');
         for x in min_x..=max_x {
             chrs.push(if points.get(&Coord::new(x, y)).unwrap_or(&0) == &0 {
                 ' '
@@ -47,7 +48,6 @@ fn draw(points: &AHashMap<Coord<i64>, i64>) -> String {
                 '#'
             });
         }
-        chrs.push('\n');
     }
     chrs.into_iter().collect()
 }

@@ -47,6 +47,5 @@ pub fn part2(input: &str) -> String {
                 .collect(),
         );
     }
-    display.push("".to_owned());
     display.join("\n")
 }

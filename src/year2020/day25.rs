@@ -23,5 +23,5 @@ pub fn part1(parts: Vec<i64>) -> Option<i64> {
 }
 
 pub fn part2(_input: &str) -> String {
-    "".to_string()
+    " ".to_string()
 }

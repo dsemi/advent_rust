@@ -49,6 +49,5 @@ pub fn part2(input: &str) -> String {
             .map(|x| if paper.contains(&(x, y)) { '#' } else { ' ' })
             .collect()
     }));
-    display.push("".to_owned());
     display.join("\n")
 }

@@ -44,5 +44,5 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(_input: &str) -> String {
-    "".to_string()
+    " ".to_string()
 }

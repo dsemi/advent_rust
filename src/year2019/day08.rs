@@ -36,6 +36,5 @@ pub fn part2(input: &str) -> String {
                 .map(|x| x.collect::<String>()),
             "\n".to_string(),
         ))
-        .chain(vec!["\n".to_owned()])
         .collect()
 }
