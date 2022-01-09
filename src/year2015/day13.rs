@@ -39,7 +39,7 @@ fn max_happiness(d: Vec<Vec<i32>>, p2: bool) -> Option<i32> {
         .permutations(d.len())
         .map(|perm| {
             let mut curr = if !p2 {
-                d[perm[0]][perm[d.len()-1]]
+                d[perm[0]][perm[d.len() - 1]]
             } else {
                 0
             };
