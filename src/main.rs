@@ -27,7 +27,7 @@ fn colorize_time(n: f64) -> String {
     } else {
         "\x1b[31m"
     };
-    format!("{}{:.3}{}", color, n, "\x1b[0m")
+    format!("{color}{n:.3}\x1b[0m")
 }
 
 fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64, String) {
@@ -43,7 +43,7 @@ fn run_problem(year: i64, day: i64) -> f64 {
         let contents = problems::get_file_input(year, day, true).unwrap();
 
         let (part1, part2) = f();
-        println!("Day {}", day);
+        println!("Day {day}");
         let (t1, ans) = run_part(part1, &contents);
         println!(
             "Part 1: {:>32}  Elapsed time {} seconds",
@@ -59,7 +59,7 @@ fn run_problem(year: i64, day: i64) -> f64 {
         println!();
         t1 + t2
     } else {
-        println!("{} Day {} not implemented", year, day);
+        println!("{year} Day {day} not implemented");
         0.0
     }
 }
@@ -91,5 +91,5 @@ fn main() {
         total += t;
     }
     println!("Max: Day {:2} {:48.3} seconds", max_day.1, max_day.0);
-    println!("Total: {:53.3} seconds", total);
+    println!("Total: {total:53.3} seconds");
 }

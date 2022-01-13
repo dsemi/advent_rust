@@ -22,10 +22,10 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
     for (year, days) in map.iter() {
         let mut day_matches = proc_macro2::TokenStream::new();
         for day in days {
-            let year_ident = format!("year{}", year)
+            let year_ident = format!("year{year}")
                 .parse::<proc_macro2::TokenStream>()
                 .unwrap();
-            let day_ident = format!("day{:02}", day)
+            let day_ident = format!("day{day:02}")
                 .parse::<proc_macro2::TokenStream>()
                 .unwrap();
             day_matches.extend(quote! {
@@ -59,7 +59,7 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
     for entry in fs::read_dir(d.value()).unwrap().map(|x| x.unwrap().path()) {
         let path = entry.to_str().unwrap();
         if let Ok((year, day)) = scanf!(path, "src/year{}/day{}.rs", i64, i64) {
-            let m: proc_macro2::TokenStream = format!("day{:02}", day).parse().unwrap();
+            let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
             let day = scanf!(&m.to_string(), "day{}", i64).unwrap();
             map.entry(year).or_insert_with(BTreeSet::new).insert(day);
             mods.extend(quote! {
@@ -78,7 +78,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
     for (year, days) in map.iter() {
         for day in days {
             let fn_name: proc_macro2::TokenStream =
-                format!("test_{0}_{1:02}", year, day).parse().unwrap();
+                format!("test_{year}_{day:02}").parse().unwrap();
             result.extend(quote! {
                 #[test]
                 fn #fn_name() -> Result<(), Box<dyn Error>> {

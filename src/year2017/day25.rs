@@ -13,7 +13,7 @@ struct Rule {
 }
 
 fn parse_branch<'a, I: Iterator<Item = &'a str>>(gen: &mut I, idx: usize) -> Option<Rule> {
-    assert!(gen.next()? == format!("  If the current value is {}:", idx));
+    assert!(gen.next()? == format!("  If the current value is {idx}:"));
     let write = scanf!(gen.next()?, "    - Write the value {}.", usize).unwrap();
     let dir = scanf!(gen.next()?, "    - Move one slot to the {}.", String).unwrap();
     let state = scanf!(gen.next()?, "    - Continue with state {}.", char).unwrap();

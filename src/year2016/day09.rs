@@ -23,5 +23,5 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    decompressed_len(|x| part2(x), input)
+    decompressed_len(part2, input)
 }

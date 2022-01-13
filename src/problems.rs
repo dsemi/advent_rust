@@ -15,10 +15,10 @@ use std::time::{Duration, Instant};
 const RATE_LIMIT: Duration = Duration::from_secs(5);
 
 pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, impl Error> {
-    let path = format!("inputs/{}/input{}.txt", year, day);
+    let path = format!("inputs/{year}/input{day}.txt");
     let input_file = Path::new(&path);
     if !input_file.exists() && download {
-        println!("Downloading input for Year {} Day {}", year, day);
+        println!("Downloading input for Year {year} Day {day}");
         lazy_static! {
             static ref LAST: Mutex<Option<Instant>> = Mutex::new(None);
         }
@@ -28,7 +28,7 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, imp
             thread::sleep(last.unwrap() + RATE_LIMIT - now);
         }
         *last = Some(Instant::now());
-        let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
+        let url = format!("https://adventofcode.com/{year}/day/{day}/input");
         let content = Client::new()
             .get(&url)
             .header("Cookie", env::var("AOC_SESSION").unwrap())

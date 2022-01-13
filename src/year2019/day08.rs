@@ -8,7 +8,7 @@ pub fn part1(input: &str) -> i32 {
         .into_iter()
         .map(|x| {
             let mut t = AHashMap::new();
-            for c in x.into_iter() {
+            for c in x {
                 *t.entry(c).or_insert(0) += 1;
             }
             t
