@@ -13,25 +13,20 @@ fn parse_scans(input: &str) -> Ground {
     for line in input.lines() {
         let (c1, v1, _c2, v2a, v2b) =
             scanf!(line, "{}={}, {}={}..{}", char, i32, char, i32, i32).unwrap();
-        let (xs, ys) = if c1 == 'x' {
-            (vec![v1], (v2a..=v2b).collect())
+        if c1 == 'x' {
+            (v2a..=v2b).for_each(|y| clay.push((v1, y)));
         } else {
-            ((v2a..=v2b).collect(), vec![v1])
-        };
-        for x in xs {
-            for y in &ys {
-                clay.push((x, *y));
-            }
+            (v2a..=v2b).for_each(|x| clay.push((x, v1)));
         }
     }
-    let (x0, y0) = (
-        clay.iter().map(|v| v.0).min().unwrap() - 1,
-        clay.iter().map(|v| v.1).min().unwrap(),
-    );
-    let (x1, y1) = (
-        clay.iter().map(|v| v.0).max().unwrap() + 1,
-        clay.iter().map(|v| v.1).max().unwrap(),
-    );
+    let (mut x0, mut y0) = (i32::MAX, i32::MAX);
+    let (mut x1, mut y1) = (0, 0);
+    for &(x, y) in &clay {
+        x0 = std::cmp::min(x0, x - 1);
+        x1 = std::cmp::max(x1, x + 1);
+        y0 = std::cmp::min(y0, y);
+        y1 = std::cmp::max(y1, y);
+    }
     let grid = vec![vec!['.'; (y1 - y0 + 1) as usize]; (x1 - x0 + 1) as usize];
     let mut ground = Ground {
         grid,
@@ -39,9 +34,7 @@ fn parse_scans(input: &str) -> Ground {
         min_y: y0,
         max_y: y1,
     };
-    for (r, c) in clay {
-        ground.set((r, c), '#');
-    }
+    clay.into_iter().for_each(|pos| ground.set(pos, '#'));
     ground
 }
 
@@ -72,40 +65,28 @@ impl Ground {
         if coord.1 < self.min_y {
             return self.go((coord.0, coord.1 + 1));
         }
-        if coord.1 > self.max_y {
-            return false;
-        }
-        if self.get(coord) == '|' {
+        if coord.1 > self.max_y || self.get(coord) == '|' {
             return false;
         }
         if self.get(coord) == '#' {
             return true;
         }
         if !self.go((coord.0, coord.1 + 1)) {
-            if self.get(coord) == '.' {
-                self.set(coord, '|');
-            }
-            false
-        } else {
-            let lefts = self.spread(coord, left);
-            let rights = self.spread(coord, right);
-            let next_l = left(&lefts[lefts.len() - 1]);
-            let next_r = right(&rights[rights.len() - 1]);
-            if self.get(next_l) == '#' && self.get(next_r) == '#' {
-                lefts
-                    .into_iter()
-                    .chain(rights)
-                    .for_each(|c| self.set(c, '~'));
-                true
-            } else {
-                lefts
-                    .into_iter()
-                    .chain(rights)
-                    .for_each(|c| self.set(c, '|'));
-                let (a, b) = (self.go(next_l), self.go(next_r));
-                a && b
-            }
+            self.set(coord, '|');
+            return false;
         }
+        let lefts = self.spread(coord, left);
+        let rights = self.spread(coord, right);
+        let next_l = left(&lefts[lefts.len() - 1]);
+        let next_r = right(&rights[rights.len() - 1]);
+        let cond = self.get(next_l) == '#' && self.get(next_r) == '#';
+        let v = if cond { '~' } else { '|' };
+        lefts.into_iter().chain(rights).for_each(|c| self.set(c, v));
+        if cond {
+            return true;
+        }
+        let (a, b) = (self.go(next_l), self.go(next_r));
+        a && b
     }
 }
 
