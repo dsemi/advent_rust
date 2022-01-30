@@ -1,208 +1,186 @@
-use itertools::Itertools;
+use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
-use std::cmp::Ordering::*;
+use std::cell::RefCell;
+use std::cmp::{max, min};
 
-type Coord = (i64, i64, i64);
+#[derive(Debug)]
+struct Pt {
+    c: RefCell<[i32; 3]>,
+}
 
-fn parse_scanners(input: &str) -> Vec<Vec<Coord>> {
+impl Pt {
+    fn mini(&self, other: &Pt) -> Pt {
+        let a = *self.c.borrow();
+        let b = *other.c.borrow();
+        Pt {
+            c: RefCell::new([min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2])]),
+        }
+    }
+
+    fn hash(&self) -> u64 {
+        let mut hash = 0;
+        for n in *self.c.borrow() {
+            hash = (hash << 21) ^ n as u64;
+        }
+        hash
+    }
+}
+
+#[derive(Debug)]
+struct Scanner {
+    ps: Vec<Pt>,
+    offset: Pt,
+    min: Pt,
+}
+
+impl Scanner {
+    fn add(&mut self, p: Pt) {
+        self.min = self.min.mini(&p);
+        self.ps.push(p);
+    }
+}
+
+fn parse_scanners(input: &str) -> Vec<Scanner> {
     input
         .split("\n\n")
         .map(|sc| {
-            sc.lines()
-                .skip(1)
-                .map(|line| scanf!(line, "{},{},{}", i64, i64, i64).unwrap())
-                .collect()
+            let mut scanner = Scanner {
+                ps: vec![],
+                offset: Pt {
+                    c: RefCell::new([0; 3]),
+                },
+                min: Pt {
+                    c: RefCell::new([0; 3]),
+                },
+            };
+            for line in sc.lines().skip(1) {
+                let (x, y, z) = scanf!(line, "{},{},{}", i32, i32, i32).unwrap();
+                scanner.add(Pt {
+                    c: RefCell::new([x, y, z]),
+                });
+            }
+            scanner
         })
         .collect()
 }
 
-fn normalise_coord((mut x, mut y, mut z): Coord) -> Coord {
-    let valsort = |lhs: &mut i64, rhs: &mut i64| {
-        if lhs.abs() > rhs.abs() {
-            let (olhs, orhs) = (*lhs, *rhs);
-            if *rhs <= 0 {
-                *rhs = olhs;
-                *lhs = -orhs;
-            } else {
-                *rhs = -olhs;
-                *lhs = orhs;
-            }
-        }
-    };
-    valsort(&mut x, &mut z);
-    valsort(&mut x, &mut y);
-    valsort(&mut y, &mut z);
-    if x < 0 {
-        x = -x;
-        y = -y;
-    }
-    if y < 0 {
-        y = -y;
-        z = -z;
-    }
-    (x, y, z)
-}
-
-const TRANS: [&dyn Fn(Coord) -> Coord; 24] = [
-    &|(x, y, z)| (x, y, z),
-    &|(x, y, z)| (-y, x, z),
-    &|(x, y, z)| (y, -x, z),
-    &|(x, y, z)| (-x, -y, z),
-    &|(x, y, z)| (x, -z, y),
-    &|(x, y, z)| (z, x, y),
-    &|(x, y, z)| (-z, -x, y),
-    &|(x, y, z)| (-x, z, y),
-    &|(x, y, z)| (x, z, -y),
-    &|(x, y, z)| (-z, x, -y),
-    &|(x, y, z)| (z, -x, -y),
-    &|(x, y, z)| (-x, -z, -y),
-    &|(x, y, z)| (x, -y, -z),
-    &|(x, y, z)| (y, x, -z),
-    &|(x, y, z)| (-y, -x, -z),
-    &|(x, y, z)| (-x, y, -z),
-    &|(x, y, z)| (z, y, -x),
-    &|(x, y, z)| (-y, z, -x),
-    &|(x, y, z)| (y, -z, -x),
-    &|(x, y, z)| (-z, -y, -x),
-    &|(x, y, z)| (-z, y, x),
-    &|(x, y, z)| (-y, -z, x),
-    &|(x, y, z)| (y, z, x),
-    &|(x, y, z)| (z, -y, x),
-];
-
-fn find_valid_transformer(from: Coord, to: Coord) -> (usize, &'static dyn Fn(Coord) -> Coord) {
-    for (idx, tran) in TRANS.iter().copied().enumerate() {
-        if tran(from) == to {
-            return (idx, tran);
-        }
-    }
-    unreachable!()
-}
-
-fn solve(input: &[Vec<Coord>]) -> (Vec<(usize, Coord)>, Vec<Coord>) {
-    let mut norms = input
-        .iter()
-        .enumerate()
-        .map(|(i, s)| {
-            let mut norm: Vec<_> = s
-                .iter()
-                .flat_map(|a| {
-                    s.iter().filter_map(move |b| {
-                        (a != b).then(|| {
-                            let norm = normalise_coord((a.0 - b.0, a.1 - b.1, a.2 - b.2));
-                            (norm, *a, *b)
-                        })
-                    })
-                })
-                .collect();
-            norm.sort_unstable();
-            (i, norm)
-        })
-        .collect::<Vec<_>>();
-    let (psidx, mut active_norms) = norms.remove(0);
-    let mut full_norms = active_norms.clone();
-    let mut scanner_loc = vec![(0, (0, 0, 0))];
-    let mut known_beacons = input[psidx].clone();
-
-    let mut candidatecount = vec![];
-    while !norms.is_empty() {
-        active_norms.clear();
-        active_norms.extend(full_norms.iter().copied());
-        active_norms.sort_unstable();
-        norms.retain(|(nidx, n)| {
-            candidatecount.clear();
-            let lhstmp = active_norms.iter().group_by(|x| x.0);
-            let mut lhsiter = lhstmp
-                .into_iter()
-                .map(|x| x.1.collect::<Vec<_>>())
-                .peekable();
-            let rhstmp = n.iter().group_by(|x| x.0);
-            let mut rhsiter = rhstmp
-                .into_iter()
-                .map(|x| x.1.collect::<Vec<_>>())
-                .peekable();
-            while lhsiter.peek().is_some() && rhsiter.peek().is_some() {
-                let (lhs, rhs) = (lhsiter.peek().unwrap(), rhsiter.peek().unwrap());
-                match lhs[0].0.cmp(&rhs[0].0) {
-                    Equal => {
-                        for (lhs, rhs) in lhs
-                            .iter()
-                            .flat_map(|lhs| rhs.iter().map(move |rhs| (lhs, rhs)))
-                        {
-                            let (lx, ly, lz) = (
-                                lhs.2 .0 - lhs.1 .0,
-                                lhs.2 .1 - lhs.1 .1,
-                                lhs.2 .2 - lhs.1 .2,
-                            );
-                            let (rx, ry, rz) = (
-                                rhs.2 .0 - rhs.1 .0,
-                                rhs.2 .1 - rhs.1 .1,
-                                rhs.2 .2 - rhs.1 .2,
-                            );
-                            let (tranid, tran) = find_valid_transformer((rx, ry, rz), (lx, ly, lz));
-                            let (lsx, lsy, lsz) = lhs.1;
-                            let (rsx, rsy, rsz) = tran(rhs.1);
-                            let offset = (lsx - rsx, lsy - rsy, lsz - rsz);
-                            candidatecount.push((offset, tranid, tran));
+fn align(a: &Scanner, b: &Scanner, aa: usize) -> bool {
+    let mut collision = [0_u8; 4096 * 6];
+    for pa in &a.ps {
+        for pb in &b.ps {
+            let mut base = 0;
+            let vals = [
+                2048 + (pb.c.borrow()[0] - b.min.c.borrow()[0])
+                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+                (pb.c.borrow()[0] - b.min.c.borrow()[0])
+                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+                2048 + (pb.c.borrow()[1] - b.min.c.borrow()[1])
+                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+                (pb.c.borrow()[1] - b.min.c.borrow()[1])
+                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+                2048 + (pb.c.borrow()[2] - b.min.c.borrow()[2])
+                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+                (pb.c.borrow()[2] - b.min.c.borrow()[2])
+                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
+            ];
+            for mut n in vals {
+                let idx = base + n as usize;
+                collision[idx] += 1;
+                if collision[idx] == 12 {
+                    let ori = idx / 4096;
+                    let axis = ori / 2;
+                    let negate = ori % 2 == 1;
+                    n += b.min.c.borrow()[axis];
+                    if negate {
+                        n += a.min.c.borrow()[aa]
+                    } else {
+                        n -= a.min.c.borrow()[aa] + 2048;
+                    }
+                    b.offset.c.borrow_mut()[aa] = if negate { -n } else { n };
+                    if axis != aa {
+                        b.min.c.borrow_mut().swap(aa, axis);
+                        for p in &b.ps {
+                            p.c.borrow_mut().swap(aa, axis);
                         }
-                        lhsiter.next();
-                        rhsiter.next();
                     }
-                    Less => {
-                        lhsiter.next();
+                    if negate {
+                        let e = &mut b.min.c.borrow_mut()[aa];
+                        *e = n - *e - 2047;
+                        for p in &b.ps {
+                            let e = &mut p.c.borrow_mut()[aa];
+                            *e = n - *e;
+                        }
+                    } else {
+                        let e = &mut b.min.c.borrow_mut()[aa];
+                        *e -= n;
+                        for p in &b.ps {
+                            let e = &mut p.c.borrow_mut()[aa];
+                            *e -= n;
+                        }
                     }
-                    Greater => {
-                        rhsiter.next();
-                    }
+                    return true;
                 }
+                base += 4096
             }
-            candidatecount.sort_unstable_by_key(|x| (x.0, x.1));
-            let transinfo = candidatecount
-                .iter()
-                .group_by(|x| (x.0, x.1))
-                .into_iter()
-                .map(|x| x.1.collect::<Vec<_>>())
-                .filter(|candidate| candidate.len() >= 6)
-                .max_by_key(|candidate| candidate.len());
-            if transinfo.is_none() {
-                return true;
-            }
-            let candidate = transinfo.unwrap();
-            let ((ox, oy, oz), _, tran) = candidate[0];
-            full_norms.extend(n.iter().map(|(norm, lhs, rhs)| {
-                let (tx, ty, tz) = tran(*lhs);
-                let lhs = (tx + ox, ty + oy, tz + oz);
-                let (tx, ty, tz) = tran(*rhs);
-                let rhs = (tx + ox, ty + oy, tz + oz);
-                (*norm, lhs, rhs)
-            }));
-
-            known_beacons.extend(input[*nidx].iter().map(|c| {
-                let (tx, ty, tz) = tran(*c);
-                (tx + ox, ty + oy, tz + oz)
-            }));
-            scanner_loc.push((*nidx, (*ox, *oy, *oz)));
-            false
-        });
+        }
     }
-    (scanner_loc, known_beacons)
+    false
+}
+
+struct Bits<T> {
+    n: T,
+}
+
+impl Iterator for Bits<u64> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.n == 0 {
+            return None;
+        }
+        let b = self.n.trailing_zeros();
+        self.n &= self.n - 1;
+        Some(b as usize)
+    }
+}
+
+fn combine(input: &str) -> (AHashSet<u64>, Vec<Scanner>) {
+    let scanners = parse_scanners(input);
+    let mut set = AHashSet::new();
+    let mut need = (1_u64 << scanners.len()) - 2;
+    let mut todo = vec![0];
+    while let Some(i) = todo.pop() {
+        for j in (Bits { n: need }) {
+            if align(&scanners[i], &scanners[j], 0) {
+                align(&scanners[i], &scanners[j], 1);
+                align(&scanners[i], &scanners[j], 2);
+                need ^= 1 << j;
+                todo.push(j);
+            }
+        }
+    }
+    for s in &scanners {
+        for p in &s.ps {
+            set.insert(p.hash());
+        }
+    }
+    (set, scanners)
 }
 
 pub fn part1(input: &str) -> usize {
-    let (_, mut beacons) = solve(&parse_scanners(input));
-    beacons.sort_unstable();
-    beacons.dedup();
-    beacons.len()
+    combine(input).0.len()
 }
 
-pub fn part2(input: &str) -> Option<i64> {
-    let (scanners, _) = solve(&parse_scanners(input));
-    scanners
-        .iter()
-        .flat_map(|(_, a)| {
-            scanners
-                .iter()
-                .map(move |(_, b)| (a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs())
-        })
-        .max()
+pub fn part2(input: &str) -> i32 {
+    let scanners = combine(input).1;
+    let mut result = 0;
+    for a in &scanners {
+        for b in &scanners {
+            let dist = (a.offset.c.borrow()[0] - b.offset.c.borrow()[0]).abs()
+                + (a.offset.c.borrow()[1] - b.offset.c.borrow()[1]).abs()
+                + (a.offset.c.borrow()[2] - b.offset.c.borrow()[2]).abs();
+            result = max(result, dist);
+        }
+    }
+    result
 }
