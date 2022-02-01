@@ -110,9 +110,7 @@ impl Iterator for Bits<u64> {
     }
 }
 
-fn combine(input: &str) -> (AHashSet<u64>, Vec<Scanner>) {
-    let mut scanners = parse_scanners(input);
-    let mut set = AHashSet::new();
+fn combine(scanners: &mut [Scanner]) {
     let mut need = (1_u64 << scanners.len()) - 2;
     let mut todo = vec![0];
     while let Some(i) = todo.pop() {
@@ -130,20 +128,21 @@ fn combine(input: &str) -> (AHashSet<u64>, Vec<Scanner>) {
             }
         }
     }
-    for s in &scanners {
-        for p in &s.ps {
-            set.insert(hash(p));
-        }
-    }
-    (set, scanners)
 }
 
 pub fn part1(input: &str) -> usize {
-    combine(input).0.len()
+    let mut scanners = parse_scanners(input);
+    combine(&mut scanners);
+    scanners
+        .iter()
+        .flat_map(|s| s.ps.iter().map(hash))
+        .collect::<AHashSet<_>>()
+        .len()
 }
 
 pub fn part2(input: &str) -> i32 {
-    let scanners = combine(input).1;
+    let mut scanners = parse_scanners(input);
+    combine(&mut scanners);
     let mut result = 0;
     for a in &scanners {
         for b in &scanners {
