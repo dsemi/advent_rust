@@ -1,32 +1,17 @@
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
-use std::cell::RefCell;
 use std::cmp::{max, min};
 
-#[derive(Debug)]
-struct Pt {
-    c: RefCell<[i32; 3]>,
+type Pt = [i32; 3];
+
+fn mins(a: &Pt, b: &Pt) -> Pt {
+    [min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2])]
 }
 
-impl Pt {
-    fn mini(&self, other: &Pt) -> Pt {
-        let a = *self.c.borrow();
-        let b = *other.c.borrow();
-        Pt {
-            c: RefCell::new([min(a[0], b[0]), min(a[1], b[1]), min(a[2], b[2])]),
-        }
-    }
-
-    fn hash(&self) -> u64 {
-        let mut hash = 0;
-        for n in *self.c.borrow() {
-            hash = (hash << 21) ^ n as u64;
-        }
-        hash
-    }
+fn hash(p: &Pt) -> u64 {
+    ((p[0] as u64) << 42) ^ ((p[1] as u64) << 21) ^ p[2] as u64
 }
 
-#[derive(Debug)]
 struct Scanner {
     ps: Vec<Pt>,
     offset: Pt,
@@ -35,7 +20,7 @@ struct Scanner {
 
 impl Scanner {
     fn add(&mut self, p: Pt) {
-        self.min = self.min.mini(&p);
+        self.min = mins(&self.min, &p);
         self.ps.push(p);
     }
 }
@@ -46,85 +31,66 @@ fn parse_scanners(input: &str) -> Vec<Scanner> {
         .map(|sc| {
             let mut scanner = Scanner {
                 ps: vec![],
-                offset: Pt {
-                    c: RefCell::new([0; 3]),
-                },
-                min: Pt {
-                    c: RefCell::new([0; 3]),
-                },
+                offset: [0; 3],
+                min: [0; 3],
             };
             for line in sc.lines().skip(1) {
                 let (x, y, z) = scanf!(line, "{},{},{}", i32, i32, i32).unwrap();
-                scanner.add(Pt {
-                    c: RefCell::new([x, y, z]),
-                });
+                scanner.add([x, y, z]);
             }
             scanner
         })
         .collect()
 }
 
-fn align(a: &Scanner, b: &Scanner, aa: usize) -> bool {
+fn can_align<const AA: usize>(a: &Scanner, b: &Scanner) -> Option<(i32, usize, bool)> {
     let mut collision = [0_u8; 4096 * 6];
     for pa in &a.ps {
         for pb in &b.ps {
             let mut base = 0;
-            let vals = [
-                2048 + (pb.c.borrow()[0] - b.min.c.borrow()[0])
-                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-                (pb.c.borrow()[0] - b.min.c.borrow()[0])
-                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-                2048 + (pb.c.borrow()[1] - b.min.c.borrow()[1])
-                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-                (pb.c.borrow()[1] - b.min.c.borrow()[1])
-                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-                2048 + (pb.c.borrow()[2] - b.min.c.borrow()[2])
-                    - (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-                (pb.c.borrow()[2] - b.min.c.borrow()[2])
-                    + (pa.c.borrow()[aa] - a.min.c.borrow()[aa]),
-            ];
-            for mut n in vals {
+            for mut n in [
+                2048 + (pb[0] - b.min[0]) - (pa[AA] - a.min[AA]),
+                (pb[0] - b.min[0]) + (pa[AA] - a.min[AA]),
+                2048 + (pb[1] - b.min[1]) - (pa[AA] - a.min[AA]),
+                (pb[1] - b.min[1]) + (pa[AA] - a.min[AA]),
+                2048 + (pb[2] - b.min[2]) - (pa[AA] - a.min[AA]),
+                (pb[2] - b.min[2]) + (pa[AA] - a.min[AA]),
+            ] {
                 let idx = base + n as usize;
                 collision[idx] += 1;
                 if collision[idx] == 12 {
                     let ori = idx / 4096;
                     let axis = ori / 2;
                     let negate = ori % 2 == 1;
-                    n += b.min.c.borrow()[axis];
+                    n += b.min[axis];
                     if negate {
-                        n += a.min.c.borrow()[aa]
+                        n += a.min[AA]
                     } else {
-                        n -= a.min.c.borrow()[aa] + 2048;
+                        n -= a.min[AA] + 2048;
                     }
-                    b.offset.c.borrow_mut()[aa] = if negate { -n } else { n };
-                    if axis != aa {
-                        b.min.c.borrow_mut().swap(aa, axis);
-                        for p in &b.ps {
-                            p.c.borrow_mut().swap(aa, axis);
-                        }
-                    }
-                    if negate {
-                        let e = &mut b.min.c.borrow_mut()[aa];
-                        *e = n - *e - 2047;
-                        for p in &b.ps {
-                            let e = &mut p.c.borrow_mut()[aa];
-                            *e = n - *e;
-                        }
-                    } else {
-                        let e = &mut b.min.c.borrow_mut()[aa];
-                        *e -= n;
-                        for p in &b.ps {
-                            let e = &mut p.c.borrow_mut()[aa];
-                            *e -= n;
-                        }
-                    }
-                    return true;
+
+                    return Some((n, axis, negate));
                 }
-                base += 4096
+                base += 4096;
             }
         }
     }
-    false
+    None
+}
+
+fn align<const AA: usize>(b: &mut Scanner, n: i32, axis: usize, negate: bool) {
+    b.offset[AA] = if negate { -n } else { n };
+    if axis != AA {
+        b.min.swap(AA, axis);
+        b.ps.iter_mut().for_each(|p| p.swap(AA, axis));
+    }
+    if negate {
+        b.min[AA] = n - b.min[AA] - 2047;
+        b.ps.iter_mut().for_each(|p| p[AA] = n - p[AA]);
+    } else {
+        b.min[AA] -= n;
+        b.ps.iter_mut().for_each(|p| p[AA] -= n);
+    }
 }
 
 struct Bits<T> {
@@ -145,15 +111,20 @@ impl Iterator for Bits<u64> {
 }
 
 fn combine(input: &str) -> (AHashSet<u64>, Vec<Scanner>) {
-    let scanners = parse_scanners(input);
+    let mut scanners = parse_scanners(input);
     let mut set = AHashSet::new();
     let mut need = (1_u64 << scanners.len()) - 2;
     let mut todo = vec![0];
     while let Some(i) = todo.pop() {
         for j in (Bits { n: need }) {
-            if align(&scanners[i], &scanners[j], 0) {
-                align(&scanners[i], &scanners[j], 1);
-                align(&scanners[i], &scanners[j], 2);
+            if let Some((n, axis, negate)) = can_align::<0>(&scanners[i], &scanners[j]) {
+                align::<0>(&mut scanners[j], n, axis, negate);
+                if let Some((n, axis, negate)) = can_align::<1>(&scanners[i], &scanners[j]) {
+                    align::<1>(&mut scanners[j], n, axis, negate);
+                }
+                if let Some((n, axis, negate)) = can_align::<2>(&scanners[i], &scanners[j]) {
+                    align::<2>(&mut scanners[j], n, axis, negate);
+                }
                 need ^= 1 << j;
                 todo.push(j);
             }
@@ -161,7 +132,7 @@ fn combine(input: &str) -> (AHashSet<u64>, Vec<Scanner>) {
     }
     for s in &scanners {
         for p in &s.ps {
-            set.insert(p.hash());
+            set.insert(hash(p));
         }
     }
     (set, scanners)
@@ -176,9 +147,9 @@ pub fn part2(input: &str) -> i32 {
     let mut result = 0;
     for a in &scanners {
         for b in &scanners {
-            let dist = (a.offset.c.borrow()[0] - b.offset.c.borrow()[0]).abs()
-                + (a.offset.c.borrow()[1] - b.offset.c.borrow()[1]).abs()
-                + (a.offset.c.borrow()[2] - b.offset.c.borrow()[2]).abs();
+            let dist = (a.offset[0] - b.offset[0]).abs()
+                + (a.offset[1] - b.offset[1]).abs()
+                + (a.offset[2] - b.offset[2]).abs();
             result = max(result, dist);
         }
     }
