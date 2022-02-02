@@ -12,31 +12,24 @@ fn parse(input: &str) -> Vec<u128> {
 }
 
 fn step(lights: &mut Vec<u128>) {
-    let mut prev = 0;
+    let mut prev: u128 = 0;
     for i in 0..lights.len() {
-        let mut curr = lights[i];
-        let next = *lights.get(i + 1).unwrap_or(&0);
-        let mut adjs = vec![prev << 1, prev, prev >> 1,
-                            curr << 1,       curr >> 1,
-                            next << 1, next, next >> 1];
-        let mut curr2 = 0;
-        for _ in 0..lights.len() {
-            curr2 <<= 1;
-            let mut adj = 0;
-            for v in adjs.iter_mut() {
-                adj += (*v & 1) as u8;
-                *v >>= 1;
-            }
-            let mut c = curr & 1;
-            curr >>= 1;
-            if c > 0 && adj != 2 && adj != 3 {
-                c = 0;
-            } else if c == 0 && adj == 3 {
-                c = 1;
-            }
-            curr2 |= c;
+        let curr = lights[i] << 1;
+        let next = *lights.get(i + 1).unwrap_or(&0) << 1;
+        let mut mask = 0b111;
+        let mut focus = 0b10;
+        let mut new_curr = 0;
+        for _ in 0..100 {
+            let c = curr & focus;
+            let adj = (prev & mask).count_ones()
+                + (curr & (mask - c)).count_ones()
+                + (next & mask).count_ones();
+            new_curr <<= 1;
+            new_curr |= (adj == 3 || c != 0 && adj == 2) as u128;
+            mask <<= 1;
+            focus <<= 1;
         }
-        prev = std::mem::replace(&mut lights[i], curr2);
+        prev = std::mem::replace(&mut lights[i], new_curr) << 1;
     }
 }
 
