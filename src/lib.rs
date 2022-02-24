@@ -1,5 +1,5 @@
 #![allow(clippy::many_single_char_names)]
-#![deny(clippy::disallowed_type)]
+#![deny(clippy::disallowed_types)]
 
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;

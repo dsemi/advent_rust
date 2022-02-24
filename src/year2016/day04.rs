@@ -20,7 +20,7 @@ fn parse_rooms<'a>(input: &'a str) -> impl Iterator<Item = Room<'a>> + '_ {
 
 impl Room<'_> {
     fn is_real(&self) -> bool {
-        let tbl = self.name.replace("-", "").chars().collect::<Counter<_>>();
+        let tbl = self.name.replace('-', "").chars().collect::<Counter<_>>();
         self.checksum
             == tbl
                 .most_common_ordered()

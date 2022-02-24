@@ -55,7 +55,7 @@ pub fn part1(input: &str) -> Option<String> {
     run_factory(input)
         .into_iter()
         .filter(|(_k, v)| v == &vec![17, 61])
-        .map(|x| x.0.rsplit_once(" ").unwrap().1.to_string())
+        .map(|x| x.0.rsplit_once(' ').unwrap().1.to_string())
         .next()
 }
 

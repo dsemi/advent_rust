@@ -148,7 +148,7 @@ fn find_sea_monsters(pic: &[u128]) -> u32 {
     let cnt: u32 = mons.iter().map(|&x: &u128| x.count_ones()).sum();
     pic.windows(3)
         .map(|wind| {
-            let mut rs: Vec<u128> = wind.iter().copied().collect();
+            let mut rs: Vec<u128> = wind.to_vec();
             let mut tot = 0;
             while rs.iter().any(|x| x > &0) {
                 if rs.iter().zip(&mons).all(|(a, b)| a & b == *b) {
@@ -169,7 +169,7 @@ pub fn part2(input: &str) -> Option<u32> {
     for tile in grid.iter_mut() {
         tile.grid = tile.grid[1..tile.grid.len() - 1]
             .iter()
-            .map(|row| row[1..row.len() - 1].iter().copied().collect())
+            .map(|row| row[1..row.len() - 1].to_vec())
             .collect();
         inner_size = tile.grid.len();
     }
@@ -188,10 +188,7 @@ pub fn part2(input: &str) -> Option<u32> {
     for p in orientations(&pic) {
         let p2 = p
             .into_iter()
-            .map(|row| {
-                row.iter()
-                    .fold(0_u128, |acc, x| (acc << 1) + (*x as u128))
-            })
+            .map(|row| row.iter().fold(0_u128, |acc, x| (acc << 1) + (*x as u128)))
             .collect::<Vec<_>>();
         let ms = find_sea_monsters(&p2);
         if ms != 0 {
