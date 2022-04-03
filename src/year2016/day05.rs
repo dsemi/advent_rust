@@ -17,7 +17,7 @@ pub fn part1(input: &str) -> String {
                     h.input_str(&i.to_string());
                     let mut output = [0; 16];
                     h.result(&mut output);
-                    (output[0] == 0 && output[1] == 0 && output[2] < 0xF)
+                    (output[0] == 0 && output[1] == 0 && output[2] < 16)
                         .then(|| std::char::from_digit(output[2] as u32, 16).unwrap())
                 })
                 .collect::<Vec<_>>()
