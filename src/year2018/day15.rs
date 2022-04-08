@@ -58,7 +58,7 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> 
     result
 }
 
-fn run_round(grid: &mut Vec<Vec<(char, i32)>>, elf_power: i32, allow_elf_death: bool) -> Outcome {
+fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: bool) -> Outcome {
     let mut elves = 0;
     let mut goblins = 0;
     let units = grid

@@ -25,7 +25,7 @@ fn parse_actions(input: &str) -> Vec<Action> {
         .collect()
 }
 
-fn apply_action(s: &mut String, action: &Action) {
+fn apply_action(s: &mut str, action: &Action) {
     unsafe {
         match action {
             Spin(n) => {

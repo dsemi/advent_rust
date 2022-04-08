@@ -27,7 +27,7 @@ pub struct Sim {
     instrs: Vec<Instr>,
 }
 
-fn optimize(instrs: &mut Vec<Instr>) {
+fn optimize(instrs: &mut [Instr]) {
     for i in 0..instrs.len() {
         if i + 6 <= instrs.len() {
             match instrs[i..i + 6] {
@@ -80,7 +80,7 @@ pub fn parse_instrs(input: &str) -> Sim {
                 _ => panic!("Invalid instruction {}", line),
             },
         )
-        .collect();
+        .collect::<Vec<_>>();
     optimize(&mut instrs);
     Sim {
         regs: [0; 4],

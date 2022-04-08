@@ -20,7 +20,7 @@ fn parse_moons(input: &str) -> Vec<Moon> {
         .collect()
 }
 
-fn step(moons: &mut Vec<Moon>) {
+fn step(moons: &mut [Moon]) {
     for i in 0..moons.len() {
         for j in 0..moons.len() {
             for x in 0..moons[i].vel.len() {

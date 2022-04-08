@@ -11,7 +11,7 @@ fn parse(input: &str) -> Vec<u128> {
     res
 }
 
-fn step(lights: &mut Vec<u128>) {
+fn step(lights: &mut [u128]) {
     let mut prev: u128 = 0;
     for i in 0..lights.len() {
         let curr = lights[i] << 1;

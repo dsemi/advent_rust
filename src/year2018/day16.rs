@@ -26,7 +26,7 @@ static OPS: [Op; 16] = [
     Addr, Addi, Mulr, Muli, Banr, Bani, Borr, Bori, Setr, Seti, Gtir, Gtri, Gtrr, Eqir, Eqri, Eqrr,
 ];
 
-fn eval(v: &mut Vec<usize>, op: Op, a: usize, b: usize, c: usize) {
+fn eval(v: &mut [usize], op: Op, a: usize, b: usize, c: usize) {
     v[c as usize] = match op {
         Addr => v[a] + v[b],
         Addi => v[a] + b,

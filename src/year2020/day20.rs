@@ -129,9 +129,8 @@ fn place_tiles(tiles: Vec<Tile>) -> (Vec<Tile>, usize) {
                     .map(|row| row[row.len() - 1])
                     .collect::<Row>()]
                     .iter()
-                    .filter(|t| t.num != prev.num)
+                    .find(|t| t.num != prev.num)
                     .cloned()
-                    .next()
                     .unwrap()
             });
         }

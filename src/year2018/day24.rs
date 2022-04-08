@@ -117,7 +117,7 @@ fn target_selection(groups: &[Option<Group>]) -> Vec<(usize, usize)> {
     res.into_iter().map(|(g, t)| (g.num, t)).collect()
 }
 
-fn attack(groups: &mut Vec<Option<Group>>, atks: Vec<(usize, usize)>) -> bool {
+fn attack(groups: &mut [Option<Group>], atks: Vec<(usize, usize)>) -> bool {
     let mut result = false;
     for (k1, k2) in atks {
         if let Some(g1) = groups[k1].as_ref() {
@@ -136,7 +136,7 @@ fn attack(groups: &mut Vec<Option<Group>>, atks: Vec<(usize, usize)>) -> bool {
     result
 }
 
-fn battle(groups: &mut Vec<Option<Group>>) -> bool {
+fn battle(groups: &mut [Option<Group>]) -> bool {
     let mut changed = true;
     while changed {
         let mut gen = groups.iter().flatten();

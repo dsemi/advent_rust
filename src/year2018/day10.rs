@@ -40,7 +40,7 @@ fn bounding_box(objs: &[Obj]) -> (i32, i32, i32, i32) {
     result
 }
 
-fn find_message(objs: &mut Vec<Obj>) -> usize {
+fn find_message(objs: &mut [Obj]) -> usize {
     let mut bb = bounding_box(objs);
     let mut result = 0;
     while bb.3 - bb.1 > 15 {

@@ -16,7 +16,7 @@ fn parse_landscape(input: &str) -> Vec<u128> {
         .collect()
 }
 
-fn step(grid: &mut Vec<u128>) {
+fn step(grid: &mut [u128]) {
     let mut prev = 0;
     for i in 0..grid.len() {
         let mut curr = grid[i];
