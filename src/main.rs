@@ -46,13 +46,13 @@ fn run_problem(year: i64, day: i64) -> f64 {
         println!("Day {day}");
         let (t1, ans) = run_part(part1, &contents);
         println!(
-            "Part 1: {:>32}  Elapsed time {} seconds",
+            "Part 1: {:>50}  Elapsed time {} seconds",
             ans,
             colorize_time(t1)
         );
         let (t2, ans) = run_part(part2, &contents);
         println!(
-            "Part 2: {:>32}  Elapsed time {} seconds",
+            "Part 2: {:>50}  Elapsed time {} seconds",
             ans,
             colorize_time(t2)
         );
@@ -90,6 +90,6 @@ fn main() {
         });
         total += t;
     }
-    println!("Max: Day {:2} {:48.3} seconds", max_day.1, max_day.0);
-    println!("Total: {total:53.3} seconds");
+    println!("Max: Day {:2} {:66.3} seconds", max_day.1, max_day.0);
+    println!("Total: {total:71.3} seconds");
 }
