@@ -1,3 +1,4 @@
+use crate::utils::bits;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
@@ -93,28 +94,11 @@ fn align<const AA: usize>(b: &mut Scanner, n: i32, axis: usize, negate: bool) {
     }
 }
 
-struct Bits<T> {
-    n: T,
-}
-
-impl Iterator for Bits<u64> {
-    type Item = usize;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.n == 0 {
-            return None;
-        }
-        let b = self.n.trailing_zeros();
-        self.n &= self.n - 1;
-        Some(b as usize)
-    }
-}
-
 fn combine(scanners: &mut [Scanner]) {
     let mut need = (1_u64 << scanners.len()) - 2;
     let mut todo = vec![0];
     while let Some(i) = todo.pop() {
-        for j in (Bits { n: need }) {
+        for j in bits(need) {
             if let Some((n, axis, negate)) = can_align::<0>(&scanners[i], &scanners[j]) {
                 align::<0>(&mut scanners[j], n, axis, negate);
                 if let Some((n, axis, negate)) = can_align::<1>(&scanners[i], &scanners[j]) {

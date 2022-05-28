@@ -748,3 +748,24 @@ macro_rules! adj_w_diag {
         ]
     };
 }
+
+pub fn bits<T>(n: T) -> Bits<T> {
+    Bits { n }
+}
+
+pub struct Bits<T> {
+    n: T,
+}
+
+impl Iterator for Bits<u64> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.n == 0 {
+            return None;
+        }
+        let b = self.n.trailing_zeros();
+        self.n &= self.n - 1;
+        Some(b as usize)
+    }
+}
