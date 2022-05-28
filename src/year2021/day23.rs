@@ -18,7 +18,7 @@ fn read_input(input: &str) -> u32 {
     }
     let mut room = 0;
     for i in 0..4 {
-        room |= to_glyph(b[31]) << ((8 * i) + 0);
+        room |= to_glyph(b[31]) << (8 * i);
         room |= to_glyph(b[45]) << ((8 * i) + 2);
         b = &b[2..];
     }
@@ -332,12 +332,14 @@ fn solve(start: State) -> i32 {
                 q.push(Reverse((new_cost, hash)));
             } else {
                 let (prev_cost, prev_skips) = cost.get(new_idx);
-                if new_cost == *prev_cost as i32 {
-                    *prev_skips &= skips;
-                } else if new_cost < *prev_cost as i32 {
-                    *prev_cost = new_cost as u16;
-                    *prev_skips = skips;
-                    q.push(Reverse((new_cost, hash)));
+                match new_cost.cmp(&(*prev_cost as i32)) {
+                    Equal => *prev_skips &= skips,
+                    Less => {
+                        *prev_cost = new_cost as u16;
+                        *prev_skips = skips;
+                        q.push(Reverse((new_cost, hash)));
+                    }
+                    Greater => (),
                 }
             }
         }

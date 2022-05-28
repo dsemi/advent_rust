@@ -124,9 +124,9 @@ pub fn part1(input: &str) -> usize {
         let p = inp.as_bytes();
         let mut d_mask = 0;
         let mut r_mask = 0;
-        for i in 0..count {
-            d_mask |= ((p[i] == b'v') as u64) << i;
-            r_mask |= ((p[i] == b'>') as u64) << i;
+        for (i, c) in p.iter().enumerate().take(count) {
+            d_mask |= ((*c == b'v') as u64) << i;
+            r_mask |= ((*c == b'>') as u64) << i;
         }
         (d_mask, r_mask)
     }
