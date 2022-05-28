@@ -6,13 +6,13 @@ use nom::combinator::{map_res, opt, recognize};
 use nom::sequence::tuple;
 use nom::IResult;
 use num::traits::abs;
-use num::{Num, Signed};
+use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
 use std::cmp::{Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
 use std::iter::{Fuse, Sum};
-use std::ops::{Add, AddAssign, BitAnd, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, BitAnd, BitAndAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::str::FromStr;
 use streaming_iterator::StreamingIterator;
 
@@ -757,15 +757,15 @@ pub struct Bits<T> {
     n: T,
 }
 
-impl Iterator for Bits<u64> {
+impl<T: PartialEq + PrimInt + BitAndAssign + FromPrimitive> Iterator for Bits<T> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.n == 0 {
+        if self.n == FromPrimitive::from_u8(0).unwrap() {
             return None;
         }
         let b = self.n.trailing_zeros();
-        self.n &= self.n - 1;
+        self.n &= self.n - FromPrimitive::from_u8(1).unwrap();
         Some(b as usize)
     }
 }
