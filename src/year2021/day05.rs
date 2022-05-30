@@ -1,4 +1,4 @@
-use crate::utils::Coord;
+use crate::utils::*;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::max;
 
@@ -18,7 +18,7 @@ fn solve(input: &str, p2: bool) -> usize {
         }
         let d = (c1 - c).signum();
         while c != c1 + d {
-            grid[c.x as usize][c.y as usize] += 1;
+            grid[c] += 1;
             c += d;
         }
     }

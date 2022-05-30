@@ -12,7 +12,9 @@ use std::cmp::{Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
 use std::iter::{Fuse, Sum};
-use std::ops::{Add, AddAssign, BitAnd, BitAndAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, BitAnd, BitAndAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+};
 use std::str::FromStr;
 use streaming_iterator::StreamingIterator;
 
@@ -393,6 +395,20 @@ where
             ),
             |a, b| a + b,
         )
+    }
+}
+
+impl<T> Index<Coord<i32>> for Vec<Vec<T>> {
+    type Output = T;
+
+    fn index(&self, c: Coord<i32>) -> &T {
+        &self[c.x as usize][c.y as usize]
+    }
+}
+
+impl<T> IndexMut<Coord<i32>> for Vec<Vec<T>> {
+    fn index_mut(&mut self, c: Coord<i32>) -> &mut T {
+        &mut self[c.x as usize][c.y as usize]
     }
 }
 

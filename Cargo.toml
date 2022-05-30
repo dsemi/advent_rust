@@ -11,7 +11,7 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ahash = "0.7.4"
+ahash = "0.7.6"
 bit-set = "0.5.2"
 counter = "0.5.2"
 genawaiter = "0.99.1"
