@@ -1,4 +1,5 @@
-use std::ops::{BitAnd, BitOr, BitXor};
+use impl_ops::*;
+use std::ops;
 
 const HEIGHT: usize = 137;
 
@@ -7,62 +8,48 @@ struct Cucumbers {
     c: [[u64; 4]; HEIGHT],
 }
 
-impl BitOr for &Cucumbers {
-    type Output = Cucumbers;
+impl ops::Index<usize> for Cucumbers {
+    type Output = [u64; 4];
 
-    fn bitor(self, rhs: Self) -> Self::Output {
-        let mut result = Self::Output {
-            c: [[0; 4]; HEIGHT],
-        };
-        for r in 0..HEIGHT {
-            for i in 0..4 {
-                result.c[r][i] = self.c[r][i] | rhs.c[r][i];
-            }
-        }
-        result
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.c[index]
     }
 }
 
-impl BitAnd for &Cucumbers {
-    type Output = Cucumbers;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        let mut result = Self::Output {
-            c: [[0; 4]; HEIGHT],
-        };
-        for r in 0..HEIGHT {
-            for i in 0..4 {
-                result.c[r][i] = self.c[r][i] & rhs.c[r][i];
-            }
-        }
-        result
+impl ops::IndexMut<usize> for Cucumbers {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.c[index]
     }
 }
 
-impl BitXor for &Cucumbers {
-    type Output = Cucumbers;
-
-    fn bitxor(self, rhs: Self) -> Self::Output {
-        let mut result = Self::Output {
-            c: [[0; 4]; HEIGHT],
-        };
-        for r in 0..HEIGHT {
-            for i in 0..4 {
-                result.c[r][i] = self.c[r][i] ^ rhs.c[r][i];
+macro_rules! impl_operator {
+    ($op:tt) => {
+        impl_op_ex!($op |a: &Cucumbers, b: &Cucumbers| -> Cucumbers {
+            let mut result = Cucumbers {
+                c: [[0; 4]; HEIGHT],
+            };
+            for r in 0..HEIGHT {
+                for i in 0..4 {
+                    result[r][i] = a[r][i] $op b[r][i];
+                }
             }
-        }
-        result
+            result
+        });
     }
 }
+
+impl_operator!(|);
+impl_operator!(&);
+impl_operator!(^);
 
 impl Cucumbers {
     fn shift_up(&self) -> Self {
         let mut result = Self {
             c: [[0; 4]; HEIGHT],
         };
-        result.c[HEIGHT - 1] = self.c[0];
+        result[HEIGHT - 1] = self[0];
         for r in 1..HEIGHT {
-            result.c[r - 1] = self.c[r];
+            result[r - 1] = self[r];
         }
         result
     }
@@ -71,9 +58,9 @@ impl Cucumbers {
         let mut result = Self {
             c: [[0; 4]; HEIGHT],
         };
-        result.c[0] = self.c[HEIGHT - 1];
+        result[0] = self[HEIGHT - 1];
         for r in 1..HEIGHT {
-            result.c[r] = self.c[r - 1];
+            result[r] = self[r - 1];
         }
         result
     }
@@ -83,11 +70,11 @@ impl Cucumbers {
             c: [[0; 4]; HEIGHT],
         };
         for r in 0..HEIGHT {
-            result.c[r][0] = (self.c[r][0] >> 1) | (self.c[r][1] << 63);
-            result.c[r][1] = (self.c[r][1] >> 1) | (self.c[r][2] << 63);
-            result.c[r][2] = (self.c[r][2] >> 1) | (self.c[r][0] << 10);
-            result.c[r][2] &= 0x7ff;
-            result.c[r][3] = 0;
+            result[r][0] = (self[r][0] >> 1) | (self[r][1] << 63);
+            result[r][1] = (self[r][1] >> 1) | (self[r][2] << 63);
+            result[r][2] = (self[r][2] >> 1) | (self[r][0] << 10);
+            result[r][2] &= 0x7ff;
+            result[r][3] = 0;
         }
         result
     }
@@ -97,11 +84,11 @@ impl Cucumbers {
             c: [[0; 4]; HEIGHT],
         };
         for r in 0..HEIGHT {
-            result.c[r][0] = (self.c[r][0] << 1) | (self.c[r][2] >> 10);
-            result.c[r][1] = (self.c[r][1] << 1) | (self.c[r][0] >> 63);
-            result.c[r][2] = (self.c[r][2] << 1) | (self.c[r][1] >> 63);
-            result.c[r][2] &= 0x7ff;
-            result.c[r][3] = 0;
+            result[r][0] = (self[r][0] << 1) | (self[r][2] >> 10);
+            result[r][1] = (self[r][1] << 1) | (self[r][0] >> 63);
+            result[r][2] = (self[r][2] << 1) | (self[r][1] >> 63);
+            result[r][2] &= 0x7ff;
+            result[r][3] = 0;
         }
         result
     }
@@ -109,14 +96,14 @@ impl Cucumbers {
 
 fn advance_right(d: &Cucumbers, r: &Cucumbers) -> Cucumbers {
     let result = r.shift_right();
-    let blocked = &result & &(d | r);
-    &(&result ^ &blocked) | &blocked.shift_left()
+    let blocked = &result & (d | r);
+    (result ^ &blocked) | blocked.shift_left()
 }
 
 fn advance_down(d: &Cucumbers, r: &Cucumbers) -> Cucumbers {
     let result = d.shift_down();
-    let blocked = &result & &(d | r);
-    &(&result ^ &blocked) | &blocked.shift_up()
+    let blocked = &result & (d | r);
+    (result ^ &blocked) | blocked.shift_up()
 }
 
 pub fn part1(input: &str) -> usize {

@@ -1,6 +1,6 @@
+use ahash::AHashMap;
 use itertools::Itertools;
 use std::cmp::max;
-use ahash::AHashMap;
 use std::hash::Hash;
 
 struct IdMap<T> {
