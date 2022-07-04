@@ -412,6 +412,20 @@ impl<T> IndexMut<Coord<i32>> for Vec<Vec<T>> {
     }
 }
 
+impl<T> Index<Coord<usize>> for Vec<Vec<T>> {
+    type Output = T;
+
+    fn index(&self, c: Coord<usize>) -> &T {
+        &self[c.x][c.y]
+    }
+}
+
+impl<T> IndexMut<Coord<usize>> for Vec<Vec<T>> {
+    fn index_mut(&mut self, c: Coord<usize>) -> &mut T {
+        &mut self[c.x][c.y]
+    }
+}
+
 pub fn adjacents(coord: Coord<i64>) -> impl Iterator<Item = Coord<i64>> {
     (-1..2)
         .cartesian_product(-1..2)
