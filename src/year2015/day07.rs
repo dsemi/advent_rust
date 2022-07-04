@@ -1,5 +1,6 @@
 use crate::utils::Cache;
 use ahash::AHashMap;
+use std::fmt::Write;
 
 struct Node<'a>(&'a dyn Fn(u16, u16) -> u16, &'a str, &'a str);
 
@@ -40,6 +41,6 @@ pub fn part1(input: &str) -> u16 {
 
 pub fn part2(input: &str) -> u16 {
     let mut inp = input.to_string();
-    inp.push_str(&format!("\n{} -> b", part1(input)));
+    write!(&mut inp, "\n{} -> b", part1(input)).unwrap();
     lookup(parse_cmds(&inp), "a")
 }

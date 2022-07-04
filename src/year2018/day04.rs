@@ -13,7 +13,7 @@ fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
         if rest.starts_with("Guard") {
             GuardChange(
                 rest.chars()
-                    .filter(|&c| c.is_digit(10))
+                    .filter(|&c| c.is_ascii_digit())
                     .collect::<String>()
                     .parse()
                     .unwrap(),

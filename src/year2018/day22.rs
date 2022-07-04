@@ -116,7 +116,7 @@ pub fn part2(input: &str) -> usize {
 
     fn heur(target: &Coord<i32>, node: &Node) -> usize {
         let dist = *target - node.pos;
-        dist.x.abs() as usize + dist.y.abs() as usize
+        dist.x.unsigned_abs() as usize + dist.y.unsigned_abs() as usize
     }
 
     a_star(

@@ -53,7 +53,8 @@ fn all_paths_and_dist_map(input: &str) -> (Adj, Vec<Vec<char>>) {
         .enumerate()
         .flat_map(|(r, line)| {
             line.chars().enumerate().filter_map(move |(c, v)| {
-                v.is_digit(10).then(|| (Coord::new(r as i32, c as i32), v))
+                v.is_ascii_digit()
+                    .then(|| (Coord::new(r as i32, c as i32), v))
             })
         })
         .collect::<Vec<_>>();
