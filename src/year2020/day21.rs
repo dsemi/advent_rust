@@ -5,8 +5,7 @@ use std::iter::FromIterator;
 fn parse_ings(s: &str) -> Vec<(Vec<&str>, Vec<&str>)> {
     s.lines()
         .map(|line| {
-            let parts: Vec<&str> = line.split(" (contains ").collect();
-            let (ingredients, allergens) = (parts[0], parts[1]);
+            let (ingredients, allergens) = line.split_once(" (contains ").unwrap();
             (
                 ingredients.split(' ').collect(),
                 allergens[..allergens.len() - 1].split(", ").collect(),
