@@ -1,65 +1,69 @@
 use ahash::AHashMap;
 
-type Coord4 = (i64, i64, i64, i64);
+struct Node {
+    pt: (i64, i64, i64, i64),
+    parent: usize,
+    rank: usize,
+}
 
-fn parse_points(input: &str) -> Vec<Coord4> {
+fn parse_points(input: &str) -> Vec<Node> {
     input
         .lines()
-        .map(|line| {
+        .enumerate()
+        .map(|(i, line)| {
             let ns = line
                 .split(',')
                 .map(|x| x.parse().unwrap())
                 .collect::<Vec<_>>();
-            (ns[0], ns[1], ns[2], ns[3])
+            Node {
+                pt: (ns[0], ns[1], ns[2], ns[3]),
+                parent: i,
+                rank: 0,
+            }
         })
         .collect()
 }
 
-fn dist(a: Coord4, b: Coord4) -> i64 {
-    let (w0, x0, y0, z0) = a;
-    let (w1, x1, y1, z1) = b;
+fn dist(a: &Node, b: &Node) -> i64 {
+    let (w0, x0, y0, z0) = a.pt;
+    let (w1, x1, y1, z1) = b.pt;
     (w0 - w1).abs() + (x0 - x1).abs() + (y0 - y1).abs() + (z0 - z1).abs()
 }
 
-fn find(parent: &[usize], mut k: usize) -> usize {
-    while k != parent[k] {
-        k = parent[k]
+fn find(points: &[Node], mut k: usize) -> usize {
+    while k != points[k].parent {
+        k = points[k].parent
     }
     k
 }
 
-fn union(parent: &mut [usize], rank: &mut [usize], x: usize, y: usize) {
-    let x_root = find(parent, x);
-    let y_root = find(parent, y);
+fn union(points: &mut [Node], x: usize, y: usize) {
+    let x_root = find(points, x);
+    let y_root = find(points, y);
     if x_root == y_root {
         return;
     }
-    if rank[x_root] < rank[y_root] {
-        parent[x_root] = y_root;
-    } else if rank[x_root] > rank[y_root] {
-        parent[y_root] = x_root;
+    if points[x_root].rank < points[y_root].rank {
+        points[x_root].parent = y_root;
+    } else if points[x_root].rank > points[y_root].rank {
+        points[y_root].parent = x_root;
     } else {
-        parent[y_root] = x_root;
-        rank[x_root] += 1;
+        points[y_root].parent = x_root;
+        points[x_root].rank += 1;
     }
 }
 
-fn constellations(pts: Vec<Coord4>) -> usize {
-    let mut parent = vec![0; pts.len()];
-    for (i, p) in parent.iter_mut().enumerate() {
-        *p = i;
-    }
-    let mut rank = vec![0; pts.len()];
+fn constellations(mut pts: Vec<Node>) -> usize {
     for i in 0..pts.len() {
         for j in i + 1..pts.len() {
-            if dist(pts[i], pts[j]) <= 3 {
-                union(&mut parent, &mut rank, i, j);
+            if dist(&pts[i], &pts[j]) <= 3 {
+                union(&mut pts, i, j);
             }
         }
     }
     let mut m = AHashMap::new();
     for p in 0..pts.len() {
-        m.insert(find(&parent, p), true);
+        m.insert(find(&pts, p), true);
     }
     m.len()
 }
