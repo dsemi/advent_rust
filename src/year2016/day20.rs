@@ -4,17 +4,15 @@ use std::iter::Peekable;
 type IpRange = (u64, u64);
 
 struct IpRanges<I> {
-    current: Option<IpRange>,
     ips: I,
 }
 
 impl<I> IpRanges<I> {
-    fn new(mut ips: I) -> IpRanges<Peekable<I>>
+    fn new(ips: I) -> IpRanges<Peekable<I>>
     where
         I: Iterator<Item = IpRange>,
     {
         IpRanges {
-            current: ips.next(),
             ips: ips.peekable(),
         }
     }
@@ -27,11 +25,10 @@ where
     type Item = IpRange;
 
     fn next(&mut self) -> Option<IpRange> {
-        let mut curr = self.current?;
+        let mut curr = self.ips.next()?;
         while self.ips.peek().is_some() && self.ips.peek()?.0 <= curr.1 + 1 {
             curr.1 = max(curr.1, self.ips.next()?.1);
         }
-        self.current = self.ips.next();
         Some(curr)
     }
 }
