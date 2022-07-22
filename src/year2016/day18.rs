@@ -10,18 +10,21 @@ fn safe_or_trap(a: char, b: char, c: char) -> char {
 
 fn num_safe(n: usize, input: &str) -> usize {
     let mut state = input.chars().collect::<Vec<_>>();
+    state.push('.');
     let mut total = 0;
     for _ in 0..n {
-        total += state.iter().filter(|&x| *x == '.').count();
-        state = (0..state.len())
-            .map(|i| {
-                safe_or_trap(
-                    *state.get(i - 1).unwrap_or(&'.'),
-                    state[i],
-                    *state.get(i + 1).unwrap_or(&'.'),
-                )
-            })
-            .collect();
+        total += state[..state.len() - 1]
+            .iter()
+            .filter(|&x| *x == '.')
+            .count();
+        let mut prev = '.';
+        for i in 0..state.len() - 1 {
+            state[i] = safe_or_trap(
+                std::mem::replace(&mut prev, state[i]),
+                state[i],
+                state[i + 1],
+            );
+        }
     }
     total
 }
