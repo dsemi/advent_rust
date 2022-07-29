@@ -436,7 +436,7 @@ pub fn dist<T: Copy + Num + Signed>(a: &Coord<T>, b: &Coord<T>) -> T {
     (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
-#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Coord3<T> {
     pub x: T,
     pub y: T,
@@ -451,14 +451,6 @@ where
 {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
-    }
-
-    pub fn scale(&self, n: T) -> Self {
-        Self {
-            x: self.x * n,
-            y: self.y * n,
-            z: self.z * n,
-        }
     }
 
     pub fn div(&self, n: T) -> Self {

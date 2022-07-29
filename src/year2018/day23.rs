@@ -10,14 +10,7 @@ struct Nanobot {
 impl Nanobot {
     fn in_range(&self, coord: Coord3<i64>) -> bool {
         let p = self.pos - coord;
-        p.x.abs() + p.y.abs() + p.z.abs() <= self.radius
-    }
-
-    fn div(&self, n: i64) -> Self {
-        Nanobot {
-            pos: self.pos.div(n),
-            radius: self.radius / n,
-        }
+        p.abs().sum() <= self.radius
     }
 }
 
@@ -40,47 +33,85 @@ pub fn part1(input: &str) -> usize {
     ns.iter().filter(|n| max_bot.in_range(n.pos)).count()
 }
 
+#[derive(Debug)]
+struct Cube {
+    lo: Coord3<i64>,
+    hi: Coord3<i64>,
+}
+
+impl Cube {
+    fn children(&self) -> Vec<Cube> {
+        let mid = (self.lo + self.hi).div(2);
+        vec![
+            Cube {
+                lo: Coord3::new(mid.x + 1, mid.y + 1, mid.z + 1),
+                hi: Coord3::new(self.hi.x, self.hi.y, self.hi.z),
+            },
+            Cube {
+                lo: Coord3::new(mid.x + 1, mid.y + 1, self.lo.z),
+                hi: Coord3::new(self.hi.x, self.hi.y, mid.z),
+            },
+            Cube {
+                lo: Coord3::new(mid.x + 1, self.lo.y, mid.z + 1),
+                hi: Coord3::new(self.hi.x, mid.y, self.hi.z),
+            },
+            Cube {
+                lo: Coord3::new(mid.x + 1, self.lo.y, self.lo.z),
+                hi: Coord3::new(self.hi.x, mid.y, mid.z),
+            },
+            Cube {
+                lo: Coord3::new(self.lo.x, mid.y + 1, mid.z + 1),
+                hi: Coord3::new(mid.x, self.hi.y, self.hi.z),
+            },
+            Cube {
+                lo: Coord3::new(self.lo.x, mid.y + 1, self.lo.z),
+                hi: Coord3::new(mid.x, self.hi.y, mid.z),
+            },
+            Cube {
+                lo: Coord3::new(self.lo.x, self.lo.y, mid.z + 1),
+                hi: Coord3::new(mid.x, mid.y, self.hi.z),
+            },
+            Cube {
+                lo: Coord3::new(self.lo.x, self.lo.y, self.lo.z),
+                hi: Coord3::new(mid.x, mid.y, mid.z),
+            },
+        ]
+    }
+
+    fn in_range(&self, n: &Nanobot) -> bool {
+        let p = Coord3::new(
+            max(self.lo.x, min(self.hi.x, n.pos.x)),
+            max(self.lo.y, min(self.hi.y, n.pos.y)),
+            max(self.lo.z, min(self.hi.z, n.pos.z)),
+        );
+        (p - n.pos).abs().sum() <= n.radius
+    }
+}
+
 pub fn part2(input: &str) -> i64 {
     let ns = parse_nanobots(input);
-    let mut n = 10_000_000;
-    let mut min_coord = ns
-        .iter()
-        .map(|n| n.pos)
-        .reduce(|a, b| Coord3::new(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)))
-        .unwrap()
-        .div(n);
-    let mut max_coord = ns
-        .iter()
-        .map(|n| n.pos)
-        .reduce(|a, b| Coord3::new(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
-        .unwrap()
-        .div(n);
-    let mut coord = Coord3::new(0, 0, 0);
-    while n != 0 {
-        let ns2 = ns.iter().map(|b| b.div(n)).collect::<Vec<_>>();
-        let ns2r = &ns2;
-        coord = (min_coord.x..=max_coord.x)
-            .flat_map(|x| {
-                (min_coord.y..=max_coord.y).flat_map(move |y| {
-                    (min_coord.z..=max_coord.z).map(move |z| {
-                        let p = Coord3::new(x, y, z);
-                        let cnt = ns2r.iter().filter(|b| b.in_range(p)).count();
-                        (cnt, p)
-                    })
-                })
-            })
-            .reduce(|(ac, ap), (bc, bp)| {
-                if (bc, -bp) > (ac, -ap) {
-                    (bc, bp)
-                } else {
-                    (ac, ap)
-                }
-            })
-            .unwrap()
-            .1;
-        min_coord = (coord - Coord3::new(1, 1, 1)).scale(10);
-        max_coord = (coord + Coord3::new(1, 1, 1)).scale(10);
-        n /= 10;
+    let mut cube = Cube {
+        lo: Coord3::new(i64::MAX, i64::MAX, i64::MAX),
+        hi: Coord3::new(i64::MIN, i64::MIN, i64::MIN),
+    };
+    for n in ns.iter() {
+        cube.lo = Coord3::new(
+            min(cube.lo.x, n.pos.x - n.radius),
+            min(cube.lo.y, n.pos.y - n.radius),
+            min(cube.lo.z, n.pos.z - n.radius),
+        );
+        cube.hi = Coord3::new(
+            max(cube.hi.x, n.pos.x + n.radius),
+            max(cube.hi.y, n.pos.y + n.radius),
+            max(cube.hi.z, n.pos.z + n.radius),
+        );
     }
-    coord.x + coord.y + coord.z
+    while cube.lo.x < cube.hi.x || cube.lo.y < cube.hi.y || cube.lo.z < cube.hi.z {
+        cube = cube
+            .children()
+            .into_iter()
+            .max_by_key(|c| ns.iter().filter(|n| c.in_range(n)).count())
+            .unwrap();
+    }
+    cube.lo.abs().sum()
 }
