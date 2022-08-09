@@ -30,18 +30,17 @@ impl Floors {
 
 fn parse_floors(input: &str) -> Floors {
     let mut tbl = AHashMap::new();
-    let re = Regex::new(r"\S+ (microchip|generator)").unwrap();
+    let re = Regex::new(r"(\w+)(?:-compatible)? (microchip|generator)").unwrap();
     for (i, line) in input.lines().enumerate() {
-        for item in re.find_iter(line) {
-            match item.as_str().split_once(' ').unwrap() {
-                (radiation, "generator") => {
-                    let e = tbl.entry(radiation).or_insert(Pair { chip: 0, gen: 0 });
+        for cap in re.captures_iter(line) {
+            let e = tbl
+                .entry(cap[1].to_owned())
+                .or_insert(Pair { chip: 0, gen: 0 });
+            match &cap[2] {
+                "generator" => {
                     e.gen = i as i32 + 1;
                 }
-                (compat, "microchip") => {
-                    let e = tbl
-                        .entry(compat.split_once('-').unwrap().0)
-                        .or_insert(Pair { chip: 0, gen: 0 });
+                "microchip" => {
                     e.chip = i as i32 + 1;
                 }
                 _ => panic!("Invalid input: {}", line),
@@ -74,13 +73,13 @@ fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
 fn neighbors(floors: &Floors) -> Vec<Floors> {
     let mut result = Vec::new();
     let mut neighbs = AHashSet::new();
-    for e in &[floors.elev + 1, floors.elev - 1] {
-        if *e > 0 && *e <= 4 {
-            for mut floors2 in all_moves(floors, *e) {
+    for e in [floors.elev + 1, floors.elev - 1] {
+        if e > 0 && e <= 4 {
+            for mut floors2 in all_moves(floors, e) {
                 if floors2.is_valid() {
                     floors2.flrs.sort();
                     let neighb = Floors {
-                        elev: *e,
+                        elev: e,
                         flrs: floors2.flrs.clone(),
                     };
                     if !neighbs.contains(&neighb) {
@@ -88,11 +87,11 @@ fn neighbors(floors: &Floors) -> Vec<Floors> {
                         result.push(neighb);
                     }
                 }
-                for mut floors3 in all_moves(&floors2, *e) {
+                for mut floors3 in all_moves(&floors2, e) {
                     if floors3.is_valid() {
                         floors3.flrs.sort();
                         let neighb = Floors {
-                            elev: *e,
+                            elev: e,
                             flrs: floors3.flrs,
                         };
                         if !neighbs.contains(&neighb) {
