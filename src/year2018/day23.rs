@@ -84,7 +84,7 @@ impl Cube {
             max(self.lo.y, min(self.hi.y, n.pos.y)),
             max(self.lo.z, min(self.hi.z, n.pos.z)),
         );
-        (p - n.pos).abs().sum() <= n.radius
+        n.in_range(p)
     }
 }
 
