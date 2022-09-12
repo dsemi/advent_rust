@@ -7,6 +7,21 @@ enum Action {
     Partner(char, char),
 }
 
+struct Line {
+    offset: usize,
+    s: String,
+}
+
+impl Line {
+    fn to_string(&self) -> String {
+        let mut s = String::with_capacity(self.s.len());
+        for i in 0..self.s.len() {
+            s.push(self.s.as_bytes()[(self.offset + i).rem_euclid(self.s.len())] as char);
+        }
+        s
+    }
+}
+
 fn parse_actions(input: &str) -> Vec<Action> {
     input
         .split(',')
@@ -25,28 +40,35 @@ fn parse_actions(input: &str) -> Vec<Action> {
         .collect()
 }
 
-fn apply_action(s: &mut str, action: &Action) {
+fn apply_action(l: &mut Line, action: &Action) {
     unsafe {
         match action {
             Spin(n) => {
-                s.as_bytes_mut().rotate_right(*n);
+                l.offset -= *n;
             }
             Exchange(i, j) => {
-                s.as_bytes_mut().swap(*i, *j);
+                let len = l.s.len();
+                l.s.as_bytes_mut().swap(
+                    (l.offset + *i).rem_euclid(len),
+                    (l.offset + *j).rem_euclid(len),
+                );
             }
             Partner(a, b) => {
-                let (i, j) = (s.find(*a).unwrap(), s.find(*b).unwrap());
-                s.as_bytes_mut().swap(i, j);
+                let (i, j) = (l.s.find(*a).unwrap(), l.s.find(*b).unwrap());
+                l.s.as_bytes_mut().swap(i, j);
             }
         }
     }
 }
 
 fn dance(n: usize, actions: Vec<Action>) -> String {
-    let mut result = "abcdefghijklmnop".to_string();
+    let mut result = Line {
+        offset: 0,
+        s: "abcdefghijklmnop".to_string(),
+    };
     let mut tbl = AHashMap::new();
     for c in 0..n {
-        if let Some(v) = tbl.insert(result.clone(), c) {
+        if let Some(v) = tbl.insert(result.to_string(), c) {
             for _ in 0..((n - c) % (c - v)) {
                 for action in &actions {
                     apply_action(&mut result, action);
@@ -58,7 +80,7 @@ fn dance(n: usize, actions: Vec<Action>) -> String {
             apply_action(&mut result, action);
         }
     }
-    result
+    result.to_string()
 }
 
 pub fn part1(input: &str) -> String {
