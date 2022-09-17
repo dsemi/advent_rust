@@ -96,7 +96,7 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
         }
         if let Some(t_pos) = neighbors(&pos)
             .filter(|&n| grid[n.x as usize][n.y as usize].0 == enemy)
-            .min_by_key(|n| grid[n.x as usize][n.y as usize])
+            .min_by_key(|n| grid[n.x as usize][n.y as usize].1)
         {
             let pwr = if v.0 == 'E' { elf_power } else { 3 };
             let (t, hp) = grid[t_pos.x as usize][t_pos.y as usize];
