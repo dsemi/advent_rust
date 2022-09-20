@@ -128,7 +128,7 @@ impl Maze {
                     }
                     vec![(r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)]
                         .into_iter()
-                        .filter_map(|(r, c)| (self.grid[r][c] != Tile::Wall).then(|| (r, c)))
+                        .filter(|&(r, c)| self.grid[r][c] != Tile::Wall)
                         .collect()
                 })
                 .filter(|(_, (r, c))| self.grid[*r][*c] != Tile::Floor),
