@@ -45,22 +45,32 @@ fn run_problem(year: i64, day: i64) -> f64 {
         let (part1, part2) = f();
         println!("Day {day}");
         let (t1, ans) = run_part(part1, &contents);
-        println!(
-            "Part 1: {:>50}  Elapsed time {} seconds",
-            ans,
-            colorize_time(t1)
-        );
+        print_output(1, ans, t1);
         let (t2, ans) = run_part(part2, &contents);
-        println!(
-            "Part 2: {:>50}  Elapsed time {} seconds",
-            ans,
-            colorize_time(t2)
-        );
+        print_output(2, ans, t2);
         println!();
         t1 + t2
     } else {
         println!("{year} Day {day} not implemented");
         0.0
+    }
+}
+
+fn print_output(part: usize, output: String, t: f64) {
+    print!("Part {}: ", part);
+    let lns = output.lines().collect::<Vec<_>>();
+    let len = lns.len();
+
+    for (i, ln) in lns.into_iter().enumerate() {
+        if i == len - 1 {
+            if i == 0 {
+                println!("{:>54}  Elapsed time {} seconds", ln, colorize_time(t));
+            } else {
+                println!("{:62}  Elapsed time {} seconds", ln, colorize_time(t));
+            }
+        } else {
+            println!("{}", ln);
+        }
     }
 }
 
@@ -90,6 +100,6 @@ fn main() {
         });
         total += t;
     }
-    println!("Max: Day {:2} {:66.3} seconds", max_day.1, max_day.0);
-    println!("Total: {total:71.3} seconds");
+    println!("Max: Day {:2} {:70.3} seconds", max_day.1, max_day.0);
+    println!("Total: {total:75.3} seconds");
 }

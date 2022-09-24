@@ -56,8 +56,9 @@ fn find_message(objs: &mut [Obj]) -> usize {
 fn show_objects(objs: &[Obj]) -> String {
     let lights = objs.iter().map(|obj| obj.pos).collect::<AHashSet<_>>();
     let (x0, y0, x1, y1) = bounding_box(objs);
-    let mut result = "\n".to_owned();
+    let mut result = String::new();
     for y in y0..=y1 {
+        result.push('\n');
         for x in x0..=x1 {
             result.push(if lights.contains(&Coord::new(x, y)) {
                 '#'
@@ -65,7 +66,6 @@ fn show_objects(objs: &[Obj]) -> String {
                 ' '
             });
         }
-        result.push('\n');
     }
     result
 }
