@@ -48,31 +48,25 @@ pub fn part1(input: &str) -> i64 {
         .sum()
 }
 
-fn find_cycle(moons: Vec<Moon>) -> u64 {
-    let mut ms = moons.clone();
-    let mut i = 1;
-    loop {
-        step(&mut ms);
-        if ms == moons {
-            return i;
-        }
-        i += 1;
-    }
-}
-
 pub fn part2(input: &str) -> Option<u64> {
     let moons = parse_moons(input);
     (0..=2)
         .map(|n| {
-            find_cycle(
-                moons
-                    .iter()
-                    .map(|m| Moon {
-                        pos: vec![m.pos[n]],
-                        vel: vec![m.vel[n]],
-                    })
-                    .collect(),
-            )
+            let mut degen = moons
+                .iter()
+                .map(|m| Moon {
+                    pos: vec![m.pos[n]],
+                    vel: vec![m.vel[n]],
+                })
+                .collect::<Vec<_>>();
+            let mut counter = 1;
+            loop {
+                step(&mut degen);
+                if degen.iter().all(|m| m.vel.iter().all(|&v| v == 0)) {
+                    break counter * 2;
+                }
+                counter += 1;
+            }
         })
         .reduce(lcm)
 }
