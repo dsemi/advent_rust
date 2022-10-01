@@ -70,19 +70,77 @@ fn visibilities(pt: &Coord<i32>, pts: &[Coord<i32>]) -> Vec<Vec<Coord<i32>>> {
     m.into_values().collect()
 }
 
-fn max_detected(asts: Vec<Coord<i32>>) -> Vec<Vec<Coord<i32>>> {
-    asts.iter()
-        .map(|ast| visibilities(ast, &asts))
-        .max_by_key(|x| x.len())
-        .unwrap()
+fn max_detected(input: &str) -> Vec<Vec<Coord<i32>>> {
+    let asts = parse_coords(input);
+    let dim = input.chars().position(|c| c == '\n').unwrap();
+    let fs = fractions(dim);
+    let mut reduced = [[0; 50]; 50];
+    for (i, f) in fs.into_iter().enumerate() {
+        let mut g = f;
+        while g.y < dim as i32 && g.x < dim as i32 {
+            reduced[g.y as usize][g.x as usize] = i;
+            g += f;
+        }
+    }
+    let max = asts
+        .iter()
+        .max_by_key(|&ast| {
+            let mut visible = asts.len() - 1;
+            let mut b = [[false; 2048]; 4];
+            for ast2 in asts.iter() {
+                if ast == ast2 {
+                    continue;
+                }
+                let mut dx = ast.y - ast2.y;
+                let mut dy = ast2.x - ast.x;
+                let mut quad = 0;
+                if dy > 0 && dx <= 0 {
+                    quad = 1;
+                    dx = std::mem::replace(&mut dy, -dx);
+                } else if dx < 0 && dy <= 0 {
+                    quad = 2;
+                    dx = -dx;
+                    dy = -dy;
+                } else if dx >= 0 && dy < 0 {
+                    quad = 3;
+                    dy = std::mem::replace(&mut dx, -dy);
+                }
+                let g = reduced[dy as usize][dx as usize];
+                if std::mem::replace(&mut b[quad][g], true) {
+                    visible -= 1;
+                }
+            }
+            visible
+        })
+        .unwrap();
+    visibilities(max, &asts)
+}
+
+fn fractions(n: usize) -> Vec<Coord<i32>> {
+    let mut fs = Vec::new();
+    let mut stack = vec![Coord::new(1, 1)];
+    let mut l = Coord::new(1, 0);
+    while let Some(mut r) = stack.last().map(|x| x.clone()) {
+        fs.push(l);
+        while l.x + r.x < n as i32 {
+            r += l;
+            stack.push(r);
+        }
+        l = stack.pop().unwrap();
+    }
+    fs.push(Coord::new(1, 1));
+    for i in (1..fs.len() - 1).rev() {
+        fs.push(Coord::new(fs[i].y, fs[i].x));
+    }
+    fs
 }
 
 pub fn part1(input: &str) -> usize {
-    max_detected(parse_coords(input)).len()
+    max_detected(input).len()
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    max_detected(parse_coords(input))
+    max_detected(input)
         .into_iter()
         .map(|x| x.into_iter())
         .cycle()
