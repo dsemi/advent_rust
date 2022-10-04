@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
+use Instr::*;
 
 fn parse_instrs(input: &str) -> Vec<i64> {
     input.split(',').map(|x| x.parse().unwrap()).collect()
@@ -59,29 +60,33 @@ impl IndexMut<i64> for Program {
 }
 
 impl Program {
-    fn arg(&self, i: i64) -> i64 {
-        let mode = self[self.idx] / 10_i64.pow((i + 1).try_into().unwrap()) % 10;
-        match mode {
-            0 => self[self.idx + i],
-            1 => self.idx + i,
-            2 => self[self.idx + i] + self.rel_base,
+    fn arg(&mut self, idx: i64) -> i64 {
+        let mode = self[idx] / 10_i64.pow((self.idx - idx + 1).try_into().unwrap()) % 10;
+        let val = match mode {
+            0 => self[self.idx],
+            1 => self.idx,
+            2 => self[self.idx] + self.rel_base,
             _ => panic!("Unknown mode"),
-        }
+        };
+        self.idx += 1;
+        val
     }
 
     fn parse_instr(&mut self) -> Instr {
-        let op_code = self[self.idx] % 100;
+        let idx = self.idx;
+        let op_code = self[idx] % 100;
+        self.idx += 1;
         match op_code {
-            1 => Instr::Add(self.arg(1), self.arg(2), self.arg(3)),
-            2 => Instr::Mul(self.arg(1), self.arg(2), self.arg(3)),
-            3 => Instr::Sav(self.arg(1)),
-            4 => Instr::Out(self.arg(1)),
-            5 => Instr::Jit(self.arg(1), self.arg(2)),
-            6 => Instr::Jif(self.arg(1), self.arg(2)),
-            7 => Instr::Lt(self.arg(1), self.arg(2), self.arg(3)),
-            8 => Instr::Eql(self.arg(1), self.arg(2), self.arg(3)),
-            9 => Instr::Arb(self.arg(1)),
-            99 => Instr::Hlt,
+            1 => Add(self.arg(idx), self.arg(idx), self.arg(idx)),
+            2 => Mul(self.arg(idx), self.arg(idx), self.arg(idx)),
+            3 => Sav(self.arg(idx)),
+            4 => Out(self.arg(idx)),
+            5 => Jit(self.arg(idx), self.arg(idx)),
+            6 => Jif(self.arg(idx), self.arg(idx)),
+            7 => Lt(self.arg(idx), self.arg(idx), self.arg(idx)),
+            8 => Eql(self.arg(idx), self.arg(idx), self.arg(idx)),
+            9 => Arb(self.arg(idx)),
+            99 => Hlt,
             _ => panic!("Unknown instr {}", op_code),
         }
     }
@@ -100,52 +105,23 @@ impl Program {
         assert!(!self.done);
         loop {
             match self.parse_instr() {
-                Instr::Add(a, b, c) => {
-                    self[c] = self[a] + self[b];
-                    self.idx += 4;
-                }
-                Instr::Mul(a, b, c) => {
-                    self[c] = self[a] * self[b];
-                    self.idx += 4;
-                }
-                Instr::Sav(a) => {
-                    if self.input.is_empty() {
+                Add(a, b, c) => self[c] = self[a] + self[b],
+                Mul(a, b, c) => self[c] = self[a] * self[b],
+                Sav(a) => {
+                    if let Some(v) = self.input.pop_front() {
+                        self[a] = v;
+                    } else {
+                        self.idx -= 2;
                         break;
                     }
-                    self[a] = self.input.pop_front().unwrap();
-                    self.idx += 2;
                 }
-                Instr::Out(a) => {
-                    self.output.push_back(self[a]);
-                    self.idx += 2;
-                }
-                Instr::Jit(a, b) => {
-                    if self[a] != 0 {
-                        self.idx = self[b];
-                    } else {
-                        self.idx += 3;
-                    }
-                }
-                Instr::Jif(a, b) => {
-                    if self[a] == 0 {
-                        self.idx = self[b];
-                    } else {
-                        self.idx += 3;
-                    }
-                }
-                Instr::Lt(a, b, c) => {
-                    self[c] = (self[a] < self[b]) as i64;
-                    self.idx += 4;
-                }
-                Instr::Eql(a, b, c) => {
-                    self[c] = (self[a] == self[b]) as i64;
-                    self.idx += 4;
-                }
-                Instr::Arb(a) => {
-                    self.rel_base += self[a];
-                    self.idx += 2;
-                }
-                Instr::Hlt => {
+                Out(a) => self.output.push_back(self[a]),
+                Jit(a, b) => self.idx = if self[a] != 0 { self[b] } else { self.idx },
+                Jif(a, b) => self.idx = if self[a] == 0 { self[b] } else { self.idx },
+                Lt(a, b, c) => self[c] = (self[a] < self[b]) as i64,
+                Eql(a, b, c) => self[c] = (self[a] == self[b]) as i64,
+                Arb(a) => self.rel_base += self[a],
+                Hlt => {
                     self.done = true;
                     break;
                 }
