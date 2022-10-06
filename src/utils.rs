@@ -755,22 +755,6 @@ pub fn int<T: FromStr>(i: &str) -> IResult<&str, T> {
     })(i)
 }
 
-macro_rules! adj_w_diag {
-    ($grid:ident, $r:ident, $c:ident) => {
-        vec![
-            $grid[$r - 1][$c - 1],
-            $grid[$r - 1][$c],
-            $grid[$r - 1][$c + 1],
-            $grid[$r][$c - 1],
-            $grid[$r][$c],
-            $grid[$r][$c + 1],
-            $grid[$r + 1][$c - 1],
-            $grid[$r + 1][$c],
-            $grid[$r + 1][$c + 1],
-        ]
-    };
-}
-
 pub fn bits<T>(n: T) -> Bits<T> {
     Bits { n }
 }
