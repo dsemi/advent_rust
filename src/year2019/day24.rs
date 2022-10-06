@@ -1,134 +1,94 @@
 use ahash::AHashSet;
-use std::collections::VecDeque;
 
-type Planet = Vec<Vec<bool>>;
-
-fn parse_grid(input: &str) -> Planet {
+fn parse(input: &str) -> u64 {
     input
         .lines()
-        .map(|row| row.chars().map(|v| v == '#').collect())
-        .collect()
+        .flat_map(|row| row.chars().map(|v| (v == '#') as u64))
+        .rev()
+        .fold(0, |a, b| a << 2 | b)
 }
 
-fn neighbor_counts(p: &[Vec<bool>]) -> Vec<Vec<u64>> {
-    let mut result = vec![vec![0; p[0].len()]; p.len()];
-    for r in 0..p.len() {
-        for c in 0..p[r].len() {
-            for (dr, dc) in &[(-1, 0), (1, 0), (0, -1), (0, 1)] {
-                let r2 = r as i32 + dr;
-                let c2 = c as i32 + dc;
-                if r2 >= 0 && r2 < p.len() as i32 && c2 >= 0 && c2 < p[r2 as usize].len() as i32 {
-                    result[r][c] += p[r2 as usize][c2 as usize] as u64;
-                }
-            }
-        }
-    }
-    result
+fn sacc(x: u64, a: u64) -> u64 {
+    const MASK: u64 = 0x5555555555555555;
+    ((x & !MASK) | (x & MASK) + a) ^ (a & x & (x >> 1))
 }
 
-fn next_bug(v: bool, adj_bugs: u64) -> bool {
-    if v {
-        adj_bugs == 1
-    } else {
-        adj_bugs == 1 || adj_bugs == 2
-    }
+fn even_bits(grid: u64) -> u32 {
+    let mut b = (grid | (grid >> 31)) as u32;
+    b = (b & 0x99999999) | (b & 0x22222222) << 1 | (b & 0x44444444) >> 1;
+    b = (b & 0xc3c3c3c3) | (b & 0x0c0c0c0c) << 2 | (b & 0x30303030) >> 2;
+    b = (b & 0xf00ff00f) | (b & 0x00f000f0) << 4 | (b & 0x0f000f00) >> 4;
+    b = (b & 0xff0000ff) | (b & 0x0000ff00) << 8 | (b & 0x00ff0000) >> 8;
+    b
 }
 
-fn biodiversity(p: &[Vec<bool>]) -> u64 {
-    let mut i = 1;
-    let mut result = 0;
-    for row in p {
-        for v in row {
-            result += i * *v as u64;
-            i *= 2;
-        }
-    }
-    result
+fn neighbors4(grid: u64) -> u64 {
+    let mut n = sacc(grid << 10, grid >> 10);
+    n = sacc(n, (grid & 0x0ff3fcff3fcff) << 2);
+    n = sacc(n, (grid & 0x3fcff3fcff3fc) >> 2);
+    n
 }
 
-pub fn part1(input: &str) -> u64 {
-    let mut planet = parse_grid(input);
+fn life_or_death(grid: u64, n: u64, mask: u64) -> u64 {
+    let survived = grid & (n & !(n >> 1));
+    let born = !grid & (n ^ (n >> 1));
+    (survived | born) & mask
+}
+
+fn next(grid: u64) -> u64 {
+    life_or_death(grid, neighbors4(grid), 0x1555555555555)
+}
+
+pub fn part1(input: &str) -> u32 {
+    let mut planet = parse(input);
     let mut s = AHashSet::new();
-    let mut result = biodiversity(&planet);
-    while s.insert(result) {
-        let counts = neighbor_counts(&planet);
-        for (r, row) in planet.iter_mut().enumerate() {
-            for (c, v) in row.iter_mut().enumerate() {
-                *v = next_bug(*v, counts[r][c]);
-            }
-        }
-        result = biodiversity(&planet);
+    while s.insert(planet) {
+        planet = next(planet)
     }
-    result
+    even_bits(planet)
 }
 
-fn step(planets: &mut VecDeque<Planet>, empty: &[Vec<bool>]) {
-    planets.push_front(empty.to_owned());
-    planets.push_back(empty.to_owned());
-    let mut counts = planets
-        .iter()
-        .map(|p| neighbor_counts(p))
-        .collect::<Vec<_>>();
-    for i in 1..counts.len() - 1 {
-        for (r, row) in counts[i].iter_mut().enumerate() {
-            for (c, v) in row.iter_mut().enumerate() {
-                if r == 2 && c == 2 {
-                    *v = 0;
-                } else if r == 1 && c == 2 {
-                    for x in 0..5 {
-                        *v += planets[i + 1][0][x] as u64;
-                    }
-                } else if r == 3 && c == 2 {
-                    for x in 0..5 {
-                        *v += planets[i + 1][4][x] as u64;
-                    }
-                } else if r == 2 && c == 1 {
-                    for y in 0..5 {
-                        *v += planets[i + 1][y][0] as u64;
-                    }
-                } else if r == 2 && c == 3 {
-                    for y in 0..5 {
-                        *v += planets[i + 1][y][4] as u64;
-                    }
-                } else {
-                    if r == 0 {
-                        *v += planets[i - 1][1][2] as u64;
-                    } else if r == 4 {
-                        *v += planets[i - 1][3][2] as u64;
-                    }
-                    if c == 0 {
-                        *v += planets[i - 1][2][1] as u64;
-                    } else if c == 4 {
-                        *v += planets[i - 1][2][3] as u64;
-                    }
-                }
-            }
-        }
-    }
+fn step(inner: u64, grid: u64, outer: u64) -> u64 {
+    const UMASK: u64 = 0x155;
+    const DMASK: u64 = UMASK << 40;
+    const LMASK: u64 = 0x10040100401;
+    const RMASK: u64 = LMASK << 8;
 
-    for (i, planet) in planets.iter_mut().enumerate() {
-        for (r, row) in planet.iter_mut().enumerate() {
-            for (c, v) in row.iter_mut().enumerate() {
-                *v = next_bug(*v, counts[i][r][c]);
-            }
-        }
-    }
+    const IMASK: u64 = 0x404404000;
+    const IUDMASK: u64 = 0x400004000;
+
+    let oud =
+        (u64::MAX - ((outer >> 14) & 1) + 1) & UMASK | (u64::MAX - ((outer >> 34) & 1) + 1) & DMASK;
+    let olr =
+        (u64::MAX - ((outer >> 22) & 1) + 1) & LMASK | (u64::MAX - ((outer >> 26) & 1) + 1) & RMASK;
+
+    let iud = (inner & UMASK) << 10 | (inner & DMASK) >> 10;
+    let ilr = (inner & LMASK) << 2 | (inner & RMASK) >> 2;
+
+    let mut n = neighbors4(grid);
+    n = sacc(n, oud);
+    n = sacc(n, olr);
+    n = sacc(n, (iud | ilr) & IMASK);
+    n = sacc(n, (iud >> 2 | ilr >> 10) & IMASK);
+    n = sacc(n, (iud << 2 | ilr << 10) & IMASK);
+    n = sacc(n, ((iud >> 4 & IUDMASK) | ilr >> 20) & IMASK);
+    n = sacc(n, ((iud << 4 & IUDMASK) | ilr << 20) & IMASK);
+
+    life_or_death(grid, n, 0x1555554555555)
 }
 
-pub fn part2(input: &str) -> usize {
-    let empty = vec![vec![false; 5]; 5];
-    let mut planets = vec![empty.clone(), parse_grid(input), empty.clone()]
-        .into_iter()
-        .collect();
+pub fn part2(input: &str) -> u32 {
+    let mut planets = vec![0, parse(input), 0];
     for _ in 0..200 {
-        step(&mut planets, &empty);
+        planets = (0..planets.len() + 2)
+            .map(|i| {
+                step(
+                    *planets.get(i - 2).unwrap_or(&0),
+                    *planets.get(i - 1).unwrap_or(&0),
+                    *planets.get(i).unwrap_or(&0),
+                )
+            })
+            .collect();
     }
-    planets
-        .into_iter()
-        .map(|p| {
-            p.into_iter()
-                .map(|row| row.into_iter().filter(|&v| v).count())
-                .sum::<usize>()
-        })
-        .sum()
+    planets.into_iter().map(|p| p.count_ones()).sum()
 }
