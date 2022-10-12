@@ -1,5 +1,6 @@
+use crate::utils::*;
 use lazy_static::lazy_static;
-use std::cmp::{max, min};
+use std::cmp::max;
 
 struct Spell {
     cost: i32,
@@ -7,12 +8,11 @@ struct Spell {
     active: fn(&Game) -> bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 struct Game {
     player_health: i32,
     player_mana: i32,
     player_armor: i32,
-    spent_mana: i32,
     boss_health: i32,
     boss_damage: i32,
     shield_turns: i32,
@@ -82,7 +82,6 @@ fn parse_boss(input: &str) -> Game {
         player_health: 50,
         player_mana: 500,
         player_armor: 0,
-        spent_mana: 0,
         boss_health: v[0],
         boss_damage: v[1],
         shield_turns: 0,
@@ -91,49 +90,43 @@ fn parse_boss(input: &str) -> Game {
     }
 }
 
-fn min_cost_to_win(s: Game, hard: bool) -> Option<i32> {
-    let mut states = vec![s];
-    let mut result = None;
-    while let Some(mut state) = states.pop() {
-        if hard {
-            state.player_health -= 1;
-            if state.player_health <= 0 {
-                continue;
-            }
+fn neighbors(s: &Game, hard: bool) -> Vec<(usize, Game)> {
+    let mut state = s.clone();
+    if hard {
+        state.player_health -= 1;
+        if state.player_health <= 0 {
+            return vec![];
         }
-        apply_effects(&mut state);
-        if state.boss_health <= 0 {
-            result = Some(result.map_or(state.spent_mana, |v| min(v, state.spent_mana)));
-            continue;
-        }
-        for spell in SPELLS.iter() {
-            if state.player_mana >= spell.cost
-                && (result.is_none() || state.spent_mana + spell.cost < result.unwrap())
-                && !(spell.active)(&state)
-            {
-                let mut new_state = state.clone();
-                new_state.player_mana -= spell.cost;
-                new_state.spent_mana += spell.cost;
-                (spell.effect)(&mut new_state);
-                apply_effects(&mut new_state);
-                if new_state.boss_health <= 0 {
-                    result = Some(new_state.spent_mana);
-                    continue;
-                }
-                new_state.player_health -= max(1, new_state.boss_damage - new_state.player_armor);
-                if new_state.player_health > 0 {
-                    states.push(new_state);
-                }
+    }
+    apply_effects(&mut state);
+    if state.boss_health <= 0 {
+        // Don't bother checking more since we've won already.
+        return vec![(0, state)];
+    }
+    let mut neighbs = Vec::new();
+    for spell in SPELLS.iter() {
+        if state.player_mana >= spell.cost && !(spell.active)(&state) {
+            let mut new_state = state.clone();
+            new_state.player_mana -= spell.cost;
+            (spell.effect)(&mut new_state);
+            apply_effects(&mut new_state);
+            new_state.player_health -= max(1, new_state.boss_damage - new_state.player_armor);
+            if new_state.boss_health <= 0 || new_state.player_health > 0 {
+                neighbs.push((spell.cost as usize, new_state));
             }
         }
     }
-    result
+    neighbs
 }
 
-pub fn part1(input: &str) -> Option<i32> {
-    min_cost_to_win(parse_boss(input), false)
+pub fn part1(input: &str) -> Option<usize> {
+    dijkstra(parse_boss(input), |s| neighbors(s, false))
+        .filter_map(|(d, s)| (s.boss_health <= 0).then(|| d))
+        .next()
 }
 
-pub fn part2(input: &str) -> Option<i32> {
-    min_cost_to_win(parse_boss(input), true)
+pub fn part2(input: &str) -> Option<usize> {
+    dijkstra(parse_boss(input), |s| neighbors(s, true))
+        .filter_map(|(d, s)| (s.boss_health <= 0).then(|| d))
+        .next()
 }
