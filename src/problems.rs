@@ -1,6 +1,7 @@
 use advent::make_problems;
 use lazy_static::lazy_static;
 use reqwest::blocking::Client;
+use serde::Serialize;
 use std::collections::BTreeSet;
 use std::env;
 use std::error::Error;
@@ -44,6 +45,31 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, imp
         f.write_all(&content).expect("File failed to write");
     }
     fs::read_to_string(input_file).map(|f| f.trim_end().to_string())
+}
+
+#[derive(Serialize)]
+struct Answer<'a> {
+    level: i64,
+    answer: &'a str,
+}
+
+pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
+    let url = format!("https://adventofcode.com/{year}/day/{day}/answer");
+    let data = Answer {
+        level: part,
+        answer: answer,
+    };
+    let response = Client::new()
+        .post(url)
+        .header("Cookie", env::var("AOC_SESSION").unwrap())
+        .json(&data)
+        .send()
+        .expect("Problem submission failed")
+        .error_for_status()
+        .expect("Bad HTTP response")
+        .text()
+        .unwrap();
+    println!("{}", response);
 }
 
 trait POutput {

@@ -39,25 +39,25 @@ fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64,
     (t, ans)
 }
 
-fn run_problem(year: i64, day: i64) -> f64 {
+fn run_problem(year: i64, day: i64) -> Option<(f64, String, String)> {
     if let Some(f) = problems::get_prob(year, day) {
         let contents = problems::get_file_input(year, day, true).unwrap();
 
         let (part1, part2) = f();
         println!("Day {day}");
-        let (t1, ans) = run_part(part1, &contents);
-        print_output(1, ans, t1);
-        let (t2, ans) = run_part(part2, &contents);
-        print_output(2, ans, t2);
+        let (t1, ans1) = run_part(part1, &contents);
+        print_output(1, &ans1, t1);
+        let (t2, ans2) = run_part(part2, &contents);
+        print_output(2, &ans2, t2);
         println!();
-        t1 + t2
+        Some((t1 + t2, ans1, ans2))
     } else {
         println!("{year} Day {day} not implemented");
-        0.0
+        None
     }
 }
 
-fn print_output(part: usize, output: String, t: f64) {
+fn print_output(part: usize, output: &str, t: f64) {
     print!("Part {}: ", part);
     let lns = output.lines().collect::<Vec<_>>();
     let len = lns.len();
@@ -86,6 +86,20 @@ fn parse_day(daystr: &str) -> Vec<i64> {
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
+    if args[0] == "submit" {
+        assert!(args.len() == 3);
+        let year = args[1].parse().unwrap();
+        let day = args[2].parse().unwrap();
+        if let Some((_, a1, a2)) = run_problem(year, day) {
+            let (part, ans) = if a2 == "" || a2 == "0" {
+                (1, a1)
+            } else {
+                (2, a2)
+            };
+            problems::submit_answer(year, day, part, &ans);
+        }
+        return;
+    }
     let year = args[0].parse().unwrap();
     let mut days: Vec<i64> = args[1..].iter().flat_map(|x| parse_day(x)).collect();
     if days.is_empty() {
@@ -95,11 +109,12 @@ fn main() {
     let mut total: f64 = 0.0;
     let mut max_day = (0.0, 0);
     for &day in days.iter() {
-        let t = run_problem(year, day);
-        max_day = max_by(max_day, (t, day), |a, b| {
-            a.0.partial_cmp(&b.0).unwrap_or(Equal)
-        });
-        total += t;
+        if let Some((t, _, _)) = run_problem(year, day) {
+            max_day = max_by(max_day, (t, day), |a, b| {
+                a.0.partial_cmp(&b.0).unwrap_or(Equal)
+            });
+            total += t;
+        }
     }
     println!("Max: Day {:2} {:70.3} seconds", max_day.1, max_day.0);
     println!("Total: {total:75.3} seconds");
