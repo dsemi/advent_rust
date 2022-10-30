@@ -1,11 +1,83 @@
-use ahash::AHashMap;
+use bit_set::BitSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
+#[derive(Debug)]
+struct Interval {
+    lo: i64,
+    hi: i64,
+}
+
+impl Interval {
+    fn new(lo: i64, hi: i64) -> Self {
+        Self { lo, hi }
+    }
+
+    fn intersects(&self, o: &Self) -> bool {
+        self.lo < o.hi && o.lo < self.hi
+    }
+
+    fn intersect(&self, o: &Self) -> Self {
+        Self::new(max(self.lo, o.lo), min(self.hi, o.hi))
+    }
+
+    fn len(&self) -> i64 {
+        self.hi - self.lo
+    }
+}
+
+struct Cube {
+    axis: [Interval; 3],
+}
+
+impl Cube {
+    fn volume(&self) -> i64 {
+        self.axis.iter().map(|i| i.len()).product()
+    }
+
+    fn intersects(&self, o: &Self) -> bool {
+        self.axis
+            .iter()
+            .zip(o.axis.iter())
+            .all(|(a, b)| a.intersects(b))
+    }
+
+    fn intersect(&self, o: &Self) -> Cube {
+        Cube {
+            axis: self
+                .axis
+                .iter()
+                .zip(o.axis.iter())
+                .map(|(a, b)| a.intersect(b))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
+        }
+    }
+}
+
+fn intersect_volume(cubes: &[Cube], bs: &[BitSet], cube: &Cube, set: &BitSet) -> i64 {
+    let mut vol = cube.volume();
+    for idx in set {
+        let common = cube.intersect(&cubes[idx]);
+        let int = set.intersection(&bs[idx]).collect();
+        vol -= intersect_volume(cubes, bs, &common, &int);
+    }
+    vol
+}
+
 fn solve(input: &str, lo: i64, hi: i64) -> i64 {
-    let mut cubes = AHashMap::new();
+    let active_cube = Cube {
+        axis: [
+            Interval::new(lo, hi),
+            Interval::new(lo, hi),
+            Interval::new(lo, hi),
+        ],
+    };
+    let mut cubes = Vec::new();
+    let mut on = Vec::new();
     for line in input.lines() {
-        let (w, nx0, nx1, ny0, ny1, nz0, nz1) = scanf!(
+        let (w, x0, x1, y0, y1, z0, z1) = scanf!(
             line,
             "{} x={}..{},y={}..{},z={}..{}",
             String,
@@ -17,35 +89,36 @@ fn solve(input: &str, lo: i64, hi: i64) -> i64 {
             i64
         )
         .unwrap();
-        let mut update = AHashMap::new();
-        for ((ex0, ex1, ey0, ey1, ez0, ez1), es) in cubes.iter() {
-            let (x0, x1) = (max(nx0, *ex0), min(nx1, *ex1));
-            let (y0, y1) = (max(ny0, *ey0), min(ny1, *ey1));
-            let (z0, z1) = (max(nz0, *ez0), min(nz1, *ez1));
-            if x0 <= x1 && y0 <= y1 && z0 <= z1 {
-                *update.entry((x0, x1, y0, y1, z0, z1)).or_insert(0) -= *es;
+        let cube = Cube {
+            axis: [
+                Interval::new(x0, x1 + 1),
+                Interval::new(y0, y1 + 1),
+                Interval::new(z0, z1 + 1),
+            ],
+        };
+        on.push(w == "on" && cube.intersects(&active_cube));
+        cubes.push(cube);
+    }
+    let mut bs = vec![BitSet::new(); cubes.len()];
+    for i in 0..cubes.len() {
+        for j in 0..i {
+            if cubes[i].intersects(&cubes[j]) {
+                bs[j].insert(i);
             }
         }
-        if w == "on" {
-            *update.entry((nx0, nx1, ny0, ny1, nz0, nz1)).or_insert(0) += 1;
-        }
-        for (k, v) in update {
-            *cubes.entry(k).or_insert(0) += v;
-        }
     }
-    cubes
-        .into_iter()
-        .map(|((x0, x1, y0, y1, z0, z1), s)| {
-            let (x0, x1) = (max(lo, x0), min(hi, x1));
-            let (y0, y1) = (max(lo, y0), min(hi, y1));
-            let (z0, z1) = (max(lo, z0), min(hi, z1));
-            max(0, x1 - x0 + 1) * max(0, y1 - y0 + 1) * max(0, z1 - z0 + 1) * s
-        })
-        .sum()
+    let mut ans = 0;
+    for i in 0..cubes.len() {
+        if !on[i] {
+            continue;
+        }
+        ans += intersect_volume(&cubes, &bs, &cubes[i], &bs[i]);
+    }
+    ans
 }
 
 pub fn part1(input: &str) -> i64 {
-    solve(input, -50, 50)
+    solve(input, -50, 51)
 }
 
 pub fn part2(input: &str) -> i64 {
