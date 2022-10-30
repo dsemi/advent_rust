@@ -4,84 +4,91 @@ use nom::bytes::complete::tag;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 use rayon::prelude::*;
-use Snailfish::*;
 
 #[derive(Clone)]
-enum Snailfish {
-    Reg(u64),
-    Pair(Box<Snailfish>, Box<Snailfish>),
+struct Num {
+    depth: usize,
+    value: u64,
 }
 
-fn parse(i: &str) -> IResult<&str, Snailfish> {
+struct Snailfish {
+    ns: Vec<Num>,
+}
+
+fn parse(i: &str, depth: usize) -> IResult<&str, Vec<Num>> {
     alt((
-        |i| int(i).map(|(i, n)| (i, Reg(n))),
+        |i| int(i).map(|(i, n)| (i, vec![Num { depth, value: n }])),
         |i| {
-            delimited(tag("["), separated_pair(parse, tag(","), parse), tag("]"))(i)
-                .map(|(i, (a, b))| (i, Pair(Box::new(a), Box::new(b))))
+            delimited(
+                tag("["),
+                separated_pair(|i| parse(i, depth + 1), tag(","), |i| parse(i, depth + 1)),
+                tag("]"),
+            )(i)
+            .map(|(i, (a, b))| (i, [a, b].concat()))
         },
     ))(i)
 }
 
 impl Snailfish {
     fn explode(&mut self) -> bool {
-        let mut next = None;
-        self.exp(&mut None, &mut next, 0) || next.is_some()
-    }
-
-    fn reg(&self) -> u64 {
-        match self {
-            Reg(v) => *v,
-            _ => panic!("Not a regular number"),
-        }
-    }
-
-    fn exp<'a>(
-        &'a mut self,
-        prev: &mut Option<&'a mut u64>,
-        next: &mut Option<u64>,
-        depth: usize,
-    ) -> bool {
-        match self {
-            Reg(n) if next.is_some() => {
-                *n += next.unwrap();
-                return true;
-            }
-            Pair(a, b) if next.is_none() && depth == 4 => {
-                if let Some(p) = prev.take() {
-                    *p += a.reg();
+        for i in 0..self.ns.len() {
+            if self.ns[i].depth > 4 {
+                if i > 0 {
+                    self.ns[i - 1].value += self.ns[i].value
                 }
-                *next = Some(b.reg());
-                *self = Reg(0);
-            }
-            Reg(n) => *prev = Some(n),
-            Pair(a, b) => {
-                return a.exp(prev, next, depth + 1) || b.exp(prev, next, depth + 1);
+                if i + 2 < self.ns.len() {
+                    self.ns[i + 2].value += self.ns[i + 1].value
+                }
+                self.ns.remove(i + 1);
+                self.ns[i].value = 0;
+                self.ns[i].depth -= 1;
+                return true;
             }
         }
         false
     }
 
     fn split(&mut self) -> bool {
-        match self {
-            Reg(r) if *r > 9 => {
-                *self = Pair(Box::new(Reg(*r / 2)), Box::new(Reg((*r + 1) / 2)));
-                true
+        for i in 0..self.ns.len() {
+            if self.ns[i].value > 9 {
+                let n = &self.ns[i];
+                self.ns.insert(
+                    i + 1,
+                    Num {
+                        depth: n.depth + 1,
+                        value: (n.value + 1) / 2,
+                    },
+                );
+                self.ns[i].value /= 2;
+                self.ns[i].depth += 1;
+                return true;
             }
-            Pair(a, b) => a.split() || b.split(),
-            _ => false,
         }
+        false
     }
 
-    fn magnitude(&self) -> u64 {
-        match self {
-            Reg(n) => *n,
-            Pair(a, b) => 3 * a.magnitude() + 2 * b.magnitude(),
+    fn magnitude(&mut self) -> u64 {
+        while self.ns.len() > 1 {
+            for i in 0..self.ns.len() - 1 {
+                if self.ns[i].depth == self.ns[i + 1].depth {
+                    self.ns[i] = Num {
+                        depth: self.ns[i].depth - 1,
+                        value: 3 * self.ns[i].value + 2 * self.ns[i + 1].value,
+                    };
+                    self.ns.remove(i + 1);
+                    break;
+                }
+            }
         }
+        self.ns[0].value
     }
 }
 
-fn add(a: Snailfish, b: Snailfish) -> Snailfish {
-    let mut x = Pair(Box::new(a), Box::new(b));
+fn add(a: &Snailfish, b: &Snailfish) -> Snailfish {
+    let mut x = Snailfish {
+        ns: a.ns.iter().chain(b.ns.iter()).cloned().collect(),
+    };
+    x.ns.iter_mut().for_each(|v| v.depth += 1);
     while x.explode() || x.split() {}
     x
 }
@@ -89,8 +96,10 @@ fn add(a: Snailfish, b: Snailfish) -> Snailfish {
 pub fn part1(input: &str) -> u64 {
     input
         .lines()
-        .map(|line| parse(line).unwrap().1)
-        .reduce(add)
+        .map(|line| Snailfish {
+            ns: parse(line, 0).unwrap().1,
+        })
+        .reduce(|a, b| add(&a, &b))
         .unwrap()
         .magnitude()
 }
@@ -98,9 +107,11 @@ pub fn part1(input: &str) -> u64 {
 pub fn part2(input: &str) -> Option<u64> {
     let ns = input
         .lines()
-        .map(|line| parse(line).unwrap().1)
+        .map(|line| Snailfish {
+            ns: parse(line, 0).unwrap().1,
+        })
         .collect::<Vec<_>>();
     ns.par_iter()
-        .flat_map(|a| ns.par_iter().map(|b| add(a.clone(), b.clone()).magnitude()))
+        .flat_map(|a| ns.par_iter().map(|b| add(a, b).magnitude()))
         .max()
 }
