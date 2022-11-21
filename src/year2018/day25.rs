@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use ahash::AHashSet;
 
 struct Node {
     pt: (i64, i64, i64, i64),
@@ -61,11 +61,10 @@ fn constellations(mut pts: Vec<Node>) -> usize {
             }
         }
     }
-    let mut m = AHashMap::new();
-    for p in 0..pts.len() {
-        m.insert(find(&pts, p), true);
-    }
-    m.len()
+    (0..pts.len())
+        .map(|p| find(&pts, p))
+        .collect::<AHashSet<_>>()
+        .len()
 }
 
 pub fn part1(input: &str) -> usize {
