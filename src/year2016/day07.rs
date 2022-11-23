@@ -3,7 +3,7 @@ struct Ip<'a> {
     hypernets: Vec<&'a str>,
 }
 
-fn ips<'a>(input: &'a str) -> impl Iterator<Item = Ip<'a>> + '_ {
+fn ips(input: &str) -> impl Iterator<Item = Ip<'_>> + '_ {
     input.lines().map(|line| {
         let mut ip = Ip {
             supernets: Vec::new(),
@@ -45,7 +45,7 @@ pub fn part2(input: &str) -> usize {
                 abas(s.as_bytes()).any(|(a, b)| {
                     let bab = [b, a, b];
                     let babstr = std::str::from_utf8(&bab).unwrap();
-                    ip.hypernets.iter().any(|h| h.contains(&babstr))
+                    ip.hypernets.iter().any(|h| h.contains(babstr))
                 })
             })
         })

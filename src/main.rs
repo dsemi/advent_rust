@@ -91,7 +91,7 @@ fn main() {
         let year = args[1].parse().unwrap();
         let day = args[2].parse().unwrap();
         if let Some((_, a1, a2)) = run_problem(year, day) {
-            let (part, ans) = if a2 == "" || a2 == "0" {
+            let (part, ans) = if a2.is_empty() || a2 == "0" {
                 (1, a1)
             } else {
                 (2, a2)

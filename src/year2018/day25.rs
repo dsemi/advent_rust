@@ -1,4 +1,5 @@
 use ahash::AHashSet;
+use std::cmp::Ordering::*;
 
 struct Node {
     pt: (i64, i64, i64, i64),
@@ -43,13 +44,13 @@ fn union(points: &mut [Node], x: usize, y: usize) {
     if x_root == y_root {
         return;
     }
-    if points[x_root].rank < points[y_root].rank {
-        points[x_root].parent = y_root;
-    } else if points[x_root].rank > points[y_root].rank {
-        points[y_root].parent = x_root;
-    } else {
-        points[y_root].parent = x_root;
-        points[x_root].rank += 1;
+    match points[x_root].rank.cmp(&points[y_root].rank) {
+        Less => points[x_root].parent = y_root,
+        Greater => points[y_root].parent = x_root,
+        Equal => {
+            points[y_root].parent = x_root;
+            points[x_root].rank += 1;
+        }
     }
 }
 

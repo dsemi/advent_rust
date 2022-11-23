@@ -2,11 +2,11 @@ fn advance(grid: &mut [u8], quads: &[u8], xor_in: u16, xor_out: u8, dim: usize) 
     let mut prev = [0_u8; 100];
     for r in 0..dim {
         let mut quad = 0_u16;
-        for c in 0..dim {
+        for (c, e) in prev.iter_mut().enumerate().take(dim) {
             let p = 100 * r + c;
             quad = (quad & 0x3333) << 2;
-            quad |= ((prev[c] as u16) << 8) | grid[p] as u16;
-            prev[c] = grid[p];
+            quad |= ((*e as u16) << 8) | grid[p] as u16;
+            *e = grid[p];
             grid[p] = quads[(quad ^ xor_in) as usize] ^ xor_out;
         }
     }
@@ -26,7 +26,7 @@ fn run(input: &str, times: usize) -> u32 {
         quad |= rules[(i >> 5) & 0x777] << 5;
         quad |= rules[(i >> 4) & 0x777] << 4;
         quad |= rules[(i >> 1) & 0x777] << 1;
-        quad |= rules[(i >> 0) & 0x777] << 0;
+        quad |= rules[i & 0x777];
         quads[i] = quad;
     }
     let inp = img.as_bytes();
@@ -35,10 +35,10 @@ fn run(input: &str, times: usize) -> u32 {
     for r in 0..50 {
         for c in 0..50 {
             let mut quad = 0;
-            quad |= (inp[idx + 0] & 1) << 5;
+            quad |= (inp[idx] & 1) << 5;
             quad |= (inp[idx + 1] & 1) << 4;
             quad |= (inp[idx + 101] & 1) << 1;
-            quad |= (inp[idx + 102] & 1) << 0;
+            quad |= inp[idx + 102] & 1;
             grid[100 * r + c] = quad;
             idx += 2;
         }

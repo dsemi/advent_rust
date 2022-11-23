@@ -15,8 +15,8 @@ fn path(input: &str) -> impl Iterator<Item = Coord<i32>> + '_ {
             iter::once(df).chain(iter::repeat(Coord::new(1, 0)).take(n - 1))
         })
         .scan((Coord::new(0, 0), Coord::new(0, 1)), |state, x| {
-            (*state).1 *= x;
-            (*state).0 += state.1;
+            state.1 *= x;
+            state.0 += state.1;
             Some(state.0)
         })
 }
@@ -27,7 +27,5 @@ pub fn part1(input: &str) -> Option<i32> {
 
 pub fn part2(input: &str) -> Option<i32> {
     let mut s = AHashSet::new();
-    path(input)
-        .filter_map(|pos| (!s.insert(pos)).then(|| pos.x.abs() + pos.y.abs()))
-        .next()
+    path(input).find_map(|pos| (!s.insert(pos)).then(|| pos.x.abs() + pos.y.abs()))
 }

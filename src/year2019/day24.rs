@@ -10,7 +10,7 @@ fn parse(input: &str) -> u64 {
 
 fn sacc(x: u64, a: u64) -> u64 {
     const MASK: u64 = 0x5555555555555555;
-    ((x & !MASK) | (x & MASK) + a) ^ (a & x & (x >> 1))
+    ((x & !MASK) | ((x & MASK) + a)) ^ (a & x & (x >> 1))
 }
 
 fn even_bits(grid: u64) -> u32 {

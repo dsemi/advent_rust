@@ -57,7 +57,7 @@ pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
     let url = format!("https://adventofcode.com/{year}/day/{day}/answer");
     let data = Answer {
         level: part,
-        answer: answer,
+        answer,
     };
     let response = Client::new()
         .post(url)

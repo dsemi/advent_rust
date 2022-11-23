@@ -3,7 +3,7 @@ use std::cmp::max;
 
 fn is_pulled(prog: &intcode::Program, x: i64, y: i64) -> bool {
     let mut prog = prog.clone();
-    prog.input.extend(&[x, y]);
+    prog.input.extend([x, y]);
     prog.run();
     prog.output.pop_front().unwrap() == 1
 }

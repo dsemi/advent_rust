@@ -120,7 +120,7 @@ fn fractions(n: usize) -> Vec<Coord<i32>> {
     let mut fs = Vec::new();
     let mut stack = vec![Coord::new(1, 1)];
     let mut l = Coord::new(1, 0);
-    while let Some(mut r) = stack.last().map(|x| x.clone()) {
+    while let Some(mut r) = stack.last().copied() {
         fs.push(l);
         while l.x + r.x < n as i32 {
             r += l;

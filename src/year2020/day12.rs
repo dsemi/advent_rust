@@ -2,7 +2,7 @@ use crate::utils::Coord;
 
 fn travel(start: Coord<i64>, move_way: bool, s: &str) -> i64 {
     let mut st = [Coord::new(0, 0), start];
-    let idx = if move_way { 1 } else { 0 };
+    let idx = usize::from(move_way);
     for line in s.lines() {
         let cmd = line.chars().next().unwrap();
         let n: i64 = line[1..].parse().unwrap();

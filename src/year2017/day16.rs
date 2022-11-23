@@ -1,4 +1,5 @@
 use ahash::AHashMap;
+use std::fmt::{Display, Error, Formatter, Write};
 use Action::*;
 
 enum Action {
@@ -12,13 +13,12 @@ struct Line {
     s: String,
 }
 
-impl Line {
-    fn to_string(&self) -> String {
-        let mut s = String::with_capacity(self.s.len());
+impl Display for Line {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         for i in 0..self.s.len() {
-            s.push(self.s.as_bytes()[(self.offset + i).rem_euclid(self.s.len())] as char);
+            f.write_char(self.s.as_bytes()[(self.offset + i).rem_euclid(self.s.len())] as char)?;
         }
-        s
+        Ok(())
     }
 }
 

@@ -20,7 +20,7 @@ fn dijkstra(grid: Vec<Vec<i8>>) -> usize {
     let goal = dim * dim - dim - 2;
     let mut q = vec![vec![]; 16];
     let mut tmp = vec![];
-    q[0].push(dim * 1 + 1);
+    q[0].push(dim + 1);
     for qi in 0.. {
         tmp.clear();
         std::mem::swap(&mut q[qi % 16], &mut tmp);

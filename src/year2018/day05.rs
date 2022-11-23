@@ -18,7 +18,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    ('a'..'z')
+    ('a'..='z')
         .map(|c| react(&input.replace(&[c, c.to_ascii_uppercase()][..], "")))
         .min()
 }
