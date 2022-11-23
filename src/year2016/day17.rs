@@ -48,8 +48,7 @@ pub fn part1(input: &str) -> Option<String> {
         },
         neighbors,
     )
-    .filter_map(|(_, p)| p.is_done().then(|| p.st[input.len()..].to_string()))
-    .next()
+    .find_map(|(_, p)| p.is_done().then(|| p.st[input.len()..].to_string()))
 }
 
 pub fn part2(input: &str) -> Option<usize> {

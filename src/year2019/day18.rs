@@ -147,8 +147,7 @@ fn search(mut maze: Maze) -> Option<usize> {
         },
         |n| maze.available_moves(n),
     )
-    .filter_map(|(d, n)| (n.keys == ks).then(|| d))
-    .next()
+    .find_map(|(d, n)| (n.keys == ks).then(|| d))
 }
 
 pub fn part1(input: &str) -> Option<usize> {

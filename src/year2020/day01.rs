@@ -6,18 +6,11 @@ fn solve(x: usize, ns: BTreeSet<i64>) -> Option<i64> {
             xs.contains(&c).then(|| c)
         } else {
             xs.iter()
-                .filter_map(|x2| {
-                    go(n - 1, c - x2, xs.clone().split_off(&(x2 + 1))).map(|x3| x2 * x3)
-                })
-                .next()
+                .find_map(|x2| go(n - 1, c - x2, xs.clone().split_off(&(x2 + 1))).map(|x3| x2 * x3))
         }
     }
 
-    go(
-        x,
-        2020,
-        ns,
-    )
+    go(x, 2020, ns)
 }
 
 pub fn part1(input: BTreeSet<i64>) -> Option<i64> {

@@ -121,12 +121,10 @@ fn neighbors(s: &Game, hard: bool) -> Vec<(usize, Game)> {
 
 pub fn part1(input: &str) -> Option<usize> {
     dijkstra(parse_boss(input), |s| neighbors(s, false))
-        .filter_map(|(d, s)| (s.boss_health <= 0).then(|| d))
-        .next()
+        .find_map(|(d, s)| (s.boss_health <= 0).then(|| d))
 }
 
 pub fn part2(input: &str) -> Option<usize> {
     dijkstra(parse_boss(input), |s| neighbors(s, true))
-        .filter_map(|(d, s)| (s.boss_health <= 0).then(|| d))
-        .next()
+        .find_map(|(d, s)| (s.boss_health <= 0).then(|| d))
 }

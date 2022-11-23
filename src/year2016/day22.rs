@@ -72,7 +72,7 @@ pub fn part2(input: &str) -> Option<usize> {
         }
         mx = max(mx, node.coord);
     }
-    let mut x = bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st))
-        .filter_map(|(d, v)| (v.1 == Coord::new(0, 0)).then(|| d));
-    x.next()
+    let x = bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st))
+        .find_map(|(d, v)| (v.1 == Coord::new(0, 0)).then(|| d));
+    x
 }

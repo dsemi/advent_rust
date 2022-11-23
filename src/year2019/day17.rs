@@ -53,16 +53,13 @@ fn go(grid: &[Vec<char>], pos: (i64, i64), (x, y): (i64, i64)) -> Vec<String> {
 
 fn find_path(grid: &[Vec<char>]) -> Vec<String> {
     let (pos, dir) = (0..grid.len())
-        .filter_map(|r| {
-            (0..grid[r].len())
-                .filter_map(|c| {
-                    "^><v"
-                        .contains(grid[r][c])
-                        .then(|| ((c as i64, r as i64), grid[r][c]))
-                })
-                .next()
+        .find_map(|r| {
+            (0..grid[r].len()).find_map(|c| {
+                "^><v"
+                    .contains(grid[r][c])
+                    .then(|| ((c as i64, r as i64), grid[r][c]))
+            })
         })
-        .next()
         .unwrap();
     let res = go(
         grid,

@@ -141,9 +141,7 @@ impl Maze {
 
 pub fn part1(input: &str) -> Option<usize> {
     let (mut maze, start, end) = parse_maze(input);
-    dijkstra(start, |x| maze.available_moves(x))
-        .filter_map(|(d, st)| (st == end).then(|| d))
-        .next()
+    dijkstra(start, |x| maze.available_moves(x)).find_map(|(d, st)| (st == end).then(|| d))
 }
 
 pub fn part2(input: &str) -> Option<usize> {
@@ -164,6 +162,5 @@ pub fn part2(input: &str) -> Option<usize> {
             })
             .collect::<Vec<_>>()
     })
-    .filter_map(|(d, st)| (st == (end, 0)).then(|| d))
-    .next()
+    .find_map(|(d, st)| (st == (end, 0)).then(|| d))
 }

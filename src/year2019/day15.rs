@@ -30,9 +30,7 @@ fn search(prog: intcode::Program) -> impl Iterator<Item = (usize, bool, intcode:
 }
 
 fn find_oxygen(prog: intcode::Program) -> Option<(usize, intcode::Program)> {
-    search(prog)
-        .filter_map(|(d, b, p)| b.then(|| (d, p)))
-        .next()
+    search(prog).find_map(|(d, b, p)| b.then(|| (d, p)))
 }
 
 pub fn part1(input: &str) -> Option<usize> {

@@ -83,12 +83,10 @@ impl Network {
 pub fn part1(input: &str) -> Option<i64> {
     let mut network = Network::new(input);
     let_gen_using!(gen, |co| network.run(co));
-    gen.into_iter()
-        .filter_map(|p| match p {
-            Signal::ToNat(v) => Some(v),
-            _ => None,
-        })
-        .next()
+    gen.into_iter().find_map(|p| match p {
+        Signal::ToNat(v) => Some(v),
+        _ => None,
+    })
 }
 
 pub fn part2(input: &str) -> i64 {
