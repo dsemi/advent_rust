@@ -24,37 +24,37 @@ struct Prog {
     pc: usize,
 }
 
-fn parse(input: &str) -> (Vec<Instr>, Prog) {
+fn parse(input: &str) -> Vec<Instr> {
     fn value(x: &str) -> Value {
         match x.as_bytes()[0] {
             c @ b'w'..=b'z' => Reg((c - b'w') as usize),
             _ => Lit(x.parse().unwrap()),
         }
     }
-
-    (
-        input
-            .lines()
-            .map(
-                |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                    ["inp", a] => Inp((a.as_bytes()[0] - b'w') as usize),
-                    ["add", a, b] => Add((a.as_bytes()[0] - b'w') as usize, value(b)),
-                    ["mul", a, b] => Mul((a.as_bytes()[0] - b'w') as usize, value(b)),
-                    ["div", a, b] => Div((a.as_bytes()[0] - b'w') as usize, value(b)),
-                    ["mod", a, b] => Mod((a.as_bytes()[0] - b'w') as usize, value(b)),
-                    ["eql", a, b] => Eql((a.as_bytes()[0] - b'w') as usize, value(b)),
-                    _ => panic!("Invalid input: {}", line),
-                },
-            )
-            .collect(),
-        Prog {
-            regs: [0; 4],
-            pc: 0,
-        },
-    )
+    input
+        .lines()
+        .map(
+            |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
+                ["inp", a] => Inp((a.as_bytes()[0] - b'w') as usize),
+                ["add", a, b] => Add((a.as_bytes()[0] - b'w') as usize, value(b)),
+                ["mul", a, b] => Mul((a.as_bytes()[0] - b'w') as usize, value(b)),
+                ["div", a, b] => Div((a.as_bytes()[0] - b'w') as usize, value(b)),
+                ["mod", a, b] => Mod((a.as_bytes()[0] - b'w') as usize, value(b)),
+                ["eql", a, b] => Eql((a.as_bytes()[0] - b'w') as usize, value(b)),
+                _ => panic!("Invalid input: {}", line),
+            },
+        )
+        .collect()
 }
 
 impl Prog {
+    fn new() -> Self {
+        Self {
+            regs: [0; 4],
+            pc: 0,
+        }
+    }
+
     fn val(&self, v: &Value) -> i64 {
         match v {
             Reg(r) => self.regs[*r],
@@ -85,46 +85,44 @@ impl Prog {
         assert!(a != 0);
         a != 26 || self.regs[1] == 0
     }
-}
 
-fn dfs(
-    vis: &mut AHashSet<(i64, usize)>,
-    instrs: &[Instr],
-    prog: Prog,
-    n: i64,
-    d: usize,
-    p2: bool,
-) -> Option<i64> {
-    if d == 0 {
-        return (prog.regs[3] == 0).then(|| n);
-    }
-    if vis.contains(&(prog.regs[3], d)) {
-        return None;
-    }
-    let ds: Vec<i64> = if p2 {
-        (1..=9).collect()
-    } else {
-        (1..=9).rev().collect()
-    };
-    for i in ds {
-        let mut p = prog.clone();
-        if !p.run_next(instrs, i) {
-            continue;
+    fn dfs(
+        &self,
+        vis: &mut AHashSet<(i64, usize)>,
+        instrs: &[Instr],
+        n: i64,
+        d: usize,
+        p2: bool,
+    ) -> Option<i64> {
+        if d == 0 {
+            return (self.regs[3] == 0).then(|| n);
         }
-        if let Some(v) = dfs(vis, instrs, p, n * 10 + i, d - 1, p2) {
-            return Some(v);
+        if vis.contains(&(self.regs[3], d)) {
+            return None;
         }
+        let ds: Vec<i64> = if p2 {
+            (1..=9).collect()
+        } else {
+            (1..=9).rev().collect()
+        };
+        for i in ds {
+            let mut p = self.clone();
+            if !p.run_next(instrs, i) {
+                continue;
+            }
+            if let Some(v) = p.dfs(vis, instrs, n * 10 + i, d - 1, p2) {
+                return Some(v);
+            }
+        }
+        vis.insert((self.regs[3], d));
+        None
     }
-    vis.insert((prog.regs[3], d));
-    None
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    let (instrs, prog) = parse(input);
-    dfs(&mut AHashSet::new(), &instrs, prog, 0, 14, false)
+    Prog::new().dfs(&mut AHashSet::new(), &parse(input), 0, 14, false)
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let (instrs, prog) = parse(input);
-    dfs(&mut AHashSet::new(), &instrs, prog, 0, 14, true)
+    Prog::new().dfs(&mut AHashSet::new(), &parse(input), 0, 14, true)
 }
