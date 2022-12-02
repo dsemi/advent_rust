@@ -4,7 +4,7 @@ fn solve(input: &str, conv: fn(u8, u8) -> u8) -> i32 {
         .map(|line| {
             let pts = line.as_bytes();
             let a = pts[0] - b'A';
-            let b = conv(pts[2] - b'A', a);
+            let b = conv(pts[2] - b'X', a);
             let wld = if b == (a + 1) % 3 {
                 6
             } else if b == a {
