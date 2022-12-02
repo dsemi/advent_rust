@@ -62,7 +62,7 @@ pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
     let response = Client::new()
         .post(url)
         .header("Cookie", env::var("AOC_SESSION").unwrap())
-        .json(&data)
+        .form(&data)
         .send()
         .expect("Problem submission failed")
         .error_for_status()
