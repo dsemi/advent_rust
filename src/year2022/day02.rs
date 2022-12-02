@@ -1,10 +1,10 @@
-fn solve(input: &str, conv: fn(u8, u8) -> u8) -> i32 {
+fn solve(input: &str, conv: fn(i32, i32) -> i32) -> i32 {
     input
         .lines()
         .map(|line| {
             let pts = line.as_bytes();
-            let a = pts[0] - b'A';
-            let b = conv(pts[2] - b'X', a);
+            let a = (pts[0] - b'A') as i32;
+            let b = conv((pts[2] - b'X') as i32, a);
             let wld = if b == (a + 1) % 3 {
                 6
             } else if b == a {
@@ -12,7 +12,7 @@ fn solve(input: &str, conv: fn(u8, u8) -> u8) -> i32 {
             } else {
                 0
             };
-            (wld + b + 1) as i32
+            wld + b + 1
         })
         .sum()
 }
