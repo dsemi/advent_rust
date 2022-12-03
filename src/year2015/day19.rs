@@ -1,6 +1,5 @@
-use ahash::{AHashMap, AHashSet};
-use itertools::Itertools;
-use regex::{Captures, Regex};
+use ahash::AHashSet;
+use regex::Regex;
 
 fn parse_mappings(input: &str) -> (&str, Vec<(&str, &str)>) {
     let v: Vec<_> = input.split("\n\n").collect();
@@ -35,22 +34,10 @@ pub fn part1(input: &str) -> usize {
         .len()
 }
 
-pub fn part2(input: &str) -> i32 {
-    let (s, mappings) = parse_mappings(input);
-    let mut mol: String = s.chars().rev().collect();
-    let reps: AHashMap<String, String> = mappings
-        .into_iter()
-        .map(|(a, b)| (b.chars().rev().collect(), a.chars().rev().collect()))
-        .collect();
-    let re = Regex::new(&reps.keys().join("|")).unwrap();
-    let mut count = 0;
-    while mol != "e" {
-        mol = re
-            .replace_all(&mol, |caps: &Captures| {
-                count += 1;
-                &reps[&caps[0]]
-            })
-            .into();
-    }
-    count
+pub fn part2(input: &str) -> usize {
+    let mol = parse_mappings(input).0;
+    mol.matches(|c: char| c.is_ascii_uppercase()).count()
+        - (mol.matches("Rn").count() + mol.matches("Ar").count())
+        - 2 * mol.matches("Y").count()
+        - 1
 }
