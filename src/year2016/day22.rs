@@ -60,7 +60,7 @@ fn neighbors(
     .collect()
 }
 
-pub fn part2(input: &str) -> Option<usize> {
+pub fn part2(input: &str) -> usize {
     let nodes = parse_nodes(input);
     let mut grid = AHashMap::new();
     let mut opn = Coord::new(0, 0);
@@ -72,7 +72,10 @@ pub fn part2(input: &str) -> Option<usize> {
         }
         mx = max(mx, node.coord);
     }
-    let x = bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st))
-        .find_map(|(d, v)| (v.1 == Coord::new(0, 0)).then(|| d));
-    x
+    for (d, v) in bfs((opn, Coord::new(mx.x, 0)), |st| neighbors(&grid, st)) {
+        if v.1 == Coord::new(0, 0) {
+            return d;
+        }
+    }
+    unreachable!()
 }
