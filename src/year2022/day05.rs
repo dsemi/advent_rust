@@ -14,17 +14,13 @@ fn move_stacks(input: &str, in_order: bool) -> String {
     }
     for line in y.lines() {
         let (n, a, b) = scanf!(line, "move {} from {} to {}", usize, usize, usize).unwrap();
+        let mut tmp = (0..n)
+            .map(|_| stacks[a - 1].pop().unwrap())
+            .collect::<Vec<_>>();
         if in_order {
-            let seg = stacks[a - 1][stacks[a - 1].len() - n..].to_vec();
-            let len = stacks[a - 1].len();
-            stacks[a - 1].truncate(len - n);
-            stacks[b - 1].extend(seg);
-        } else {
-            for _ in 0..n {
-                let v = stacks[a - 1].pop().unwrap();
-                stacks[b - 1].push(v);
-            }
+            tmp.reverse();
         }
+        stacks[b - 1].extend(tmp);
     }
     stacks.into_iter().map(|mut s| s.pop().unwrap()).collect()
 }
