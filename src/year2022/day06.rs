@@ -1,9 +1,7 @@
-use ahash::AHashSet;
+use itertools::Itertools;
 
 fn solve(input: &str, nchars: usize) -> Option<usize> {
-    (0..input.len()).find_map(|i| {
-        (input[i..i + nchars].chars().collect::<AHashSet<_>>().len() == nchars).then(|| i + nchars)
-    })
+    (nchars..input.len()).find_map(|i| input[i - nchars..i].chars().all_unique().then(|| i))
 }
 
 pub fn part1(input: &str) -> Option<usize> {
