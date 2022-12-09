@@ -9,7 +9,7 @@ pub fn part1(input: &str) -> usize {
             let a = line[..line.len() / 2].chars().collect::<AHashSet<_>>();
             let b = line[line.len() / 2..].chars().collect::<AHashSet<_>>();
             let ch = *a.intersection(&b).next().unwrap();
-            S.chars().position(|c| c == ch).unwrap()
+            S.chars().position(|c| c == ch).unwrap() + 1
         })
         .sum()
 }
@@ -29,7 +29,7 @@ pub fn part2(input: &str) -> usize {
                 .intersection(&c)
                 .next()
                 .unwrap();
-            S.chars().position(|c| c == ch).unwrap()
+            S.chars().position(|c| c == ch).unwrap() + 1
         })
         .sum()
 }

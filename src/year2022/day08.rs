@@ -24,7 +24,7 @@ fn trees(input: &str) -> Vec<Tree> {
             for mut path in paths {
                 let mut cnt = 0;
                 let mut edge = true;
-                while let Some(x) = path.next() {
+                for x in path.by_ref() {
                     cnt += 1;
                     if x >= grid[r][c] {
                         edge = false;

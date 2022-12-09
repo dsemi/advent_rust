@@ -3,7 +3,7 @@ fn all_sizes(input: &str) -> Vec<i64> {
     let mut fstree = vec![0];
     for line in input.lines() {
         if line.starts_with("$ cd ") {
-            if line.ends_with("/") {
+            if line.ends_with('/') {
                 while fstree.len() > 1 {
                     let size = fstree.pop().unwrap();
                     *fstree.last_mut().unwrap() += size;

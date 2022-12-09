@@ -38,6 +38,6 @@ pub fn part2(input: &str) -> usize {
     let mol = parse_mappings(input).0;
     mol.matches(|c: char| c.is_ascii_uppercase()).count()
         - (mol.matches("Rn").count() + mol.matches("Ar").count())
-        - 2 * mol.matches("Y").count()
+        - 2 * mol.matches('Y').count()
         - 1
 }
