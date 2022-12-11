@@ -1,3 +1,4 @@
+use crate::ocr::*;
 use crate::utils::Coord;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
@@ -67,7 +68,7 @@ fn show_objects(objs: &[Obj]) -> String {
             });
         }
     }
-    result
+    parse_letters(&result, None)
 }
 
 pub fn part1(input: &str) -> String {

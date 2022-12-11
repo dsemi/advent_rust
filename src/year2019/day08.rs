@@ -1,3 +1,4 @@
+use crate::ocr::*;
 use ahash::AHashMap;
 use itertools::Itertools;
 
@@ -27,14 +28,16 @@ pub fn part2(input: &str) -> String {
             }
         }
     }
-    std::iter::once("\n".to_owned())
-        .chain(itertools::Itertools::intersperse(
+    parse_letters(
+        &itertools::Itertools::intersperse(
             pts.into_iter()
                 .map(|x| if x == '0' { ' ' } else { '#' })
                 .chunks(25)
                 .into_iter()
                 .map(|x| x.collect::<String>()),
             "\n".to_string(),
-        ))
-        .collect()
+        )
+        .collect::<String>(),
+        None,
+    )
 }

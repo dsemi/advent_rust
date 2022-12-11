@@ -1,3 +1,4 @@
+use crate::ocr::*;
 use crate::utils::*;
 
 fn run(input: &str) -> impl Iterator<Item = i32> + '_ {
@@ -27,5 +28,5 @@ pub fn part2(input: &str) -> String {
         }
         res.push(if (m - x).abs() <= 1 { '#' } else { ' ' });
     }
-    res
+    parse_letters(&res, None)
 }

@@ -1,3 +1,4 @@
+use crate::ocr::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 
@@ -47,5 +48,5 @@ pub fn part2(input: &str) -> String {
                 .collect(),
         );
     }
-    display.join("\n")
+    parse_letters(&display.join("\n"), None)
 }

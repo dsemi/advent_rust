@@ -8,6 +8,7 @@ use std::time::Instant;
 
 #[macro_use]
 mod utils;
+mod ocr;
 // mod md5;
 mod year2015;
 mod year2016;

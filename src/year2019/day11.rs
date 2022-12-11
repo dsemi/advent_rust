@@ -1,4 +1,5 @@
 use super::intcode;
+use crate::ocr::*;
 use crate::utils::Coord;
 use ahash::AHashMap;
 use std::cmp::{max, min};
@@ -49,7 +50,7 @@ fn draw(points: &AHashMap<Coord<i64>, i64>) -> String {
             });
         }
     }
-    chrs.into_iter().collect()
+    parse_letters(&chrs.into_iter().collect::<String>(), None)
 }
 
 pub fn part2(input: &str) -> String {

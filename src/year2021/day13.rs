@@ -1,3 +1,4 @@
+use crate::ocr::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
@@ -49,5 +50,5 @@ pub fn part2(input: &str) -> String {
             .map(|x| if paper.contains(&(x, y)) { '#' } else { ' ' })
             .collect()
     }));
-    display.join("\n")
+    parse_letters(&display.join("\n"), None)
 }
