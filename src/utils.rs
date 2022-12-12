@@ -20,29 +20,45 @@ use streaming_iterator::StreamingIterator;
 
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where
-    T: Clone,
-    T: Eq,
-    T: Hash,
+    T: Clone + Eq + Hash,
     F: Fn(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
-    bfs_on(|x| x.clone(), start, neighbs)
+    bfs_on(|x| x.clone(), [start], neighbs)
 }
 
-pub fn bfs_on<T, F, G, H, I, I2>(h: G, start: T, neighbs: F) -> Bfs<T, F, G, H>
+pub fn bfs_m<T, J, J2, F, I, I2>(starts: J, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where
-    H: Eq,
-    H: Hash,
-    G: Fn(&T) -> H,
+    T: Clone + Eq + Hash,
+    J: IntoIterator<Item = T, IntoIter = J2>,
+    J2: Iterator<Item = T>,
     F: Fn(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
-    let x = h(&start);
+    bfs_on(|x| x.clone(), starts, neighbs)
+}
+
+pub fn bfs_on<T, J, J2, F, G, H, I, I2>(h: G, starts: J, neighbs: F) -> Bfs<T, F, G, H>
+where
+    H: Eq + Hash,
+    G: Fn(&T) -> H,
+    J: IntoIterator<Item = T, IntoIter = J2>,
+    J2: Iterator<Item = T>,
+    F: Fn(&T) -> I,
+    I: IntoIterator<Item = T, IntoIter = I2>,
+    I2: Iterator<Item = T>,
+{
+    let mut visited = AHashSet::new();
+    let mut frontier = VecDeque::new();
+    for start in starts {
+        visited.insert(h(&start));
+        frontier.push_back((0, start));
+    }
     Bfs {
-        frontier: vec![(0, start)].into_iter().collect(),
-        visited: vec![x].into_iter().collect(),
+        frontier,
+        visited,
         hash: h,
         neighbs,
     }

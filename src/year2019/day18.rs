@@ -64,11 +64,11 @@ impl Maze {
                 if !self.moves.contains_key(from) {
                     let moves = bfs_on(
                         |e| e.dest,
-                        Edge {
+                        [Edge {
                             dest: *from,
                             doors: 0,
                             keys: 0,
-                        },
+                        }],
                         |edge| {
                             vec![
                                 edge.dest - self.cols,
