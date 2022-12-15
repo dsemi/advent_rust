@@ -1,30 +1,6 @@
+use crate::utils::Interval;
 use bit_set::BitSet;
 use scan_fmt::scan_fmt as scanf;
-use std::cmp::{max, min};
-
-#[derive(Debug)]
-struct Interval {
-    lo: i64,
-    hi: i64,
-}
-
-impl Interval {
-    fn new(lo: i64, hi: i64) -> Self {
-        Self { lo, hi }
-    }
-
-    fn intersects(&self, o: &Self) -> bool {
-        self.lo < o.hi && o.lo < self.hi
-    }
-
-    fn intersect(&self, o: &Self) -> Self {
-        Self::new(max(self.lo, o.lo), min(self.hi, o.hi))
-    }
-
-    fn len(&self) -> i64 {
-        self.hi - self.lo
-    }
-}
 
 struct Cube {
     axis: [Interval; 3],

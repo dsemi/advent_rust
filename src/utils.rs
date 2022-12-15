@@ -8,7 +8,7 @@ use nom::IResult;
 use num::traits::abs;
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
-use std::cmp::{Ordering, Reverse};
+use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
 use std::iter::{Fuse, Sum};
@@ -789,5 +789,33 @@ impl<T: PartialEq + PrimInt + BitAndAssign + FromPrimitive> Iterator for Bits<T>
         let b = self.n.trailing_zeros();
         self.n &= self.n - FromPrimitive::from_u8(1).unwrap();
         Some(b as usize)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Interval {
+    pub lo: i64,
+    pub hi: i64,
+}
+
+impl Interval {
+    pub fn new(lo: i64, hi: i64) -> Self {
+        Self { lo, hi }
+    }
+
+    pub fn intersects(&self, o: &Self) -> bool {
+        self.lo < o.hi && o.lo < self.hi
+    }
+
+    pub fn intersect(&self, o: &Self) -> Self {
+        Self::new(max(self.lo, o.lo), min(self.hi, o.hi))
+    }
+
+    pub fn union(&self, o: &Self) -> Self {
+        Self::new(min(self.lo, o.lo), max(self.hi, o.hi))
+    }
+
+    pub fn len(&self) -> i64 {
+        self.hi - self.lo
     }
 }
