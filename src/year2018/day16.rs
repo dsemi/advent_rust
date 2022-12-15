@@ -27,7 +27,7 @@ static OPS: [Op; 16] = [
 ];
 
 fn eval(v: &mut [usize], op: Op, a: usize, b: usize, c: usize) {
-    v[c as usize] = match op {
+    v[c] = match op {
         Addr => v[a] + v[b],
         Addi => v[a] + b,
         Mulr => v[a] * v[b],
@@ -63,7 +63,7 @@ fn test_sample(sample: &str) -> (usize, u16) {
         .split(", ")
         .map(|x| x.parse().unwrap())
         .collect();
-    let mut result = (op as usize, 0);
+    let mut result = (op, 0);
     for cmd in OPS {
         let mut mem = mem1.clone();
         eval(&mut mem, cmd, a, b, c);

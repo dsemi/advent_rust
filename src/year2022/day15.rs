@@ -72,7 +72,7 @@ impl Line {
 }
 
 pub fn part2(input: &str) -> i64 {
-    let sensors = parse_scanners(&input).0;
+    let sensors = parse_scanners(input).0;
     let mut urs = Vec::new();
     let mut drs = Vec::new();
     for s in sensors.iter() {

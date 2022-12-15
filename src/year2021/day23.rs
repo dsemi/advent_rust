@@ -146,7 +146,7 @@ impl State {
         for b in bits(self.hall.mask()) {
             let h = (b / 4) as i32;
             let r = self.hall.get(h);
-            if self.room.empty(r) && !self.obstructed(r as i32, h) {
+            if self.room.empty(r) && !self.obstructed(r, h) {
                 self.hall.clear(h);
                 return true;
             }
@@ -155,7 +155,7 @@ impl State {
             if self.room.empty(r) {
                 continue;
             }
-            let g = self.room.get(r) as i32;
+            let g = self.room.get(r);
             if g == r || !self.room.empty(g) {
                 continue;
             }

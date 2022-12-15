@@ -73,7 +73,7 @@ pub fn part2(input: &str) -> usize {
             for c in min_x..=max_x {
                 let adj = DIRS
                     .values()
-                    .filter(|d| grid[(r as i32 + d.y) as usize][(c as i32 + d.x) as usize])
+                    .filter(|d| grid[(r + d.y) as usize][(c + d.x) as usize])
                     .count();
                 if grid[r as usize][c as usize] {
                     grid2[r as usize][c as usize] = adj != 0 && adj <= 2;

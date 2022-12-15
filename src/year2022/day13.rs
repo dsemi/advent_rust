@@ -11,15 +11,15 @@ use Packet::*;
 #[derive(Clone, Eq, PartialEq)]
 enum Packet {
     Lit(i32),
-    List(Box<Vec<Packet>>),
+    List(Vec<Packet>),
 }
 
 fn parse(i: &str) -> IResult<&str, Packet> {
     alt((
         |i| int(i).map(|(i, n)| (i, Lit(n))),
         |i| {
-            delimited(tag("["), separated_list0(tag(","), |i| parse(i)), tag("]"))(i)
-                .map(|(i, ns)| (i, List(Box::new(ns))))
+            delimited(tag("["), separated_list0(tag(","), parse), tag("]"))(i)
+                .map(|(i, ns)| (i, List(ns)))
         },
     ))(i)
 }
@@ -40,8 +40,8 @@ impl Ord for Packet {
                 .map(|(x, y)| x.cmp(y))
                 .find(|&c| c != Equal)
                 .unwrap_or_else(|| a.len().cmp(&b.len())),
-            (Lit(_), List(_)) => List(Box::new(vec![self.clone()])).cmp(other),
-            (List(_), Lit(_)) => self.cmp(&List(Box::new(vec![other.clone()]))),
+            (Lit(_), List(_)) => List(vec![self.clone()]).cmp(other),
+            (List(_), Lit(_)) => self.cmp(&List(vec![other.clone()])),
         }
     }
 }

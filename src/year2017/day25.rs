@@ -54,7 +54,7 @@ pub fn part1(input: &str) -> usize {
     tape.push_back(0);
     let mut i = 0;
     for _ in 0..steps {
-        let rule = &rules[state as usize][tape[i]];
+        let rule = &rules[state][tape[i]];
         tape[i] = rule.write;
         match rule.dir {
             Dir::L => {

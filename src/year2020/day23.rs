@@ -1,11 +1,12 @@
 fn read(input: &str, arr: &mut [u32]) {
-    let ns: Vec<u32> = input.chars()
-        .map(|c| c.to_digit(10).unwrap() as u32)
+    let ns: Vec<u32> = input
+        .chars()
+        .map(|c| c.to_digit(10).unwrap())
         .chain(10..arr.len() as u32)
         .collect();
     arr[0] = ns[0];
     for i in 0..ns.len() {
-        arr[ns[i] as usize] = ns[(i+1) % ns.len()];
+        arr[ns[i] as usize] = ns[(i + 1) % ns.len()];
     }
 }
 

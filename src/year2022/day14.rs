@@ -18,8 +18,8 @@ fn parse_grid(input: &str) -> Vec<Vec<char>> {
             let (x0, y0) = min(pts[i - 1], pts[i]);
             let (x1, y1) = max(pts[i - 1], pts[i]);
             for x in x0..=x1 {
-                for y in y0..=y1 {
-                    res[y][x] = '#';
+                for col in res.iter_mut().take(y1 + 1).skip(y0) {
+                    col[x] = '#';
                 }
             }
         }
