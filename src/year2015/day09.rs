@@ -1,35 +1,15 @@
-use ahash::AHashMap;
+use crate::utils::UniqueIdx;
 use itertools::Itertools;
 use std::cmp::max;
-use std::hash::Hash;
-
-struct IdMap<T> {
-    m: AHashMap<T, usize>,
-}
-
-impl<T> IdMap<T>
-where
-    T: Eq,
-    T: Hash,
-{
-    fn new() -> Self {
-        IdMap { m: AHashMap::new() }
-    }
-
-    fn id(&mut self, k: T) -> usize {
-        let c = self.m.len();
-        *self.m.entry(k).or_insert(c)
-    }
-}
 
 fn all_path_distances(input: &str) -> impl Iterator<Item = usize> {
     let mut adj = Vec::new();
-    let mut m = IdMap::new();
+    let mut ui = UniqueIdx::new();
     for line in input.lines() {
         let parts = line.split_whitespace().collect::<Vec<_>>();
         let (k1, k2, v) = (parts[0], parts[2], parts[4].parse().unwrap());
-        let n1 = m.id(k1);
-        let n2 = m.id(k2);
+        let n1 = ui.idx(k1);
+        let n2 = ui.idx(k2);
         while max(n1, n2) >= adj.len() {
             adj.push(Vec::new());
         }

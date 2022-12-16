@@ -1,14 +1,13 @@
-use ahash::AHashMap;
+use crate::utils::UniqueIdx;
 use itertools::Itertools;
 
 fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
-    let mut d = AHashMap::new();
+    let mut ui = UniqueIdx::new();
     let mut result: Vec<Vec<i32>> = Vec::new();
     let l = (input.lines().count() as f32).sqrt() as usize + 1;
     for _ in 0..l {
         result.push(vec![0; l]);
     }
-    let mut key = 0;
     for line in input.lines() {
         let parts = line.split_whitespace().collect::<Vec<_>>();
         let (p1, n, p2) = (
@@ -20,16 +19,8 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
             },
             &parts[10][..parts[10].len() - 1],
         );
-        d.entry(p1.to_string()).or_insert_with(|| {
-            key += 1;
-            key - 1
-        });
-        d.entry(p2.to_string()).or_insert_with(|| {
-            key += 1;
-            key - 1
-        });
-        result[d[p1]][d[p2]] += n;
-        result[d[p2]][d[p1]] += n;
+        result[ui.idx(p1)][ui.idx(p2)] += n;
+        result[ui.idx(p2)][ui.idx(p1)] += n;
     }
     result
 }
