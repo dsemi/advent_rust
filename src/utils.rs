@@ -819,3 +819,18 @@ impl Interval {
         self.hi - self.lo
     }
 }
+
+pub struct UniqueIdx<T> {
+    m: AHashMap<T, usize>,
+}
+
+impl<T: Eq + Hash> UniqueIdx<T> {
+    pub fn new() -> Self {
+        UniqueIdx { m: AHashMap::new() }
+    }
+
+    pub fn idx(&mut self, k: T) -> usize {
+        let c = self.m.len();
+        *self.m.entry(k).or_insert(c)
+    }
+}
