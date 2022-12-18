@@ -464,6 +464,7 @@ where
     T: Copy,
     T: Num,
     T: Signed,
+    T: Ord,
 {
     pub fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
@@ -487,6 +488,22 @@ where
 
     pub fn sum(&self) -> T {
         self.x + self.y + self.z
+    }
+
+    pub fn smol(&self, o: &Self) -> Self {
+        Self {
+            x: min(self.x, o.x),
+            y: min(self.y, o.y),
+            z: min(self.z, o.z),
+        }
+    }
+
+    pub fn swol(&self, o: &Self) -> Self {
+        Self {
+            x: max(self.x, o.x),
+            y: max(self.y, o.y),
+            z: max(self.z, o.z),
+        }
     }
 }
 
