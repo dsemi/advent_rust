@@ -21,7 +21,7 @@ use streaming_iterator::StreamingIterator;
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where
     T: Clone + Eq + Hash,
-    F: Fn(&T) -> I,
+    F: FnMut(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
@@ -33,7 +33,7 @@ where
     T: Clone + Eq + Hash,
     J: IntoIterator<Item = T, IntoIter = J2>,
     J2: Iterator<Item = T>,
-    F: Fn(&T) -> I,
+    F: FnMut(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
@@ -46,7 +46,7 @@ where
     G: Fn(&T) -> H,
     J: IntoIterator<Item = T, IntoIter = J2>,
     J2: Iterator<Item = T>,
-    F: Fn(&T) -> I,
+    F: FnMut(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
@@ -76,7 +76,7 @@ where
     H: Eq,
     H: Hash,
     G: Fn(&T) -> H,
-    F: Fn(&T) -> I,
+    F: FnMut(&T) -> I,
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
