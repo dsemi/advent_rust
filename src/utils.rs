@@ -258,7 +258,7 @@ where
     T: BitAnd<Output = T>,
     T: FromPrimitive,
 {
-    pub fn new(x: T, y: T) -> Self {
+    pub const fn new(x: T, y: T) -> Self {
         Self { x, y }
     }
 
