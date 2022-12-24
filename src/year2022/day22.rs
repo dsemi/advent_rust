@@ -2,7 +2,9 @@ use crate::utils::Coord;
 use ahash::AHashMap;
 use regex::Regex;
 
-fn walk(input: &str, portals: AHashMap<(Coord<i32>, Coord<i32>), (Coord<i32>, Coord<i32>)>) -> i32 {
+type Portal = (Coord<i32>, Coord<i32>);
+
+fn walk(input: &str, portals: AHashMap<Portal, Portal>) -> i32 {
     let pts = input.split("\n\n").collect::<Vec<_>>();
     let grid: Vec<Vec<char>> = pts[0].lines().map(|line| line.chars().collect()).collect();
     let mut pos = Coord::new(0, grid[0].iter().position(|&c| c == '.').unwrap() as i32);
@@ -60,12 +62,12 @@ pub fn part1(input: &str) -> i32 {
             (Coord::new(0, 100 + i), Coord::new(1, 0)),
         );
         portals.insert(
-            (Coord::new(0 + i, 50), Coord::new(0, -1)),
-            (Coord::new(0 + i, 149), Coord::new(0, -1)),
+            (Coord::new(i, 50), Coord::new(0, -1)),
+            (Coord::new(i, 149), Coord::new(0, -1)),
         );
         portals.insert(
-            (Coord::new(0 + i, 149), Coord::new(0, 1)),
-            (Coord::new(0 + i, 50), Coord::new(0, 1)),
+            (Coord::new(i, 149), Coord::new(0, 1)),
+            (Coord::new(i, 50), Coord::new(0, 1)),
         );
         portals.insert(
             (Coord::new(50 + i, 50), Coord::new(0, -1)),
@@ -76,12 +78,12 @@ pub fn part1(input: &str) -> i32 {
             (Coord::new(50 + i, 50), Coord::new(0, 1)),
         );
         portals.insert(
-            (Coord::new(100, 0 + i), Coord::new(-1, 0)),
-            (Coord::new(199, 0 + i), Coord::new(-1, 0)),
+            (Coord::new(100, i), Coord::new(-1, 0)),
+            (Coord::new(199, i), Coord::new(-1, 0)),
         );
         portals.insert(
-            (Coord::new(199, 0 + i), Coord::new(1, 0)),
-            (Coord::new(100, 0 + i), Coord::new(1, 0)),
+            (Coord::new(199, i), Coord::new(1, 0)),
+            (Coord::new(100, i), Coord::new(1, 0)),
         );
         portals.insert(
             (Coord::new(100 + i, 0), Coord::new(0, -1)),
@@ -116,27 +118,27 @@ pub fn part2(input: &str) -> i32 {
         );
         portals.insert(
             (Coord::new(0, 100 + i), Coord::new(-1, 0)),
-            (Coord::new(199, 0 + i), Coord::new(-1, 0)),
+            (Coord::new(199, i), Coord::new(-1, 0)),
         );
         portals.insert(
-            (Coord::new(199, 0 + i), Coord::new(1, 0)),
+            (Coord::new(199, i), Coord::new(1, 0)),
             (Coord::new(0, 100 + i), Coord::new(1, 0)),
         );
         portals.insert(
-            (Coord::new(0 + i, 50), Coord::new(0, -1)),
+            (Coord::new(i, 50), Coord::new(0, -1)),
             (Coord::new(149 - i, 0), Coord::new(0, 1)),
         );
         portals.insert(
             (Coord::new(149 - i, 0), Coord::new(0, -1)),
-            (Coord::new(0 + i, 50), Coord::new(0, 1)),
+            (Coord::new(i, 50), Coord::new(0, 1)),
         );
         portals.insert(
-            (Coord::new(0 + i, 149), Coord::new(0, 1)),
+            (Coord::new(i, 149), Coord::new(0, 1)),
             (Coord::new(149 - i, 99), Coord::new(0, -1)),
         );
         portals.insert(
             (Coord::new(149 - i, 99), Coord::new(0, 1)),
-            (Coord::new(0 + i, 149), Coord::new(0, -1)),
+            (Coord::new(i, 149), Coord::new(0, -1)),
         );
         portals.insert(
             (Coord::new(49, 100 + i), Coord::new(1, 0)),
@@ -148,10 +150,10 @@ pub fn part2(input: &str) -> i32 {
         );
         portals.insert(
             (Coord::new(50 + i, 50), Coord::new(0, -1)),
-            (Coord::new(100, 0 + i), Coord::new(1, 0)),
+            (Coord::new(100, i), Coord::new(1, 0)),
         );
         portals.insert(
-            (Coord::new(100, 0 + i), Coord::new(-1, 0)),
+            (Coord::new(100, i), Coord::new(-1, 0)),
             (Coord::new(50 + i, 50), Coord::new(0, 1)),
         );
         portals.insert(

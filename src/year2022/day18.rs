@@ -16,7 +16,7 @@ fn cubes(input: &str) -> AHashSet<Coord3<i32>> {
     input
         .lines()
         .map(|l| {
-            let pts = l.split(",").map(|x| x.parse().unwrap()).collect::<Vec<_>>();
+            let pts = l.split(',').map(|x| x.parse().unwrap()).collect::<Vec<_>>();
             Coord3::new(pts[0], pts[1], pts[2])
         })
         .collect()

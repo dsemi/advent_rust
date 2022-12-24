@@ -62,7 +62,7 @@ pub fn part1(input: &str) -> i64 {
 
 pub fn part2(input: &str) -> i64 {
     let ms = monkeys(input);
-    fn val<'a>(m: &AHashMap<String, Monkey>, k: &str) -> Result<i64, Box<dyn Fn(i64) -> i64>> {
+    fn val(m: &AHashMap<String, Monkey>, k: &str) -> Result<i64, Box<dyn Fn(i64) -> i64>> {
         if k == "humn" {
             return Err(Box::new(|x| x));
         }
