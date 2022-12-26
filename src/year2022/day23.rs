@@ -1,84 +1,114 @@
-use crate::utils::Coord;
-use ahash::AHashSet;
+use std::cell::RefCell;
 use std::cmp::{max, min};
+use std::rc::Rc;
 
-const DIRS: &[Coord<i16>] = &[
-    Coord::new(-1, 1),
-    Coord::new(0, 1),
-    Coord::new(1, 1),
-    Coord::new(-1, 0),
-    Coord::new(1, 0),
-    Coord::new(-1, -1),
-    Coord::new(-0, -1),
-    Coord::new(1, -1),
+const SZ: i32 = 2500;
+
+const DIRS: &[i32] = &[-SZ - 1, -SZ, -SZ + 1, -1, 1, SZ - 1, SZ, SZ + 1];
+
+const PROP_DIRS: [[i32; 3]; 4] = [
+    [-SZ - 1, -SZ, -SZ + 1],
+    [SZ - 1, SZ, SZ + 1],
+    [-SZ - 1, -1, SZ - 1],
+    [-SZ + 1, 1, SZ + 1],
 ];
 
-fn mv(elves: &AHashSet<Coord<i16>>, elf: &Coord<i16>, dir: usize) -> Coord<i16> {
-    let adjs: Vec<bool> = DIRS.iter().map(|d| !elves.contains(&(elf + d))).collect();
-    if !adjs.iter().all(|b| *b) {
-        let poss = vec![
-            (adjs[0] && adjs[1] && adjs[2], *elf + Coord::new(0, 1)),
-            (adjs[5] && adjs[6] && adjs[7], *elf + Coord::new(0, -1)),
-            (adjs[0] && adjs[3] && adjs[5], *elf + Coord::new(-1, 0)),
-            (adjs[2] && adjs[4] && adjs[7], *elf + Coord::new(1, 0)),
-        ];
-        for i in 0..4 {
-            let (avail, elf2) = poss[(dir + i) % 4];
-            if avail {
-                return elf2;
+struct Elf {
+    pos: i32,
+    prop: i32,
+}
+
+#[allow(clippy::type_complexity)]
+fn parse(
+    input: &str,
+) -> (
+    Vec<Rc<RefCell<Elf>>>,
+    Vec<Option<Rc<RefCell<Elf>>>>,
+    Vec<i32>,
+) {
+    let elves = input
+        .lines()
+        .enumerate()
+        .flat_map(|(y, line)| {
+            line.chars().enumerate().filter_map(move |(x, v)| {
+                (v == '#').then(|| {
+                    Rc::new(RefCell::new(Elf {
+                        pos: (y as i32 + SZ / 2) * SZ + x as i32 + SZ / 2,
+                        prop: i32::MIN,
+                    }))
+                })
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut grid = vec![None; SZ as usize * SZ as usize];
+    for elf in elves.iter() {
+        grid[elf.borrow().pos as usize] = Some(elf.clone());
+    }
+    (elves, grid, vec![0; SZ as usize * SZ as usize])
+}
+
+fn step(
+    elves: &[Rc<RefCell<Elf>>],
+    grid: &mut [Option<Rc<RefCell<Elf>>>],
+    props: &mut [i32],
+    dir: usize,
+) -> bool {
+    for elf in elves {
+        let pos = elf.borrow().pos;
+        if DIRS.iter().any(|d| grid[(pos + d) as usize].is_some()) {
+            for i in 0..4 {
+                let prop = PROP_DIRS[(dir + i) % 4];
+                if grid[(elf.borrow().pos + prop[0]) as usize].is_none()
+                    && grid[(pos + prop[1]) as usize].is_none()
+                    && grid[(pos + prop[2]) as usize].is_none()
+                {
+                    let prop = pos + prop[1];
+                    elf.borrow_mut().prop = prop;
+                    props[prop as usize] += 1;
+                    break;
+                }
             }
         }
     }
-    *elf
-}
-
-fn parse(input: &str) -> AHashSet<Coord<i16>> {
-    input
-        .lines()
-        .enumerate()
-        .flat_map(|(r, line)| {
-            line.chars()
-                .enumerate()
-                .filter_map(move |(c, v)| (v == '#').then(|| Coord::new(c as i16, -(r as i16))))
-        })
-        .collect()
-}
-
-fn step(elves: &mut AHashSet<Coord<i16>>, dir: usize) {
-    let elves2 = elves.clone();
-    elves.clear();
-    for elf in elves2.iter() {
-        let elf2 = mv(&elves2, elf, dir);
-        if !elves.insert(elf2) {
-            elves.remove(&elf2);
-            elves.insert(*elf);
-            elves.insert(elf2.scale(2) - *elf);
+    let mut moved = false;
+    for elf in elves {
+        let pos = elf.borrow().pos;
+        let prop = elf.borrow().prop;
+        if prop != i32::MIN {
+            if props[prop as usize] == 1 {
+                moved = true;
+                grid[pos as usize] = None;
+                grid[prop as usize] = Some(elf.clone());
+                elf.borrow_mut().pos = prop;
+            }
+            props[prop as usize] = 0;
+            elf.borrow_mut().prop = i32::MIN;
         }
     }
+    moved
 }
 
 pub fn part1(input: &str) -> usize {
-    let mut elves = parse(input);
+    let (elves, mut grid, mut props) = parse(input);
     for i in 0..10 {
-        step(&mut elves, i % 4);
+        step(&elves, &mut grid, &mut props, i % 4);
     }
-    let (mut min_x, mut min_y) = (i16::MAX, i16::MAX);
-    let (mut max_x, mut max_y) = (i16::MIN, i16::MIN);
+    let (mut min_x, mut min_y) = (i32::MAX, i32::MAX);
+    let (mut max_x, mut max_y) = (i32::MIN, i32::MIN);
     for elf in elves.iter() {
-        min_x = min(min_x, elf.x);
-        min_y = min(min_y, elf.y);
-        max_x = max(max_x, elf.x + 1);
-        max_y = max(max_y, elf.y + 1);
+        let (x, y) = (elf.borrow().pos % SZ, elf.borrow().pos / SZ);
+        min_x = min(min_x, x);
+        min_y = min(min_y, y);
+        max_x = max(max_x, x + 1);
+        max_y = max(max_y, y + 1);
     }
     (max_x - min_x) as usize * (max_y - min_y) as usize - elves.len()
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut elves = parse(input);
+    let (elves, mut grid, mut props) = parse(input);
     for i in 0.. {
-        let prev = elves.clone();
-        step(&mut elves, i % 4);
-        if prev == elves {
+        if !step(&elves, &mut grid, &mut props, i % 4) {
             return i + 1;
         }
     }
