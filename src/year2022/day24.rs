@@ -52,11 +52,11 @@ impl Valley {
             let pw_blizz = self.w_blizz.clone();
             let pe_blizz = self.e_blizz.clone();
             let p_frontier = frontier.clone();
-            for c in 0..self.w as usize {
+            for c in 0..self.w {
                 self.n_blizz[c] =
-                    (self.n_blizz[c] >> 1 | (self.n_blizz[c] & 2) << self.h - 3) & !self.walls[c];
+                    (self.n_blizz[c] >> 1 | (self.n_blizz[c] & 2) << (self.h - 3)) & !self.walls[c];
                 self.s_blizz[c] =
-                    (self.s_blizz[c] << 1 | (self.s_blizz[c] >> self.h - 3 & 2)) & !self.walls[c];
+                    (self.s_blizz[c] << 1 | (self.s_blizz[c] >> (self.h - 3) & 2)) & !self.walls[c];
                 self.w_blizz[c] = pw_blizz[(c - 2 + self.w) % (self.w - 2) + 1];
                 self.e_blizz[c] = pe_blizz[(c - 4 + self.w) % (self.w - 2) + 1];
                 frontier[c] |= p_frontier[c] >> 1
