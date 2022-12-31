@@ -1,5 +1,3 @@
-use crate::utils::Coord;
-
 struct Valley {
     w: usize,
     h: usize,
@@ -43,11 +41,11 @@ impl Valley {
         }
     }
 
-    fn shortest_path(&mut self, start: Coord<usize>, goal: Coord<usize>) -> usize {
+    fn shortest_path(&mut self, start: (usize, usize), goal: (usize, usize)) -> usize {
         let mut t = 0;
         let mut frontier = vec![0; self.w];
-        frontier[start.y] |= 1 << start.x;
-        while frontier[goal.y] & 1 << goal.x == 0 {
+        frontier[start.1] |= 1 << start.0;
+        while frontier[goal.1] & 1 << goal.0 == 0 {
             t += 1;
             let pw_blizz = self.w_blizz.clone();
             let pe_blizz = self.e_blizz.clone();
@@ -76,12 +74,12 @@ impl Valley {
 
 pub fn part1(input: &str) -> usize {
     let mut valley = Valley::new(input);
-    valley.shortest_path(Coord::new(0, 1), Coord::new(valley.h - 1, valley.w - 2))
+    valley.shortest_path((0, 1), (valley.h - 1, valley.w - 2))
 }
 
 pub fn part2(input: &str) -> usize {
     let mut valley = Valley::new(input);
-    let (start, goal) = (Coord::new(0, 1), Coord::new(valley.h - 1, valley.w - 2));
+    let (start, goal) = ((0, 1), (valley.h - 1, valley.w - 2));
     valley.shortest_path(start, goal)
         + valley.shortest_path(goal, start)
         + valley.shortest_path(start, goal)
