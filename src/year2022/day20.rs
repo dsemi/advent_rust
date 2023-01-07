@@ -8,7 +8,7 @@ struct Node<'a> {
     far_next: Cell<Option<&'a Node<'a>>>,
 }
 
-fn fix_refs<'a>(skip_size: i64, mut a: &'a Node<'a>, mut b: &'a Node<'a>) {
+fn fix_refs<'a>(skip_size: usize, mut a: &'a Node<'a>, mut b: &'a Node<'a>) {
     for _ in 0..skip_size + 1 {
         a.far_next.set(Some(b));
         b.far_prev.set(Some(a));
@@ -40,17 +40,13 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
             far_next: Cell::new(None),
         })
         .collect();
-    let skip_size = ((ns.len() / 2) as f64).sqrt() as i64 / 2;
-    let m = ns.len() as i64 - 1;
+    let skip_size = ((ns.len() / 2) as f64).sqrt() as usize / 2;
+    let m = ns.len() - 1;
     for i in 0..ns.len() {
         ns[(i + 1) % ns.len()].prev.set(Some(&ns[i]));
         ns[i].next.set(Some(&ns[(i + 1) % ns.len()]));
-        ns[(i + skip_size as usize) % ns.len()]
-            .far_prev
-            .set(Some(&ns[i]));
-        ns[i]
-            .far_next
-            .set(Some(&ns[(i + skip_size as usize) % ns.len()]));
+        ns[(i + skip_size) % ns.len()].far_prev.set(Some(&ns[i]));
+        ns[i].far_next.set(Some(&ns[(i + skip_size) % ns.len()]));
     }
     for _ in 0..times {
         for n in ns.iter() {
@@ -59,7 +55,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
             n.next.get().unwrap().prev.set(n.prev.get());
             fix_refs(skip_size, n.far_prev.get().unwrap(), n.next.get().unwrap());
             // Find new pos
-            let mut to_move = n.val.rem_euclid(m);
+            let mut to_move = n.val.rem_euclid(m as i64) as usize;
             let mut cur = n.next.get().unwrap();
             if to_move > m / 2 {
                 to_move = m - to_move;
