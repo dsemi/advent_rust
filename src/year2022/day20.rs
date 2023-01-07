@@ -8,6 +8,27 @@ struct Node<'a> {
     far_next: Cell<Option<&'a Node<'a>>>,
 }
 
+fn fix_refs<'a>(skip_size: i64, mut a: &'a Node<'a>, mut b: &'a Node<'a>) {
+    for _ in 0..skip_size + 1 {
+        a.far_next.set(Some(b));
+        b.far_prev.set(Some(a));
+        a = a.next.get().unwrap();
+        b = b.next.get().unwrap();
+    }
+}
+
+macro_rules! search {
+    ($to_move:ident, $skip_size:ident, $cur:ident, $far_step:ident, $step:ident) => {
+        while $to_move >= $skip_size {
+            $to_move -= $skip_size;
+            $cur = $cur.$far_step.get().unwrap();
+        }
+        for _ in 0..$to_move {
+            $cur = $cur.$step.get().unwrap();
+        }
+    };
+}
+
 fn mix(input: &str, scale: i64, times: usize) -> i64 {
     let ns: Vec<Node> = input
         .lines()
@@ -34,50 +55,24 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
     for _ in 0..times {
         for n in ns.iter() {
             // Remove
-            let mut a = n.far_prev.get().unwrap();
-            let mut b = n.next.get().unwrap();
             n.prev.get().unwrap().next.set(n.next.get());
             n.next.get().unwrap().prev.set(n.prev.get());
-            for _ in 0..skip_size + 1 {
-                a.far_next.set(Some(b));
-                b.far_prev.set(Some(a));
-                a = a.next.get().unwrap();
-                b = b.next.get().unwrap();
-            }
+            fix_refs(skip_size, n.far_prev.get().unwrap(), n.next.get().unwrap());
             // Find new pos
             let mut to_move = n.val.rem_euclid(m);
-            b = n.next.get().unwrap();
+            let mut cur = n.next.get().unwrap();
             if to_move > m / 2 {
                 to_move = m - to_move;
-                while to_move >= skip_size {
-                    to_move -= skip_size;
-                    b = b.far_prev.get().unwrap();
-                }
-                for _ in 0..to_move {
-                    b = b.prev.get().unwrap();
-                }
+                search!(to_move, skip_size, cur, far_prev, prev);
             } else {
-                while to_move >= skip_size {
-                    to_move -= skip_size;
-                    b = b.far_next.get().unwrap();
-                }
-                for _ in 0..to_move {
-                    b = b.next.get().unwrap();
-                }
+                search!(to_move, skip_size, cur, far_next, next);
             }
             // Insert
-            b.prev.get().unwrap().next.set(Some(n));
-            n.prev.set(b.prev.get());
-            b.prev.set(Some(n));
-            n.next.set(Some(b));
-            a = b.far_prev.get().unwrap();
-            b = n;
-            for _ in 0..skip_size + 1 {
-                a.far_next.set(Some(b));
-                b.far_prev.set(Some(a));
-                a = a.next.get().unwrap();
-                b = b.next.get().unwrap();
-            }
+            cur.prev.get().unwrap().next.set(Some(n));
+            n.prev.set(cur.prev.get());
+            cur.prev.set(Some(n));
+            n.next.set(Some(cur));
+            fix_refs(skip_size, cur.far_prev.get().unwrap(), n);
         }
     }
     let mut cur = ns.iter().find(|x| x.val == 0).unwrap();
