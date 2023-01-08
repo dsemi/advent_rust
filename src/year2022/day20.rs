@@ -19,11 +19,10 @@ fn fix_refs<'a>(skip_size: usize, mut a: &'a Node<'a>, mut b: &'a Node<'a>) {
 
 macro_rules! search {
     ($to_move:ident, $skip_size:ident, $cur:ident, $far_step:ident, $step:ident) => {
-        while $to_move >= $skip_size {
-            $to_move -= $skip_size;
+        for _ in 0..$to_move / $skip_size {
             $cur = $cur.$far_step.get().unwrap();
         }
-        for _ in 0..$to_move {
+        for _ in 0..$to_move % $skip_size {
             $cur = $cur.$step.get().unwrap();
         }
     };
