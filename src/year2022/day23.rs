@@ -69,7 +69,7 @@ impl Grid {
         for (line, r) in input.lines().zip(24..) {
             let mut row = [0_u64; 4];
             for (v, c) in line.chars().zip(72..) {
-                row[c / 64] |= ((v == '#') as u64) << c % 64;
+                row[c / 64] |= ((v == '#') as u64) << (c % 64);
             }
             res.es[r] = m256i::from(row);
         }
