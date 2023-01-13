@@ -14,10 +14,9 @@ fn move_stacks(input: &str, in_order: bool) -> String {
     }
     for line in y.lines() {
         let (n, a, b) = scanf!(line, "move {} from {} to {}", usize, usize, usize).unwrap();
-        let mut tmp = (0..n)
-            .map(|_| stacks[a - 1].pop().unwrap())
-            .collect::<Vec<_>>();
-        if in_order {
+        let idx = stacks[a - 1].len() - n;
+        let mut tmp = stacks[a - 1].split_off(idx);
+        if !in_order {
             tmp.reverse();
         }
         stacks[b - 1].extend(tmp);

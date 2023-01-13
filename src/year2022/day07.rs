@@ -1,3 +1,9 @@
+fn move_up(result: &mut Vec<i64>, fstree: &mut Vec<i64>) {
+    let size = fstree.pop().unwrap();
+    *fstree.last_mut().unwrap() += size;
+    result.push(size);
+}
+
 fn all_sizes(input: &str) -> Vec<i64> {
     let mut result = Vec::new();
     let mut fstree = vec![0];
@@ -5,14 +11,10 @@ fn all_sizes(input: &str) -> Vec<i64> {
         if line.starts_with("$ cd ") {
             if line.ends_with('/') {
                 while fstree.len() > 1 {
-                    let size = fstree.pop().unwrap();
-                    *fstree.last_mut().unwrap() += size;
-                    result.push(size);
+                    move_up(&mut result, &mut fstree);
                 }
             } else if line.ends_with("..") {
-                let size = fstree.pop().unwrap();
-                *fstree.last_mut().unwrap() += size;
-                result.push(size);
+                move_up(&mut result, &mut fstree);
             } else {
                 fstree.push(0);
             }
@@ -26,9 +28,7 @@ fn all_sizes(input: &str) -> Vec<i64> {
         }
     }
     while fstree.len() > 1 {
-        let size = fstree.pop().unwrap();
-        *fstree.last_mut().unwrap() += size;
-        result.push(size);
+        move_up(&mut result, &mut fstree);
     }
     result.push(fstree.pop().unwrap());
     result

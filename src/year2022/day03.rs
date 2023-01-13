@@ -19,16 +19,11 @@ pub fn part2(input: &str) -> usize {
     lines
         .chunks(3)
         .map(|pts| {
-            let a = pts[0].chars().collect::<AHashSet<_>>();
+            let mut a = pts[0].chars().collect::<AHashSet<_>>();
             let b = pts[1].chars().collect::<AHashSet<_>>();
             let c = pts[2].chars().collect::<AHashSet<_>>();
-            let ch = *a
-                .intersection(&b)
-                .copied()
-                .collect::<AHashSet<_>>()
-                .intersection(&c)
-                .next()
-                .unwrap();
+            a.retain(|x| b.contains(x) && c.contains(x));
+            let ch = a.into_iter().next().unwrap();
             S.chars().position(|c| c == ch).unwrap() + 1
         })
         .sum()

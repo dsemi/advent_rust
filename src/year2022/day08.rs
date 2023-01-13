@@ -10,7 +10,7 @@ fn trees(input: &str) -> Vec<Tree> {
         .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect())
         .collect();
     for r in 0..grid.len() {
-        for c in 0..grid[0].len() {
+        for c in 0..grid[r].len() {
             let mut tree = Tree {
                 visible_from_edge: false,
                 scenic_score: 1,
