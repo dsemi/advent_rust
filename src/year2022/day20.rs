@@ -1,4 +1,4 @@
-fn fix_refs<'a>(
+fn fix_refs(
     skip_size: usize,
     mut a: u16,
     mut b: u16,
@@ -14,13 +14,11 @@ fn fix_refs<'a>(
     }
 }
 
-fn search(to_move: usize, skip_size: usize, cur: &mut u16, far_step: &[u16], step: &[u16]) {
-    for _ in 0..to_move / skip_size {
-        *cur = far_step[*cur as usize];
-    }
-    for _ in 0..to_move % skip_size {
-        *cur = step[*cur as usize];
-    }
+fn search(to_move: usize, skip_size: usize, cur: u16, far_step: &[u16], step: &[u16]) -> u16 {
+    (0..to_move % skip_size).fold(
+        (0..to_move / skip_size).fold(cur, |cur, _| far_step[cur as usize]),
+        |cur, _| step[cur as usize],
+    )
 }
 
 fn mix(input: &str, scale: i64, times: usize) -> i64 {
@@ -52,14 +50,12 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
                 &mut far_next,
             );
             // Find new pos
-            let mut to_move = n.rem_euclid(m as i64) as usize;
-            let mut cur = next[idx];
-            if to_move > m / 2 {
-                to_move = m - to_move;
-                search(to_move, skip_size, &mut cur, &far_prev, &prev);
+            let to_move = n.rem_euclid(m as i64) as usize;
+            let cur = if to_move > m / 2 {
+                search(m - to_move, skip_size, next[idx], &far_prev, &prev)
             } else {
-                search(to_move, skip_size, &mut cur, &far_next, &next);
-            }
+                search(to_move, skip_size, next[idx], &far_next, &next)
+            };
             // Insert
             next[prev[cur as usize] as usize] = idx as u16;
             prev[idx] = prev[cur as usize];
@@ -75,13 +71,11 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
             );
         }
     }
-    let mut cur = ns.iter().position(|&x| x == 0).unwrap();
+    let mut cur = ns.iter().position(|&x| x == 0).unwrap() as u16;
     let mut res = 0;
     for _ in 0..3 {
-        for _ in 0..1000 {
-            cur = next[cur] as usize;
-        }
-        res += ns[cur];
+        cur = search(1000, skip_size, cur, &far_next, &next);
+        res += ns[cur as usize];
     }
     res
 }
