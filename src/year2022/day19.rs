@@ -81,7 +81,17 @@ impl Blueprint {
             *res = max(*res, geodes);
             return;
         }
-        let upper_bd = geodes + time * geode_bots + time * (time + 1) / 2;
+        let mut upper_bd = geodes + time * geode_bots;
+        let (mut obs, mut obs_rate, obs_cost) = (amts.arr[1], bots.arr[1], self.costs[0].arr[1]);
+        for t in (0..time).rev() {
+            if obs >= obs_cost {
+                obs += obs_rate - obs_cost;
+                upper_bd += t;
+            } else {
+                obs += obs_rate;
+                obs_rate += 1;
+            }
+        }
         if upper_bd <= *res {
             return;
         }
