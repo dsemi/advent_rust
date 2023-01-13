@@ -14,15 +14,13 @@ fn fix_refs<'a>(
     }
 }
 
-macro_rules! search {
-    ($to_move:ident, $skip_size:ident, $cur:ident, $far_step:ident, $step:ident) => {
-        for _ in 0..$to_move / $skip_size {
-            $cur = $far_step[$cur as usize];
-        }
-        for _ in 0..$to_move % $skip_size {
-            $cur = $step[$cur as usize];
-        }
-    };
+fn search(to_move: usize, skip_size: usize, cur: &mut u16, far_step: &[u16], step: &[u16]) {
+    for _ in 0..to_move / skip_size {
+        *cur = far_step[*cur as usize];
+    }
+    for _ in 0..to_move % skip_size {
+        *cur = step[*cur as usize];
+    }
 }
 
 fn mix(input: &str, scale: i64, times: usize) -> i64 {
@@ -58,9 +56,9 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
             let mut cur = next[idx];
             if to_move > m / 2 {
                 to_move = m - to_move;
-                search!(to_move, skip_size, cur, far_prev, prev);
+                search(to_move, skip_size, &mut cur, &far_prev, &prev);
             } else {
-                search!(to_move, skip_size, cur, far_next, next);
+                search(to_move, skip_size, &mut cur, &far_next, &next);
             }
             // Insert
             next[prev[cur as usize] as usize] = idx as u16;
