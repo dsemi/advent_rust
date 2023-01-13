@@ -1,14 +1,13 @@
 use crate::utils::UniqueIdx;
-use ahash::AHashMap;
-use genawaiter::stack::{let_gen_using, Co};
+use itertools::Itertools;
 use regex::Regex;
-use std::cmp::{max, min};
+use std::cmp::{max, min, Reverse};
 
 struct Graph {
     start: usize,
-    flow_rates: Vec<usize>,
+    flow_rates: Vec<u8>,
     working_valves: Vec<usize>,
-    dist: Vec<Vec<usize>>,
+    dist: Vec<Vec<u8>>,
 }
 
 impl Graph {
@@ -17,7 +16,7 @@ impl Graph {
             .unwrap();
         let mut ui = UniqueIdx::new();
         let valves = input.lines().collect::<Vec<_>>();
-        let mut dist = vec![vec![usize::MAX; valves.len()]; valves.len()];
+        let mut dist = vec![vec![u8::MAX; valves.len()]; valves.len()];
         let mut flow_rates = vec![0; valves.len()];
         for line in valves {
             let cap = re.captures(line).unwrap();
@@ -29,11 +28,12 @@ impl Graph {
                 dist[i][j] = 1;
             }
         }
-        let working_valves = flow_rates
+        let mut working_valves = flow_rates
             .iter()
             .enumerate()
             .filter_map(|(i, &r)| (r > 0).then(|| i))
-            .collect();
+            .collect::<Vec<_>>();
+        working_valves.sort_unstable_by_key(|&i| Reverse(flow_rates[i]));
         for k in 0..dist.len() {
             for i in 0..dist.len() {
                 for j in 0..dist.len() {
@@ -49,51 +49,77 @@ impl Graph {
         }
     }
 
-    async fn step(&self, time: usize, co: Co<'_, (usize, usize)>) {
-        let mut stack = vec![(self.start, 0, 0, time)];
-        while let Some((i, open_valves, pressure, time_left)) = stack.pop() {
-            co.yield_((open_valves, pressure)).await;
-            for j in self.working_valves.iter().copied() {
-                let bit = 1 << j;
-                if bit & open_valves == 0 && self.dist[i][j] < time_left - 1 {
-                    let time_left = time_left - self.dist[i][j] - 1;
-                    stack.push((
-                        j,
-                        open_valves | bit,
-                        pressure + self.flow_rates[j] * time_left,
-                        time_left,
-                    ));
-                }
+    fn dfs(&self, res: &mut [u16], i: usize, open_valves: u16, pressure: u16, time_left: u8) {
+        let upper_bd = self.upper_bound(open_valves, pressure, time_left);
+        let e = res.get_mut(open_valves as usize % res.len()).unwrap();
+        if upper_bd <= *e {
+            return;
+        }
+        *e = max(*e, pressure);
+        for (bit, j) in self.working_valves.iter().copied().enumerate() {
+            let bit = 1 << bit;
+            if bit & open_valves == 0 && self.dist[i][j] < time_left - 1 {
+                let time_left = time_left - self.dist[i][j] - 1;
+                self.dfs(
+                    res,
+                    j,
+                    open_valves | bit,
+                    pressure + self.flow_rates[j] as u16 * time_left as u16,
+                    time_left,
+                );
             }
         }
     }
-}
 
-pub fn part1(input: &str) -> Option<usize> {
-    let graph = Graph::new(input);
-    let_gen_using!(gen, |co| graph.step(30, co));
-    gen.into_iter().map(|(_, pressure)| pressure).max()
-}
-
-pub fn part2(input: &str) -> Option<usize> {
-    let graph = Graph::new(input);
-    let mut open_to_press = AHashMap::new();
-    let_gen_using!(gen, |co| graph.step(26, co));
-    for (open_valves, pressure) in gen {
-        let e = open_to_press.entry(open_valves).or_insert(pressure);
-        *e = max(*e, pressure);
+    fn sim(&self, time: u8, bins: usize) -> Vec<u16> {
+        let mut res = vec![0; bins];
+        self.dfs(&mut res, self.start, 0, 0, time);
+        res
     }
-    let best_pressures = open_to_press.into_iter().collect::<Vec<_>>();
+
+    fn upper_bound(&self, open_valves: u16, pressure: u16, time_left: u8) -> u16 {
+        (0..=time_left)
+            .rev()
+            .step_by(2)
+            .skip(1)
+            .zip(
+                self.working_valves
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, &j)| {
+                        (open_valves & (1 << i) == 0).then(|| self.flow_rates[j])
+                    }),
+            )
+            .map(|(min, flow)| min as u16 * flow as u16)
+            .chain(std::iter::once(pressure))
+            .sum()
+    }
+}
+
+pub fn part1(input: &str) -> Option<u16> {
+    let graph = Graph::new(input);
+    graph.sim(30, 1).into_iter().max()
+}
+
+pub fn part2(input: &str) -> u16 {
+    let graph = Graph::new(input);
+    let best_pressures = graph
+        .sim(26, u16::MAX as usize)
+        .into_iter()
+        .enumerate()
+        .filter_map(|(i, best)| (best > 0).then(|| (i as u16, best)))
+        .sorted_unstable_by_key(|p| Reverse(p.1))
+        .collect::<Vec<_>>();
     best_pressures
         .iter()
         .enumerate()
-        .flat_map(|(hi, (h_opens, h_pressure))| {
+        .fold(0, |best, (i, (h_opens, h_pressure))| {
             best_pressures
                 .iter()
-                .skip(hi + 1)
-                .filter_map(move |(e_opens, e_pressure)| {
-                    (h_opens & e_opens == 0).then(|| h_pressure + e_pressure)
-                })
+                .skip(i + 1)
+                .map(|(o, e_pressure)| (o, h_pressure + e_pressure))
+                .take_while(|&(_, p)| p > best)
+                .find_map(|(e_opens, p)| (e_opens & h_opens == 0).then(|| p))
+                .unwrap_or(best)
         })
-        .max()
 }
