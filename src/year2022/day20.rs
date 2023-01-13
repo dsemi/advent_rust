@@ -1,61 +1,61 @@
-use std::cell::Cell;
-
-struct Node<'a> {
-    val: i64,
-    prev: Cell<Option<&'a Node<'a>>>,
-    next: Cell<Option<&'a Node<'a>>>,
-    far_prev: Cell<Option<&'a Node<'a>>>,
-    far_next: Cell<Option<&'a Node<'a>>>,
-}
-
-fn fix_refs<'a>(skip_size: usize, mut a: &'a Node<'a>, mut b: &'a Node<'a>) {
+fn fix_refs<'a>(
+    skip_size: usize,
+    mut a: u16,
+    mut b: u16,
+    next: &mut [u16],
+    far_prev: &mut [u16],
+    far_next: &mut [u16],
+) {
     for _ in 0..skip_size + 1 {
-        a.far_next.set(Some(b));
-        b.far_prev.set(Some(a));
-        a = a.next.get().unwrap();
-        b = b.next.get().unwrap();
+        far_next[a as usize] = b;
+        far_prev[b as usize] = a;
+        a = next[a as usize];
+        b = next[b as usize];
     }
 }
 
 macro_rules! search {
     ($to_move:ident, $skip_size:ident, $cur:ident, $far_step:ident, $step:ident) => {
         for _ in 0..$to_move / $skip_size {
-            $cur = $cur.$far_step.get().unwrap();
+            $cur = $far_step[$cur as usize];
         }
         for _ in 0..$to_move % $skip_size {
-            $cur = $cur.$step.get().unwrap();
+            $cur = $step[$cur as usize];
         }
     };
 }
 
 fn mix(input: &str, scale: i64, times: usize) -> i64 {
-    let ns: Vec<Node> = input
+    let ns: Vec<i64> = input
         .lines()
-        .map(|x| Node {
-            val: x.parse::<i64>().unwrap() * scale,
-            prev: Cell::new(None),
-            next: Cell::new(None),
-            far_prev: Cell::new(None),
-            far_next: Cell::new(None),
-        })
+        .map(|x| x.parse::<i64>().unwrap() * scale)
         .collect();
     let skip_size = ((ns.len() / 2) as f64).sqrt() as usize / 2;
+    let mut prev = (0..ns.len() as u16).collect::<Vec<_>>();
+    let mut next = prev.clone();
+    let mut far_prev = prev.clone();
+    let mut far_next = prev.clone();
+    prev.rotate_right(1);
+    next.rotate_left(1);
+    far_prev.rotate_right(skip_size);
+    far_next.rotate_left(skip_size);
     let m = ns.len() - 1;
-    for i in 0..ns.len() {
-        ns[(i + 1) % ns.len()].prev.set(Some(&ns[i]));
-        ns[i].next.set(Some(&ns[(i + 1) % ns.len()]));
-        ns[(i + skip_size) % ns.len()].far_prev.set(Some(&ns[i]));
-        ns[i].far_next.set(Some(&ns[(i + skip_size) % ns.len()]));
-    }
     for _ in 0..times {
-        for n in ns.iter() {
+        for (idx, n) in ns.iter().enumerate() {
             // Remove
-            n.prev.get().unwrap().next.set(n.next.get());
-            n.next.get().unwrap().prev.set(n.prev.get());
-            fix_refs(skip_size, n.far_prev.get().unwrap(), n.next.get().unwrap());
+            next[prev[idx] as usize] = next[idx];
+            prev[next[idx] as usize] = prev[idx];
+            fix_refs(
+                skip_size,
+                far_prev[idx],
+                next[idx],
+                &mut next,
+                &mut far_prev,
+                &mut far_next,
+            );
             // Find new pos
-            let mut to_move = n.val.rem_euclid(m as i64) as usize;
-            let mut cur = n.next.get().unwrap();
+            let mut to_move = n.rem_euclid(m as i64) as usize;
+            let mut cur = next[idx];
             if to_move > m / 2 {
                 to_move = m - to_move;
                 search!(to_move, skip_size, cur, far_prev, prev);
@@ -63,20 +63,27 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
                 search!(to_move, skip_size, cur, far_next, next);
             }
             // Insert
-            cur.prev.get().unwrap().next.set(Some(n));
-            n.prev.set(cur.prev.get());
-            cur.prev.set(Some(n));
-            n.next.set(Some(cur));
-            fix_refs(skip_size, cur.far_prev.get().unwrap(), n);
+            next[prev[cur as usize] as usize] = idx as u16;
+            prev[idx] = prev[cur as usize];
+            prev[cur as usize] = idx as u16;
+            next[idx] = cur;
+            fix_refs(
+                skip_size,
+                far_prev[cur as usize],
+                idx as u16,
+                &mut next,
+                &mut far_prev,
+                &mut far_next,
+            );
         }
     }
-    let mut cur = ns.iter().find(|x| x.val == 0).unwrap();
+    let mut cur = ns.iter().position(|&x| x == 0).unwrap();
     let mut res = 0;
     for _ in 0..3 {
         for _ in 0..1000 {
-            cur = cur.next.get().unwrap();
+            cur = next[cur] as usize;
         }
-        res += cur.val;
+        res += ns[cur];
     }
     res
 }
