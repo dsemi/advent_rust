@@ -11,7 +11,7 @@ struct Grid {
 
 fn step_west(row: &m256i) -> m256i {
     shr_imm_u64_m256i::<1>(*row)
-        | shl_imm_u64_m256i::<63>(blend_imm_i32_m256i::<0b00111111>(
+        | shl_imm_u64_m256i::<63>(blend_imm_i32_m256i::<0b00_11_11_11>(
             zeroed_m256i(),
             shuffle_ai_i64_all_m256i::<0b00_11_10_01>(*row),
         ))
@@ -19,7 +19,7 @@ fn step_west(row: &m256i) -> m256i {
 
 fn step_east(row: &m256i) -> m256i {
     shl_imm_u64_m256i::<1>(*row)
-        | shr_imm_u64_m256i::<63>(blend_imm_i32_m256i::<0b11111100>(
+        | shr_imm_u64_m256i::<63>(blend_imm_i32_m256i::<0b11_11_11_00>(
             zeroed_m256i(),
             shuffle_ai_i64_all_m256i::<0b10_01_00_11>(*row),
         ))

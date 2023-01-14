@@ -1,36 +1,31 @@
-use safe_arch::*;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::max;
 
 const TMPL: &str = "Blueprint {}: Each ore robot costs {} ore. Each clay robot costs {} ore. Each obsidian robot costs {} ore and {} clay. Each geode robot costs {} ore and {} obsidian.";
 
-#[allow(non_camel_case_types)]
-union m128i_32 {
-    arr: [i32; 4],
-    v: m128i,
+fn gte(a: &[i32; 4], b: &[i32; 4]) -> bool {
+    a.iter().zip(b).all(|(a, b)| a >= b)
 }
 
-impl m128i_32 {
-    unsafe fn gte(&self, o: &m128i_32) -> bool {
-        move_mask_i8_m128i(cmp_lt_mask_i32_m128i(self.v, o.v)) == 0
-    }
+fn add(a: &[i32; 4], b: &[i32; 4]) -> [i32; 4] {
+    combine(a.iter().zip(b).map(|(a, b)| a + b))
+}
 
-    unsafe fn add(&self, o: &m128i_32) -> m128i_32 {
-        m128i_32 {
-            v: add_i32_m128i(self.v, o.v),
-        }
-    }
+fn sub(a: &[i32; 4], b: &[i32; 4]) -> [i32; 4] {
+    combine(a.iter().zip(b).map(|(a, b)| a - b))
+}
 
-    unsafe fn sub(&self, o: &m128i_32) -> m128i_32 {
-        m128i_32 {
-            v: sub_i32_m128i(self.v, o.v),
-        }
+fn combine<I: Iterator<Item = i32>>(src: I) -> [i32; 4] {
+    let mut result = [0, 0, 0, 0];
+    for (r, v) in result.iter_mut().zip(src) {
+        *r = v;
     }
+    result
 }
 
 struct Blueprint {
     num: i32,
-    costs: [m128i_32; 4],
+    costs: [[i32; 4]; 4],
     max_costs: [i32; 4],
 }
 
@@ -46,43 +41,31 @@ fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
             geode_bot_obs,
         ) = scanf!(line, TMPL, i32, i32, i32, i32, i32, i32, i32).unwrap();
         let costs = [
-            m128i_32 {
-                arr: [0, geode_bot_obs, 0, geode_bot_ore],
-            },
-            m128i_32 {
-                arr: [0, 0, obs_bot_clay, obs_bot_ore],
-            },
-            m128i_32 {
-                arr: [0, 0, 0, clay_bot_ore],
-            },
-            m128i_32 {
-                arr: [0, 0, 0, ore_bot_ore],
-            },
+            [0, geode_bot_obs, 0, geode_bot_ore],
+            [0, 0, obs_bot_clay, obs_bot_ore],
+            [0, 0, 0, clay_bot_ore],
+            [0, 0, 0, ore_bot_ore],
         ];
-        let mut mc = m128i::from([0i32, 0, 0, 0]);
-        unsafe {
-            for c in costs.iter() {
-                mc = max_i32_m128i(mc, c.v);
-            }
-        }
         Blueprint {
             num,
             costs,
-            max_costs: mc.into(),
+            max_costs: costs.iter().fold([0; 4], |mc, c| {
+                combine(mc.iter().zip(c).map(|(a, b)| *max(a, b)))
+            }),
         }
     })
 }
 
 impl Blueprint {
-    unsafe fn dfs(&self, res: &mut i32, time: i32, amts: m128i_32, bots: m128i_32, mut bans: u8) {
-        let geodes = amts.arr[0];
-        let geode_bots = bots.arr[0];
+    fn dfs(&self, res: &mut i32, time: i32, amts: [i32; 4], bots: [i32; 4], mut bans: u8) {
+        let geodes = amts[0];
+        let geode_bots = bots[0];
         if time == 0 {
             *res = max(*res, geodes);
             return;
         }
         let mut upper_bd = geodes + time * geode_bots;
-        let (mut obs, mut obs_rate, obs_cost) = (amts.arr[1], bots.arr[1], self.costs[0].arr[1]);
+        let (mut obs, mut obs_rate, obs_cost) = (amts[1], bots[1], self.costs[0][1]);
         for t in (0..time).rev() {
             if obs >= obs_cost {
                 obs += obs_rate - obs_cost;
@@ -96,36 +79,26 @@ impl Blueprint {
             return;
         }
         for (i, costs) in self.costs.iter().enumerate() {
-            if bans & (1 << i) == 0
-                && (i == 0 || bots.arr[i] < self.max_costs[i])
-                && amts.gte(costs)
+            if bans & (1 << i) == 0 && (i == 0 || bots[i] < self.max_costs[i]) && gte(&amts, costs)
             {
-                let mut chans = m128i_32 { arr: [0, 0, 0, 0] };
-                chans.arr[i] = 1;
+                let mut new_bots = [0; 4];
+                new_bots[i] = 1;
                 self.dfs(
                     res,
                     time - 1,
-                    amts.add(&bots).sub(costs),
-                    bots.add(&chans),
+                    sub(&add(&amts, &bots), costs),
+                    add(&bots, &new_bots),
                     0,
                 );
                 bans |= 1 << i;
             }
         }
-        self.dfs(res, time - 1, amts.add(&bots), bots, bans);
+        self.dfs(res, time - 1, add(&amts, &bots), bots, bans);
     }
 
     fn sim(&self, time: i32) -> i32 {
         let mut res = 0;
-        unsafe {
-            self.dfs(
-                &mut res,
-                time,
-                m128i_32 { arr: [0, 0, 0, 0] },
-                m128i_32 { arr: [0, 0, 0, 1] },
-                0,
-            );
-        }
+        self.dfs(&mut res, time, [0, 0, 0, 0], [0, 0, 0, 1], 0);
         res
     }
 }
