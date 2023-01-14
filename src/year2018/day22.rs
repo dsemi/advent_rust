@@ -13,7 +13,7 @@ enum Tool {
 
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Node {
-    pos: Coord<i32>,
+    pos: C<i32>,
     tool: Tool,
 }
 
@@ -25,7 +25,7 @@ fn next(t: &Tool) -> Tool {
     }
 }
 
-fn parse(input: &str) -> (i32, Coord<i32>) {
+fn parse(input: &str) -> (i32, C<i32>) {
     let lns = input.lines().collect::<Vec<_>>();
     let pts = lns[1]
         .split_once(' ')
@@ -36,16 +36,16 @@ fn parse(input: &str) -> (i32, Coord<i32>) {
         .collect::<Vec<_>>();
     (
         lns[0].split_once(' ').unwrap().1.parse().unwrap(),
-        Coord::new(pts[0], pts[1]),
+        C(pts[0], pts[1]),
     )
 }
 
-fn erosion_levels(depth: i32, target: Coord<i32>) -> Vec<Vec<Tool>> {
-    let mx = max(target.x, target.y) as usize + 3; // Arbitrary buffer size for search
+fn erosion_levels(depth: i32, target: C<i32>) -> Vec<Vec<Tool>> {
+    let mx = max(target.0, target.1) as usize + 3; // Arbitrary buffer size for search
     let mut arr = vec![vec![0; mx]; mx];
     for x in 0..mx {
         for y in 0..mx {
-            let geologic_index = if Coord::new(x as i32, y as i32) == target {
+            let geologic_index = if C(x as i32, y as i32) == target {
                 0
             } else if x == 0 {
                 y * 48271
@@ -73,7 +73,7 @@ pub fn part1(input: &str) -> u32 {
         .enumerate()
         .flat_map(|(x, row)| {
             row.into_iter().enumerate().filter_map(move |(y, v)| {
-                (x as i32 <= target.x && y as i32 <= target.y)
+                (x as i32 <= target.0 && y as i32 <= target.1)
                     .then(|| ToPrimitive::to_u32(&v).unwrap())
             })
         })
@@ -89,14 +89,14 @@ pub fn part2(input: &str) -> usize {
             .into_iter()
             .filter_map(move |d| {
                 let n_node = Node {
-                    pos: node.pos + Coord::new(d.0, d.1),
+                    pos: node.pos + C(d.0, d.1),
                     tool: node.tool,
                 };
-                (n_node.pos.x >= 0
-                    && n_node.pos.x < els.len() as i32
-                    && n_node.pos.y >= 0
-                    && n_node.pos.y < els.len() as i32
-                    && n_node.tool != els[n_node.pos.x as usize][n_node.pos.y as usize])
+                (n_node.pos.0 >= 0
+                    && n_node.pos.0 < els.len() as i32
+                    && n_node.pos.1 >= 0
+                    && n_node.pos.1 < els.len() as i32
+                    && n_node.tool != els[n_node.pos])
                     .then(|| (1, n_node))
             })
             .chain(
@@ -107,16 +107,14 @@ pub fn part2(input: &str) -> usize {
                             pos: node.pos,
                             tool: t,
                         };
-                        (n_node.tool != els[n_node.pos.x as usize][n_node.pos.y as usize])
-                            .then(|| (7, n_node))
+                        (n_node.tool != els[n_node.pos]).then(|| (7, n_node))
                     }),
             )
             .collect()
     }
 
-    fn heur(target: &Coord<i32>, node: &Node) -> usize {
-        let dist = *target - node.pos;
-        dist.x.unsigned_abs() as usize + dist.y.unsigned_abs() as usize
+    fn heur(target: &C<i32>, node: &Node) -> usize {
+        target.dist(&node.pos) as usize
     }
 
     a_star(
@@ -129,7 +127,7 @@ pub fn part2(input: &str) -> usize {
             }
         },
         Node {
-            pos: Coord::new(0, 0),
+            pos: C(0, 0),
             tool: Torch,
         },
     )

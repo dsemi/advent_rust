@@ -1,4 +1,4 @@
-use crate::utils::Coord;
+use crate::utils::C;
 use ahash::AHashMap;
 use genawaiter::stack::{let_gen_using, Co};
 use std::collections::hash_map::Entry::Occupied;
@@ -12,24 +12,24 @@ enum Turn {
 }
 
 struct Cart {
-    pos: Coord<i32>,
-    dir: Coord<i32>,
+    pos: C<i32>,
+    dir: C<i32>,
     turn: Turn,
 }
 
-fn turn(c: Coord<i32>, turn: Turn) -> Coord<i32> {
+fn turn(c: C<i32>, turn: Turn) -> C<i32> {
     match turn {
-        Left => c * Coord::new(0, 1),
+        Left => c * C(0, 1),
         Straight => c,
-        Right => c * Coord::new(0, -1),
+        Right => c * C(0, -1),
     }
 }
 
 fn move_cart(cart: &mut Cart, grid: &[Vec<char>]) {
     cart.pos += cart.dir;
-    match grid[cart.pos.x as usize][cart.pos.y as usize] {
-        '\\' => cart.dir = Coord::new(cart.dir.y, cart.dir.x),
-        '/' => cart.dir = Coord::new(-cart.dir.y, -cart.dir.x),
+    match grid[cart.pos] {
+        '\\' => cart.dir = C(cart.dir.1, cart.dir.0),
+        '/' => cart.dir = C(-cart.dir.1, -cart.dir.0),
         '+' => {
             cart.dir = turn(cart.dir, cart.turn);
             cart.turn = match cart.turn {
@@ -45,7 +45,7 @@ fn move_cart(cart: &mut Cart, grid: &[Vec<char>]) {
 
 struct Tracks {
     grid: Vec<Vec<char>>,
-    carts: AHashMap<Coord<i32>, Cart>,
+    carts: AHashMap<C<i32>, Cart>,
 }
 
 fn parse_tracks(input: &str) -> Tracks {
@@ -57,12 +57,12 @@ fn parse_tracks(input: &str) -> Tracks {
         result.grid.push(Vec::new());
         for (c, v) in line.chars().enumerate() {
             if "^>v<".contains(v) {
-                let pos = Coord::new(r as i32, c as i32);
+                let pos = C(r as i32, c as i32);
                 let dir = match v {
-                    '^' => Coord::new(-1, 0),
-                    '>' => Coord::new(0, 1),
-                    'v' => Coord::new(1, 0),
-                    '<' => Coord::new(0, -1),
+                    '^' => C(-1, 0),
+                    '>' => C(0, 1),
+                    'v' => C(1, 0),
+                    '<' => C(0, -1),
                     _ => panic!("Invalid direction: {}", v),
                 };
                 result.carts.insert(
@@ -90,7 +90,7 @@ impl Tracks {
                     move_cart(&mut cart, &self.grid);
                     if let Occupied(e) = self.carts.entry(cart.pos) {
                         e.remove();
-                        co.yield_((cart.pos.y, cart.pos.x)).await;
+                        co.yield_((cart.pos.1, cart.pos.0)).await;
                     } else {
                         self.carts.insert(cart.pos, cart);
                     }
@@ -98,7 +98,7 @@ impl Tracks {
             }
         }
         for p in self.carts.drain() {
-            co.yield_((p.0.y, p.0.x)).await;
+            co.yield_((p.0 .1, p.0 .0)).await;
         }
     }
 }

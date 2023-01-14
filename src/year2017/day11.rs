@@ -1,24 +1,24 @@
 use crate::utils::*;
 
-fn dist_from_origin(pos: Coord3<i64>) -> i64 {
-    [pos.x, pos.y, pos.z].iter().map(|v| v.abs()).max().unwrap()
+fn dist_from_origin(pos: C3<i64>) -> i64 {
+    [pos.0, pos.1, pos.2].iter().map(|v| v.abs()).max().unwrap()
 }
 
-fn ap(p: &Coord3<i64>, d: &str) -> Coord3<i64> {
+fn ap(p: &C3<i64>, d: &str) -> C3<i64> {
     let x = match d {
-        "n" => Coord3::new(0, 1, -1),
-        "ne" => Coord3::new(1, 0, -1),
-        "se" => Coord3::new(1, -1, 0),
-        "s" => Coord3::new(0, -1, 1),
-        "sw" => Coord3::new(-1, 0, 1),
-        "nw" => Coord3::new(-1, 1, 0),
+        "n" => C3(0, 1, -1),
+        "ne" => C3(1, 0, -1),
+        "se" => C3(1, -1, 0),
+        "s" => C3(0, -1, 1),
+        "sw" => C3(-1, 0, 1),
+        "nw" => C3(-1, 1, 0),
         _ => panic!("Parse error: {}", d),
     };
     *p + x
 }
 
-fn path(input: &str) -> impl Iterator<Item = Coord3<i64>> + '_ {
-    input.split(',').good_scan(Coord3::new(0, 0, 0), ap)
+fn path(input: &str) -> impl Iterator<Item = C3<i64>> + '_ {
+    input.split(',').good_scan(C3(0, 0, 0), ap)
 }
 
 pub fn part1(input: &str) -> Option<i64> {

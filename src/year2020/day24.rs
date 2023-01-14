@@ -1,23 +1,23 @@
-use crate::utils::Coord;
+use crate::utils::C;
 use ahash::{AHashMap, AHashSet};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{max, min};
 
 lazy_static! {
-    static ref DIRS: AHashMap<&'static str, Coord<i32>> = {
+    static ref DIRS: AHashMap<&'static str, C<i32>> = {
         let mut m = AHashMap::new();
-        m.insert("e", Coord::new(1, -1));
-        m.insert("se", Coord::new(0, -1));
-        m.insert("sw", Coord::new(-1, 0));
-        m.insert("w", Coord::new(-1, 1));
-        m.insert("nw", Coord::new(0, 1));
-        m.insert("ne", Coord::new(1, 0));
+        m.insert("e", C(1, -1));
+        m.insert("se", C(0, -1));
+        m.insert("sw", C(-1, 0));
+        m.insert("w", C(-1, 1));
+        m.insert("nw", C(0, 1));
+        m.insert("ne", C(1, 0));
         m
     };
 }
 
-fn flip_tiles(s: &str) -> AHashSet<Coord<i32>> {
+fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
     let re = Regex::new(
         &itertools::Itertools::intersperse(DIRS.keys().copied(), "|").collect::<String>(),
     )
@@ -44,13 +44,8 @@ pub fn part2(input: &str) -> usize {
     let tiles = flip_tiles(input);
     let (mut min_x, mut min_y, mut max_x, mut max_y) = tiles.iter().fold(
         (i32::MAX, i32::MAX, i32::MIN, i32::MIN),
-        |(min_x, min_y, max_x, max_y), coord| {
-            (
-                min(min_x, coord.x),
-                min(min_y, coord.y),
-                max(max_x, coord.x),
-                max(max_y, coord.y),
-            )
+        |(min_x, min_y, max_x, max_y), &C(x, y)| {
+            (min(min_x, x), min(min_y, y), max(max_x, x), max(max_y, y))
         },
     );
     let x_offset = -min_x + STEPS + 1;
@@ -60,8 +55,8 @@ pub fn part2(input: &str) -> usize {
     max_x += x_offset;
     max_y += y_offset;
     let mut grid = vec![vec![false; (max_x + STEPS + 2) as usize]; (max_y + STEPS + 2) as usize];
-    for tile in &tiles {
-        grid[(tile.y + y_offset) as usize][(tile.x + x_offset) as usize] = true;
+    for C(x, y) in &tiles {
+        grid[(y + y_offset) as usize][(x + x_offset) as usize] = true;
     }
     let mut grid2 = grid.clone();
     for _ in 0..STEPS {
@@ -73,7 +68,7 @@ pub fn part2(input: &str) -> usize {
             for c in min_x..=max_x {
                 let adj = DIRS
                     .values()
-                    .filter(|d| grid[(r + d.y) as usize][(c + d.x) as usize])
+                    .filter(|C(x, y)| grid[(r + y) as usize][(c + x) as usize])
                     .count();
                 if grid[r as usize][c as usize] {
                     grid2[r as usize][c as usize] = adj != 0 && adj <= 2;

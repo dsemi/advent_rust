@@ -1,25 +1,25 @@
-use crate::utils::Coord3;
+use crate::utils::C3;
 use counter::Counter;
 use itertools::Itertools;
 use regex::Regex;
 
 struct Particle {
-    pos: Coord3<i64>,
-    vel: Coord3<i64>,
-    acc: Coord3<i64>,
+    pos: C3<i64>,
+    vel: C3<i64>,
+    acc: C3<i64>,
 }
 
 fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
     let reg = Regex::new(r"-?\d+").unwrap();
     input.lines().map(move |line| {
-        let cs: Vec<Coord3<i64>> = line
+        let cs: Vec<C3<i64>> = line
             .split(", ")
             .map(|comp| {
                 let ds: Vec<i64> = reg
                     .find_iter(comp)
                     .map(|x| x.as_str().parse().unwrap())
                     .collect();
-                Coord3::new(ds[0], ds[1], ds[2])
+                C3(ds[0], ds[1], ds[2])
             })
             .collect();
         Particle {

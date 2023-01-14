@@ -1,15 +1,15 @@
-use crate::utils::Coord;
+use crate::utils::C;
 use ahash::AHashMap;
 
 fn run(input: &str, pad: &str) -> String {
-    let d: AHashMap<Coord<i32>, &str> = pad
+    let d: AHashMap<C<i32>, &str> = pad
         .lines()
         .enumerate()
         .flat_map(|(y, line)| {
             line.split(' ')
                 .enumerate()
                 .filter(|(_, c)| c != &".")
-                .map(|(x, c)| (Coord::new(x as i32, y as i32), c))
+                .map(|(x, c)| (C(x as i32, y as i32), c))
                 .collect::<Vec<_>>()
         })
         .collect();
@@ -18,10 +18,10 @@ fn run(input: &str, pad: &str) -> String {
     for line in input.lines() {
         xy = line.chars().fold(xy, |a, b| {
             let dir = match b {
-                'U' => Coord::new(0, -1),
-                'D' => Coord::new(0, 1),
-                'L' => Coord::new(-1, 0),
-                'R' => Coord::new(1, 0),
+                'U' => C(0, -1),
+                'D' => C(0, 1),
+                'L' => C(-1, 0),
+                'R' => C(1, 0),
                 _ => panic!("Invalid dir {}", b),
             };
             if d.contains_key(&(a + dir)) {

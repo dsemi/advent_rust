@@ -1,4 +1,4 @@
-use crate::utils::Coord;
+use crate::utils::C;
 
 #[derive(Eq, PartialEq)]
 enum Orientation {
@@ -8,8 +8,8 @@ enum Orientation {
 
 struct Segment {
     o: Orientation,
-    a: Coord<i32>,
-    b: Coord<i32>,
+    a: C<i32>,
+    b: C<i32>,
     d: i32,
     r: bool,
 }
@@ -22,22 +22,22 @@ fn parse_wires(input: &str) -> Vec<Wire> {
     input
         .lines()
         .map(|line| {
-            let mut pos = Coord::new(0, 0);
+            let mut pos = C(0, 0);
             let mut steps = 0;
             Wire {
                 parts: line
                     .split(',')
                     .map(|p| {
                         let (o, d) = match &p[..1] {
-                            "U" => (Orientation::V, Coord::new(0, 1)),
-                            "D" => (Orientation::V, Coord::new(0, -1)),
-                            "L" => (Orientation::H, Coord::new(-1, 0)),
-                            "R" => (Orientation::H, Coord::new(1, 0)),
+                            "U" => (Orientation::V, C(0, 1)),
+                            "D" => (Orientation::V, C(0, -1)),
+                            "L" => (Orientation::H, C(-1, 0)),
+                            "R" => (Orientation::H, C(1, 0)),
                             _ => panic!("Unknown direction: {}", p),
                         };
-                        let n = p[1..].parse().unwrap();
+                        let n = p[1..].parse::<i32>().unwrap();
                         let prev = pos;
-                        pos += d.scale(n);
+                        pos += d * n;
                         let (d, a, b, r) = if prev < pos {
                             (steps, prev, pos, false)
                         } else {
@@ -64,13 +64,13 @@ impl Wire {
                 } else {
                     (w2, w1)
                 };
-                (hs.a.x <= vs.a.x && vs.a.x <= hs.b.x && vs.a.y <= hs.a.y && hs.a.y <= vs.b.y).then(
+                (hs.a.0 <= vs.a.0 && vs.a.0 <= hs.b.0 && vs.a.1 <= hs.a.1 && hs.a.1 <= vs.b.1).then(
                     || {
                         (
-                            vs.a.x.abs() + hs.a.y.abs(),
-                            hs.d + (if hs.r { -1 } else { 1 }) * (hs.a.x - vs.a.x).abs()
+                            vs.a.0.abs() + hs.a.1.abs(),
+                            hs.d + (if hs.r { -1 } else { 1 }) * (hs.a.0 - vs.a.0).abs()
                                 + vs.d
-                                + (if vs.r { -1 } else { 1 }) * (vs.a.y - hs.a.y).abs(),
+                                + (if vs.r { -1 } else { 1 }) * (vs.a.1 - hs.a.1).abs(),
                         )
                     },
                 )

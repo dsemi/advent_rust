@@ -4,13 +4,13 @@ use crypto::md5::Md5;
 
 #[derive(Clone, Eq, Hash, PartialEq)]
 struct Path {
-    pos: Coord<i32>,
+    pos: C<i32>,
     st: String,
 }
 
 impl Path {
     fn is_done(&self) -> bool {
-        self.pos == Coord::new(4, 4)
+        self.pos == C(4, 4)
     }
 }
 
@@ -25,14 +25,14 @@ fn neighbors(path: &Path) -> Vec<Path> {
         if "bcdef".contains(c) {
             let mut path2 = path.clone();
             match d {
-                'U' => path2.pos += Coord::new(0, -1),
-                'D' => path2.pos += Coord::new(0, 1),
-                'L' => path2.pos += Coord::new(-1, 0),
-                'R' => path2.pos += Coord::new(1, 0),
+                'U' => path2.pos += C(0, -1),
+                'D' => path2.pos += C(0, 1),
+                'L' => path2.pos += C(-1, 0),
+                'R' => path2.pos += C(1, 0),
                 _ => panic!("Bad state"),
             }
             path2.st.push(d);
-            if path2.pos.x > 0 && path2.pos.x <= 4 && path2.pos.y > 0 && path2.pos.y <= 4 {
+            if path2.pos.0 > 0 && path2.pos.0 <= 4 && path2.pos.1 > 0 && path2.pos.1 <= 4 {
                 result.push(path2);
             }
         }
@@ -43,7 +43,7 @@ fn neighbors(path: &Path) -> Vec<Path> {
 pub fn part1(input: &str) -> Option<String> {
     bfs(
         Path {
-            pos: Coord::new(1, 1),
+            pos: C(1, 1),
             st: input.to_string(),
         },
         neighbors,
@@ -54,7 +54,7 @@ pub fn part1(input: &str) -> Option<String> {
 pub fn part2(input: &str) -> Option<usize> {
     bfs(
         Path {
-            pos: Coord::new(1, 1),
+            pos: C(1, 1),
             st: input.to_string(),
         },
         neighbors,

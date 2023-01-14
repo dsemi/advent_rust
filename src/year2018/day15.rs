@@ -22,14 +22,14 @@ fn parse_graph(input: &str) -> Vec<Vec<(char, i32)>> {
         .collect()
 }
 
-fn neighbors(coord: &Coord<i32>) -> impl Iterator<Item = Coord<i32>> + '_ {
+fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
     // reading order
     vec![(-1, 0), (0, -1), (0, 1), (1, 0)]
         .into_iter()
-        .map(|(x, y)| Coord::new(x, y) + *coord)
+        .map(|(x, y)| C(x, y) + *coord)
 }
 
-fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> Option<Coord<i32>> {
+fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: C<i32>) -> Option<C<i32>> {
     let mut path = AHashMap::new();
     let mut visited = AHashSet::new();
     visited.insert(coord);
@@ -38,10 +38,7 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> 
     let mut result = None;
     while let Some(mut pos) = frontier.pop_front() {
         let neighbs = neighbors(&pos).collect::<Vec<_>>();
-        if neighbs
-            .iter()
-            .any(|n| grid[n.x as usize][n.y as usize].0 == enemy)
-        {
+        if neighbs.iter().any(|&n| grid[n].0 == enemy) {
             while let Some(&next) = path.get(&pos) {
                 result = Some(pos);
                 pos = next;
@@ -49,7 +46,7 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: Coord<i32>) -> 
             break;
         }
         for n in neighbs {
-            if grid[n.x as usize][n.y as usize].0 == '.' && visited.insert(n) {
+            if grid[n].0 == '.' && visited.insert(n) {
                 path.insert(n, pos);
                 frontier.push_back(n);
             }
@@ -74,7 +71,7 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
                         } else {
                             goblins += 1;
                         }
-                        Coord::new(r as i32, c as i32)
+                        C(r as i32, c as i32)
                     })
                 })
                 .collect::<Vec<_>>()
@@ -84,22 +81,22 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
         if elves == 0 || goblins == 0 {
             return EndedEarly;
         }
-        let v = grid[pos.x as usize][pos.y as usize];
+        let v = grid[pos];
         if !"EG".contains(v.0) {
             continue;
         }
         let enemy = if v.0 == 'E' { 'G' } else { 'E' };
         if let Some(p) = find_next_move(grid, enemy, pos) {
-            grid[pos.x as usize][pos.y as usize] = ('.', 0);
-            grid[p.x as usize][p.y as usize] = v;
+            grid[pos] = ('.', 0);
+            grid[p] = v;
             pos = p;
         }
         if let Some(t_pos) = neighbors(&pos)
-            .filter(|&n| grid[n.x as usize][n.y as usize].0 == enemy)
-            .min_by_key(|n| grid[n.x as usize][n.y as usize].1)
+            .filter(|&n| grid[n].0 == enemy)
+            .min_by_key(|&n| grid[n].1)
         {
             let pwr = if v.0 == 'E' { elf_power } else { 3 };
-            let (t, hp) = grid[t_pos.x as usize][t_pos.y as usize];
+            let (t, hp) = grid[t_pos];
             if hp <= pwr {
                 if !allow_elf_death && t == 'E' {
                     return ElfDied;
@@ -109,10 +106,10 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
                     } else {
                         goblins -= 1;
                     }
-                    grid[t_pos.x as usize][t_pos.y as usize] = ('.', 0);
+                    grid[t_pos] = ('.', 0);
                 }
             } else {
-                grid[t_pos.x as usize][t_pos.y as usize] = (t, hp - pwr);
+                grid[t_pos] = (t, hp - pwr);
             }
         }
     }

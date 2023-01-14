@@ -2,22 +2,22 @@ use crate::utils::*;
 use ahash::AHashMap;
 use lazy_static::lazy_static;
 
-fn parse_grid(input: &str) -> AHashMap<Coord<i32>, char> {
+fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
     input
         .lines()
         .enumerate()
         .flat_map(|(r, line)| {
             line.chars()
                 .enumerate()
-                .filter_map(move |(c, v)| (v != ' ').then(|| (Coord::new(r as i32, c as i32), v)))
+                .filter_map(move |(c, v)| (v != ' ').then(|| (C(r as i32, c as i32), v)))
         })
         .collect()
 }
 
-fn turn(grid: &AHashMap<Coord<i32>, char>, dir: Coord<i32>, pos: Coord<i32>) -> Coord<i32> {
+fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
     lazy_static! {
-        static ref LEFT: Coord<i32> = Coord::new(0, 1);
-        static ref RIGHT: Coord<i32> = Coord::new(0, -1);
+        static ref LEFT: C<i32> = C(0, 1);
+        static ref RIGHT: C<i32> = C(0, -1);
     }
 
     if grid.contains_key(&(*LEFT * dir + pos)) {
@@ -27,9 +27,9 @@ fn turn(grid: &AHashMap<Coord<i32>, char>, dir: Coord<i32>, pos: Coord<i32>) -> 
     }
 }
 
-fn follow_path(grid: AHashMap<Coord<i32>, char>) -> Vec<char> {
+fn follow_path(grid: AHashMap<C<i32>, char>) -> Vec<char> {
     let mut coord = *grid.keys().min().unwrap();
-    let mut dir = Coord::new(1, 0);
+    let mut dir = C(1, 0);
     let mut result = Vec::new();
     while grid.contains_key(&coord) {
         let v = grid[&coord];

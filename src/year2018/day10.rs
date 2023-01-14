@@ -1,12 +1,12 @@
 use crate::ocr::*;
-use crate::utils::Coord;
+use crate::utils::C;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 struct Obj {
-    pos: Coord<i32>,
-    vel: Coord<i32>,
+    pos: C<i32>,
+    vel: C<i32>,
 }
 
 fn parse_objects(input: &str) -> Vec<Obj> {
@@ -23,8 +23,8 @@ fn parse_objects(input: &str) -> Vec<Obj> {
             )
             .unwrap();
             Obj {
-                pos: Coord::new(x0, y0),
-                vel: Coord::new(x1, y1),
+                pos: C(x0, y0),
+                vel: C(x1, y1),
             }
         })
         .collect()
@@ -33,10 +33,10 @@ fn parse_objects(input: &str) -> Vec<Obj> {
 fn bounding_box(objs: &[Obj]) -> (i32, i32, i32, i32) {
     let mut result = (i32::MAX, i32::MAX, i32::MIN, i32::MIN);
     for obj in objs {
-        result.0 = min(result.0, obj.pos.x);
-        result.1 = min(result.1, obj.pos.y);
-        result.2 = max(result.2, obj.pos.x);
-        result.3 = max(result.3, obj.pos.y);
+        result.0 = min(result.0, obj.pos.0);
+        result.1 = min(result.1, obj.pos.1);
+        result.2 = max(result.2, obj.pos.0);
+        result.3 = max(result.3, obj.pos.1);
     }
     result
 }
@@ -61,11 +61,7 @@ fn show_objects(objs: &[Obj]) -> String {
     for y in y0..=y1 {
         result.push('\n');
         for x in x0..=x1 {
-            result.push(if lights.contains(&Coord::new(x, y)) {
-                '#'
-            } else {
-                ' '
-            });
+            result.push(if lights.contains(&C(x, y)) { '#' } else { ' ' });
         }
     }
     parse_letters(&result, None)

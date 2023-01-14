@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use std::collections::BTreeMap;
 
-fn parse_coords(input: &str) -> Vec<Coord<i32>> {
+fn parse_coords(input: &str) -> Vec<C<i32>> {
     input
         .lines()
         .enumerate()
@@ -12,7 +12,7 @@ fn parse_coords(input: &str) -> Vec<Coord<i32>> {
             line.chars()
                 .enumerate()
                 .filter(|&(_, v)| v == '#')
-                .map(|(x, _)| Coord::new(x as i32, y as i32))
+                .map(|(x, _)| C(x as i32, y as i32))
                 .collect::<Vec<_>>()
         })
         .collect()
@@ -25,8 +25,8 @@ struct Angle {
 }
 
 impl Angle {
-    fn new(a: &Coord<i32>, b: &Coord<i32>) -> Self {
-        let (x, y) = (b.x - a.x, b.y - a.y);
+    fn new(a: &C<i32>, b: &C<i32>) -> Self {
+        let C(x, y) = b - a;
         let gcd = gcd(x.abs(), y.abs());
         Self {
             x: x / gcd,
@@ -56,13 +56,13 @@ impl Ord for Angle {
     }
 }
 
-fn visibilities(pt: &Coord<i32>, pts: &[Coord<i32>]) -> Vec<Vec<Coord<i32>>> {
-    let mut m: BTreeMap<Angle, Vec<Coord<i32>>> = BTreeMap::new();
+fn visibilities(pt: &C<i32>, pts: &[C<i32>]) -> Vec<Vec<C<i32>>> {
+    let mut m: BTreeMap<Angle, Vec<C<i32>>> = BTreeMap::new();
     for p in pts.iter() {
         if p != pt {
             let e = m.entry(Angle::new(pt, p)).or_insert_with(Vec::new);
             let idx = e
-                .binary_search_by_key(&dist(pt, p), |x| dist(pt, x))
+                .binary_search_by_key(&pt.dist(p), |x| pt.dist(x))
                 .collapse();
             e.insert(idx, *p);
         }
@@ -70,15 +70,15 @@ fn visibilities(pt: &Coord<i32>, pts: &[Coord<i32>]) -> Vec<Vec<Coord<i32>>> {
     m.into_values().collect()
 }
 
-fn max_detected(input: &str) -> Vec<Vec<Coord<i32>>> {
+fn max_detected(input: &str) -> Vec<Vec<C<i32>>> {
     let asts = parse_coords(input);
     let dim = input.chars().position(|c| c == '\n').unwrap();
     let fs = fractions(dim);
     let mut reduced = [[0; 50]; 50];
     for (i, f) in fs.into_iter().enumerate() {
         let mut g = f;
-        while g.y < dim as i32 && g.x < dim as i32 {
-            reduced[g.y as usize][g.x as usize] = i;
+        while g.1 < dim as i32 && g.0 < dim as i32 {
+            reduced[g.1 as usize][g.0 as usize] = i;
             g += f;
         }
     }
@@ -91,8 +91,8 @@ fn max_detected(input: &str) -> Vec<Vec<Coord<i32>>> {
                 if ast == ast2 {
                     continue;
                 }
-                let mut dx = ast.y - ast2.y;
-                let mut dy = ast2.x - ast.x;
+                let mut dx = ast.1 - ast2.1;
+                let mut dy = ast2.0 - ast.0;
                 let mut quad = 0;
                 if dy > 0 && dx <= 0 {
                     quad = 1;
@@ -116,21 +116,21 @@ fn max_detected(input: &str) -> Vec<Vec<Coord<i32>>> {
     visibilities(max, &asts)
 }
 
-fn fractions(n: usize) -> Vec<Coord<i32>> {
+fn fractions(n: usize) -> Vec<C<i32>> {
     let mut fs = Vec::new();
-    let mut stack = vec![Coord::new(1, 1)];
-    let mut l = Coord::new(1, 0);
+    let mut stack = vec![C(1, 1)];
+    let mut l = C(1, 0);
     while let Some(mut r) = stack.last().copied() {
         fs.push(l);
-        while l.x + r.x < n as i32 {
+        while l.0 + r.0 < n as i32 {
             r += l;
             stack.push(r);
         }
         l = stack.pop().unwrap();
     }
-    fs.push(Coord::new(1, 1));
+    fs.push(C(1, 1));
     for i in (1..fs.len() - 1).rev() {
-        fs.push(Coord::new(fs[i].y, fs[i].x));
+        fs.push(C(fs[i].1, fs[i].0));
     }
     fs
 }
@@ -144,6 +144,6 @@ pub fn part2(input: &str) -> Option<i32> {
         .into_iter()
         .map(|x| x.into_iter())
         .cycle()
-        .filter_map(|mut pts| pts.next().map(|c| 100 * c.x + c.y))
+        .filter_map(|mut pts| pts.next().map(|c| 100 * c.0 + c.1))
         .nth(199)
 }

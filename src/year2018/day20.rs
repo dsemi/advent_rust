@@ -1,10 +1,10 @@
-use crate::utils::Coord;
+use crate::utils::C;
 use ahash::AHashMap;
 use std::cmp::min;
 
-fn parse_edges(input: &str) -> AHashMap<Coord<i32>, usize> {
+fn parse_edges(input: &str) -> AHashMap<C<i32>, usize> {
     let mut stack = Vec::new();
-    let mut pos = Coord::new(0, 0);
+    let mut pos = C(0, 0);
     let mut result = AHashMap::new();
     for c in input[1..input.len() - 1].chars() {
         match c {
@@ -13,10 +13,10 @@ fn parse_edges(input: &str) -> AHashMap<Coord<i32>, usize> {
             '|' => pos = *stack.last().unwrap(),
             _ => {
                 let dir = match c {
-                    'N' => Coord::new(0, -1),
-                    'E' => Coord::new(1, 0),
-                    'S' => Coord::new(0, 1),
-                    'W' => Coord::new(-1, 0),
+                    'N' => C(0, -1),
+                    'E' => C(1, 0),
+                    'S' => C(0, 1),
+                    'W' => C(-1, 0),
                     _ => panic!("Invalid dir: {}", c),
                 };
                 let v = result.get(&pos).unwrap_or(&0) + 1;

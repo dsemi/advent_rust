@@ -20,21 +20,16 @@ pub fn part1(n: i64) -> i64 {
 
 fn spiral_path() -> impl Iterator<Item = i64> {
     let mut tbl = AHashMap::new();
-    tbl.insert(Coord::new(0, 0), 1);
+    tbl.insert(C(0, 0), 1);
     (1..)
         .flat_map(|i| vec![i; 2])
         .zip(
-            vec![
-                Coord::new(1, 0),
-                Coord::new(0, 1),
-                Coord::new(-1, 0),
-                Coord::new(0, -1),
-            ]
-            .into_iter()
-            .cycle(),
+            vec![C(1, 0), C(0, 1), C(-1, 0), C(0, -1)]
+                .into_iter()
+                .cycle(),
         )
         .flat_map(|(n, d)| vec![d; n])
-        .scan((tbl, Coord::new(0, 0)), |(m, pos), dir| {
+        .scan((tbl, C(0, 0)), |(m, pos), dir| {
             *pos += dir;
             let val = adjacents(*pos).map(|c| *m.get(&c).unwrap_or(&0)).sum();
             m.insert(*pos, val);

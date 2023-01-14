@@ -9,11 +9,11 @@ fn solve(input: &str, p2: bool) -> usize {
         let (x0, y0, x1, y1) = scanf!(line, "{},{} -> {},{}", i32, i32, i32, i32).unwrap();
         max_x = max(max_x, max(x0, x1));
         max_y = max(max_y, max(y0, y1));
-        lines.push((Coord::new(x0, y0), Coord::new(x1, y1)));
+        lines.push((C(x0, y0), C(x1, y1)));
     }
     let mut grid = vec![vec![0; max_y as usize + 1]; max_x as usize + 1];
     for (mut c, c1) in lines {
-        if !p2 && c.x != c1.x && c.y != c1.y {
+        if !p2 && c.0 != c1.0 && c.1 != c1.1 {
             continue;
         }
         let d = (c1 - c).signum();

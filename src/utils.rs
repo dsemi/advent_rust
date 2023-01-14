@@ -1,11 +1,9 @@
 use ahash::{AHashMap, AHashSet};
-use itertools::Itertools;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;
 use nom::combinator::{map_res, opt, recognize};
 use nom::sequence::tuple;
 use nom::IResult;
-use num::traits::abs;
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
 use std::cmp::{max, min, Ordering, Reverse};
@@ -13,7 +11,8 @@ use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
 use std::iter::{Fuse, Sum};
 use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr, Sub,
+    SubAssign,
 };
 use std::str::FromStr;
 use streaming_iterator::StreamingIterator;
@@ -222,16 +221,6 @@ where
     }
 }
 
-pub fn unit_dir(c: char) -> Coord<i64> {
-    match c {
-        '<' => Coord::new(-1, 0),
-        '>' => Coord::new(1, 0),
-        'v' => Coord::new(0, -1),
-        '^' => Coord::new(0, 1),
-        _ => panic!("Unknown direction"),
-    }
-}
-
 pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     let cols = inp.iter().map(|x| x.len()).max().unwrap();
     let mut out = vec![vec![]; cols];
@@ -245,311 +234,323 @@ pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     out
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Coord<T> {
-    pub x: T,
-    pub y: T,
-}
+macro_rules! forward_ref_binop {
+    (impl $imp:ident, $method:ident for $t:ty, $u:ty, $g:tt) => {
+        impl<'a, $g: Num + Copy> $imp<$u> for &'a $t {
+            type Output = <$t as $imp<$u>>::Output;
 
-impl<T> Coord<T>
-where
-    T: Copy,
-    T: Num,
-    T: BitAnd<Output = T>,
-    T: FromPrimitive,
-{
-    pub const fn new(x: T, y: T) -> Self {
-        Self { x, y }
-    }
-
-    pub fn scale(&self, n: T) -> Self {
-        Self {
-            x: self.x * n,
-            y: self.y * n,
-        }
-    }
-
-    pub fn pow(self, n: T) -> Self {
-        if n == FromPrimitive::from_u8(0).unwrap() {
-            Self {
-                x: FromPrimitive::from_u8(1).unwrap(),
-                y: FromPrimitive::from_u8(0).unwrap(),
+            #[inline]
+            fn $method(self, other: $u) -> <$t as $imp<$u>>::Output {
+                $imp::$method(*self, other)
             }
-        } else if n & FromPrimitive::from_u8(1).unwrap() != FromPrimitive::from_u8(0).unwrap() {
-            self * self.pow(n - FromPrimitive::from_u8(1).unwrap())
-        } else {
-            (self * self).pow(n / FromPrimitive::from_u8(2).unwrap())
         }
+
+        impl<$g: Num + Copy> $imp<&$u> for $t {
+            type Output = <$t as $imp<$u>>::Output;
+
+            #[inline]
+            fn $method(self, other: &$u) -> <$t as $imp<$u>>::Output {
+                $imp::$method(self, *other)
+            }
+        }
+
+        impl<$g: Num + Copy> $imp<&$u> for &$t {
+            type Output = <$t as $imp<$u>>::Output;
+
+            #[inline]
+            fn $method(self, other: &$u) -> <$t as $imp<$u>>::Output {
+                $imp::$method(*self, *other)
+            }
+        }
+    };
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct C<T>(pub T, pub T);
+
+impl<T: Num + Copy> C<T> {
+    pub fn sum(&self) -> T {
+        self.0 + self.1
     }
 }
 
-impl<T> Coord<T>
-where
-    T: Copy,
-    T: Signed,
-{
+impl<T: Num + Signed> C<T> {
+    pub fn abs(&self) -> Self {
+        Self(self.0.abs(), self.1.abs())
+    }
+}
+
+impl<T: Num + Signed + Copy> C<T> {
+    pub fn dist(&self, other: &Self) -> T {
+        (self.0 - other.0).abs() + (self.1 - other.1).abs()
+    }
+}
+
+impl<T: Signed + Copy> C<T> {
     pub fn signum(&self) -> Self {
-        Self {
-            x: num::signum(self.x),
-            y: num::signum(self.y),
-        }
+        Self(self.0.signum(), self.1.signum())
     }
 }
 
-impl<T: Add<Output = T>> Add for Coord<T> {
+impl<T: Ord + Copy> C<T> {
+    pub fn smol(&self, o: &Self) -> Self {
+        Self(min(self.0, o.0), min(self.1, o.1))
+    }
+
+    pub fn swol(&self, o: &Self) -> Self {
+        Self(max(self.0, o.0), max(self.1, o.1))
+    }
+}
+
+impl<T: Num> Add for C<T> {
     type Output = Self;
 
+    #[inline]
     fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
+        Self(self.0 + other.0, self.1 + other.1)
     }
 }
+forward_ref_binop! { impl Add, add for C<T>, C<T>, T }
 
-impl<'a, 'b, T> Add<&'b Coord<T>> for &'a Coord<T>
-where
-    T: Copy,
-    T: Add<Output = T>,
-{
-    type Output = Coord<T>;
-
-    fn add(self, other: &'b Coord<T>) -> Coord<T> {
-        Coord {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
-
-impl<T> AddAssign for Coord<T>
-where
-    T: Copy,
-    T: Num,
-{
+impl<T: Num + Copy> AddAssign for C<T> {
+    #[inline]
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
     }
 }
 
-impl<T: Num> Sub for Coord<T> {
+impl<T: Num> Sub for C<T> {
     type Output = Self;
 
+    #[inline]
     fn sub(self, other: Self) -> Self {
-        Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
+        Self(self.0 - other.0, self.1 - other.1)
     }
 }
+forward_ref_binop! { impl Sub, sub for C<T>, C<T>, T }
 
-impl<'a, 'b, T> Sub<&'b Coord<T>> for &'a Coord<T>
-where
-    T: Copy,
-    T: Sub<Output = T>,
-{
-    type Output = Coord<T>;
-
-    fn sub(self, other: &'b Coord<T>) -> Coord<T> {
-        Coord {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
-    }
-}
-
-impl<T> SubAssign for Coord<T>
-where
-    T: Copy,
-    T: Num,
-{
+impl<T: Num + Copy> SubAssign for C<T> {
+    #[inline]
     fn sub_assign(&mut self, other: Self) {
         *self = *self - other;
     }
 }
 
-impl<T> Mul for Coord<T>
-where
-    T: Copy,
-    T: Num,
-{
+impl<T: Num + Copy> Mul for C<T> {
     type Output = Self;
 
+    #[inline]
     fn mul(self, other: Self) -> Self {
-        Self {
-            x: self.x * other.x - self.y * other.y,
-            y: self.x * other.y + self.y * other.x,
-        }
+        Self(
+            self.0 * other.0 - self.1 * other.1,
+            self.0 * other.1 + self.1 * other.0,
+        )
     }
 }
+forward_ref_binop! { impl Mul, mul for C<T>, C<T>, T }
 
-impl<T> MulAssign for Coord<T>
-where
-    T: Copy,
-    T: Num,
-{
+impl<T: Num + Copy> MulAssign for C<T> {
+    #[inline]
     fn mul_assign(&mut self, other: Self) {
         *self = *self * other;
     }
 }
 
-impl<T> Sum for Coord<T>
-where
-    T: Copy,
-    T: Num,
-    T: BitAnd<Output = T>,
-    T: FromPrimitive,
-{
-    fn sum<I>(iter: I) -> Self
-    where
-        I: Iterator<Item = Self>,
-    {
-        iter.fold(
-            Coord::new(
-                FromPrimitive::from_u8(0).unwrap(),
-                FromPrimitive::from_u8(0).unwrap(),
-            ),
-            |a, b| a + b,
-        )
+impl<T: Num + Copy> Mul<T> for C<T> {
+    type Output = Self;
+
+    #[inline]
+    fn mul(self, n: T) -> Self {
+        Self(self.0 * n, self.1 * n)
     }
 }
 
-impl<T> Index<Coord<i32>> for Vec<Vec<T>> {
-    type Output = T;
+impl<T: Num + Copy> Div<T> for C<T> {
+    type Output = Self;
 
-    fn index(&self, c: Coord<i32>) -> &T {
-        &self[c.x as usize][c.y as usize]
+    #[inline]
+    fn div(self, n: T) -> Self {
+        Self(self.0 / n, self.1 / n)
     }
 }
 
-impl<T> IndexMut<Coord<i32>> for Vec<Vec<T>> {
-    fn index_mut(&mut self, c: Coord<i32>) -> &mut T {
-        &mut self[c.x as usize][c.y as usize]
+impl<T: Neg<Output = T>> Neg for C<T> {
+    type Output = Self;
+
+    #[inline]
+    fn neg(self) -> Self {
+        Self(-self.0, -self.1)
     }
 }
 
-impl<T> Index<Coord<usize>> for Vec<Vec<T>> {
-    type Output = T;
-
-    fn index(&self, c: Coord<usize>) -> &T {
-        &self[c.x][c.y]
+impl<T: Num + Copy> C<T> {
+    pub fn pow<N: Num + BitAnd<Output = N> + Shr<Output = N> + Copy>(self, n: N) -> Self {
+        if n.is_zero() {
+            Self(T::one(), T::zero())
+        } else if (n & N::one()).is_zero() {
+            (self * self).pow(n >> N::one())
+        } else {
+            self * self.pow(n - N::one())
+        }
     }
 }
 
-impl<T> IndexMut<Coord<usize>> for Vec<Vec<T>> {
-    fn index_mut(&mut self, c: Coord<usize>) -> &mut T {
-        &mut self[c.x][c.y]
+impl<T: Num + Copy> Sum for C<T> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self(T::zero(), T::zero()), |a, b| a + b)
     }
 }
 
-pub fn adjacents(coord: Coord<i64>) -> impl Iterator<Item = Coord<i64>> {
-    (-1..2)
-        .cartesian_product(-1..2)
-        .filter_map(move |(x, y)| (x != 0 || y != 0).then(|| Coord::new(coord.x + x, coord.y + y)))
+macro_rules! impl_idx {
+    ($($it:ty),*) => ($(
+        impl<T> Index<C<$it>> for Vec<Vec<T>> {
+            type Output = T;
+
+            fn index(&self, C(r, c): C<$it>) -> &Self::Output {
+                &self[r as usize][c as usize]
+            }
+        }
+
+        impl<T> Index<C<$it>> for [Vec<T>] {
+            type Output = T;
+
+            fn index(&self, C(r, c): C<$it>) -> &Self::Output {
+                &self[r as usize][c as usize]
+            }
+        }
+
+        impl<T> IndexMut<C<$it>> for Vec<Vec<T>> {
+            fn index_mut(&mut self, C(r, c): C<$it>) -> &mut T {
+                &mut self[r as usize][c as usize]
+            }
+        }
+
+        impl<T> IndexMut<C<$it>> for [Vec<T>] {
+            fn index_mut(&mut self, C(r, c): C<$it>) -> &mut T {
+                &mut self[r as usize][c as usize]
+            }
+        }
+    )*)
 }
 
-pub fn dist<T: Copy + Num + Signed>(a: &Coord<T>, b: &Coord<T>) -> T {
-    (a.x - b.x).abs() + (a.y - b.y).abs()
+impl_idx!(i8, i16, i32, i64, u8, u16, u32, u64, usize);
+
+pub fn adjacents(coord: C<i64>) -> impl Iterator<Item = C<i64>> {
+    [
+        C(-1, -1),
+        C(-1, 0),
+        C(-1, 1),
+        C(0, -1),
+        C(0, 1),
+        C(1, -1),
+        C(1, 0),
+        C(1, 1),
+    ]
+    .into_iter()
+    .map(move |d| coord + d)
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Coord3<T> {
-    pub x: T,
-    pub y: T,
-    pub z: T,
+pub struct C3<T>(pub T, pub T, pub T);
+
+impl<T: Num + Copy> C3<T> {
+    pub fn sum(&self) -> T {
+        self.0 + self.1 + self.2
+    }
 }
 
-impl<T> Coord3<T>
-where
-    T: Copy,
-    T: Num,
-    T: Signed,
-    T: Ord,
-{
-    pub fn new(x: T, y: T, z: T) -> Self {
-        Self { x, y, z }
-    }
-
-    pub fn div(&self, n: T) -> Self {
-        Self {
-            x: self.x / n,
-            y: self.y / n,
-            z: self.z / n,
-        }
-    }
-
+impl<T: Num + Signed> C3<T> {
     pub fn abs(&self) -> Self {
-        Self {
-            x: abs(self.x),
-            y: abs(self.y),
-            z: abs(self.z),
-        }
+        Self(self.0.abs(), self.1.abs(), self.2.abs())
     }
+}
 
-    pub fn sum(&self) -> T {
-        self.x + self.y + self.z
+impl<T: Num + Signed + Copy> C3<T> {
+    pub fn dist(&self, other: &Self) -> T {
+        (self.0 - other.0).abs() + (self.1 - other.1).abs() + (self.2 - other.2).abs()
     }
+}
 
+impl<T: Signed + Copy> C3<T> {
+    pub fn signum(&self) -> Self {
+        Self(self.0.signum(), self.1.signum(), self.2.signum())
+    }
+}
+
+impl<T: Ord + Copy> C3<T> {
     pub fn smol(&self, o: &Self) -> Self {
-        Self {
-            x: min(self.x, o.x),
-            y: min(self.y, o.y),
-            z: min(self.z, o.z),
-        }
+        Self(min(self.0, o.0), min(self.1, o.1), min(self.2, o.2))
     }
 
     pub fn swol(&self, o: &Self) -> Self {
-        Self {
-            x: max(self.x, o.x),
-            y: max(self.y, o.y),
-            z: max(self.z, o.z),
-        }
+        Self(max(self.0, o.0), max(self.1, o.1), max(self.2, o.2))
     }
 }
 
-impl<T: Add<Output = T>> Add for Coord3<T> {
+impl<T: Num> Add for C3<T> {
     type Output = Self;
 
+    #[inline]
     fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
+        Self(self.0 + other.0, self.1 + other.1, self.2 + other.2)
     }
 }
+forward_ref_binop! { impl Add, add for C3<T>, C3<T>, T }
 
-impl<T> AddAssign for Coord3<T>
-where
-    T: Copy,
-    T: Num,
-{
+impl<T: Num + Copy> AddAssign for C3<T> {
+    #[inline]
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
     }
 }
 
-impl<T: Num> Sub for Coord3<T> {
+impl<T: Num> Sub for C3<T> {
     type Output = Self;
 
+    #[inline]
     fn sub(self, other: Self) -> Self {
-        Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
+        Self(self.0 - other.0, self.1 - other.1, self.2 - other.2)
+    }
+}
+forward_ref_binop! { impl Sub, sub for C3<T>, C3<T>, T }
+
+impl<T: Num + Copy> SubAssign for C3<T> {
+    #[inline]
+    fn sub_assign(&mut self, other: Self) {
+        *self = *self - other;
     }
 }
 
-impl<T: Neg<Output = T>> Neg for Coord3<T> {
+impl<T: Num + Copy> Mul<T> for C3<T> {
     type Output = Self;
 
+    #[inline]
+    fn mul(self, n: T) -> Self {
+        Self(self.0 * n, self.1 * n, self.2 * n)
+    }
+}
+
+impl<T: Num + Copy> Div<T> for C3<T> {
+    type Output = Self;
+
+    #[inline]
+    fn div(self, n: T) -> Self {
+        Self(self.0 / n, self.1 / n, self.2 / n)
+    }
+}
+
+impl<T: Neg<Output = T>> Neg for C3<T> {
+    type Output = Self;
+
+    #[inline]
     fn neg(self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-        }
+        Self(-self.0, -self.1, -self.2)
+    }
+}
+
+impl<T: Num + Copy> Sum for C3<T> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self(T::zero(), T::zero(), T::zero()), |a, b| a + b)
     }
 }
 

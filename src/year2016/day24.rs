@@ -4,27 +4,22 @@ use itertools::Itertools;
 
 type Adj = AHashMap<(char, char), usize>;
 
-fn neighbors(grid: &[Vec<char>], xy: &Coord<i32>) -> Vec<Coord<i32>> {
-    vec![
-        Coord::new(1, 0),
-        Coord::new(-1, 0),
-        Coord::new(0, 1),
-        Coord::new(0, -1),
-    ]
-    .iter()
-    .filter_map(|d| {
-        let c = xy + d;
-        (c.x >= 0
-            && c.x < grid.len() as i32
-            && c.y >= 0
-            && c.y < grid[c.x as usize].len() as i32
-            && grid[c.x as usize][c.y as usize] != '#')
-            .then(|| c)
-    })
-    .collect()
+fn neighbors(grid: &[Vec<char>], xy: &C<i32>) -> Vec<C<i32>> {
+    vec![C(1, 0), C(-1, 0), C(0, 1), C(0, -1)]
+        .iter()
+        .filter_map(|d| {
+            let c = xy + d;
+            (c.0 >= 0
+                && c.0 < grid.len() as i32
+                && c.1 >= 0
+                && c.1 < grid[c.0 as usize].len() as i32
+                && grid[c] != '#')
+                .then(|| c)
+        })
+        .collect()
 }
 
-fn find_all_distances(grid: &[Vec<char>], ns: &[(Coord<i32>, char)]) -> Adj {
+fn find_all_distances(grid: &[Vec<char>], ns: &[(C<i32>, char)]) -> Adj {
     let mut result = AHashMap::new();
     for (p1, n1) in ns {
         for (p2, n2) in ns {
@@ -52,10 +47,9 @@ fn all_paths_and_dist_map(input: &str) -> (Adj, Vec<Vec<char>>) {
         .lines()
         .enumerate()
         .flat_map(|(r, line)| {
-            line.chars().enumerate().filter_map(move |(c, v)| {
-                v.is_ascii_digit()
-                    .then(|| (Coord::new(r as i32, c as i32), v))
-            })
+            line.chars()
+                .enumerate()
+                .filter_map(move |(c, v)| v.is_ascii_digit().then(|| (C(r as i32, c as i32), v)))
         })
         .collect::<Vec<_>>();
     pts.sort_by_key(|x| x.1);
