@@ -1,83 +1,111 @@
-fn fix_refs(
-    skip_size: usize,
-    mut a: u16,
-    mut b: u16,
-    next: &mut [u16],
-    far_prev: &mut [u16],
-    far_next: &mut [u16],
-) {
-    for _ in 0..skip_size + 1 {
-        far_next[a as usize] = b;
-        far_prev[b as usize] = a;
-        a = next[a as usize];
-        b = next[b as usize];
-    }
+use itertools::Itertools;
+
+const BIN_SIZE: usize = 32;
+const CLUSTER_SIZE: usize = 16;
+
+#[derive(Clone, Copy, Default)]
+struct Item {
+    val: i64,
+    g_idx: usize,
 }
 
-fn search(to_move: usize, skip_size: usize, cur: u16, far_step: &[u16], step: &[u16]) -> u16 {
-    (0..to_move % skip_size).fold(
-        (0..to_move / skip_size).fold(cur, |cur, _| far_step[cur as usize]),
-        |cur, _| step[cur as usize],
-    )
+#[derive(Clone, Copy)]
+struct Addr {
+    bin: usize,
+    off: usize,
 }
 
 fn mix(input: &str, scale: i64, times: usize) -> i64 {
-    let ns: Vec<i64> = input
+    let mut bins: Vec<Vec<Item>> = input
         .lines()
-        .map(|x| x.parse::<i64>().unwrap() * scale)
+        .enumerate()
+        .map(|(i, x)| Item {
+            val: x.parse::<i64>().unwrap() * scale,
+            g_idx: i,
+        })
+        .chunks(BIN_SIZE)
+        .into_iter()
+        .map(|c| c.collect())
         .collect();
-    let skip_size = ((ns.len() / 2) as f64).sqrt() as usize / 2;
-    let mut prev = (0..ns.len() as u16).collect::<Vec<_>>();
-    let mut next = prev.clone();
-    let mut far_prev = prev.clone();
-    let mut far_next = prev.clone();
-    prev.rotate_right(1);
-    next.rotate_left(1);
-    far_prev.rotate_right(skip_size);
-    far_next.rotate_left(skip_size);
-    let m = ns.len() - 1;
+    let mut clusters: Vec<usize> = vec![0; bins.len() / CLUSTER_SIZE + 1];
+    for (i, bin) in bins.iter().enumerate() {
+        clusters[i / CLUSTER_SIZE] += bin.len();
+    }
+    let mut addrs: Vec<Addr> = bins
+        .iter()
+        .enumerate()
+        .flat_map(|(i, bin)| {
+            bin.iter()
+                .enumerate()
+                .map(move |x| Addr { bin: i, off: x.0 })
+        })
+        .collect();
+    let m = addrs.len() as i64 - 1;
     for _ in 0..times {
-        for (idx, n) in ns.iter().enumerate() {
-            // Remove
-            next[prev[idx] as usize] = next[idx];
-            prev[next[idx] as usize] = prev[idx];
-            fix_refs(
-                skip_size,
-                far_prev[idx],
-                next[idx],
-                &mut next,
-                &mut far_prev,
-                &mut far_next,
-            );
-            // Find new pos
-            let to_move = n.rem_euclid(m as i64) as usize;
-            let cur = if to_move > m / 2 {
-                search(m - to_move, skip_size, next[idx], &far_prev, &prev)
-            } else {
-                search(to_move, skip_size, next[idx], &far_next, &next)
-            };
-            // Insert
-            next[prev[cur as usize] as usize] = idx as u16;
-            prev[idx] = prev[cur as usize];
-            prev[cur as usize] = idx as u16;
-            next[idx] = cur;
-            fix_refs(
-                skip_size,
-                far_prev[cur as usize],
-                idx as u16,
-                &mut next,
-                &mut far_prev,
-                &mut far_next,
-            );
+        for k in 0..addrs.len() {
+            let a = addrs[k];
+            let x = bins[a.bin][a.off];
+            for i in a.off..bins[a.bin].len() - 1 {
+                bins[a.bin][i] = bins[a.bin][i + 1];
+                addrs[bins[a.bin][i].g_idx].off = i;
+            }
+            bins[a.bin].pop();
+
+            let c_id = a.bin / CLUSTER_SIZE;
+            clusters[c_id] -= 1;
+
+            let mut g_idx = a.off;
+            g_idx += clusters.iter().take(c_id).sum::<usize>();
+            g_idx += (c_id * CLUSTER_SIZE..a.bin)
+                .map(|i| bins[i].len())
+                .sum::<usize>();
+            g_idx = (g_idx as i64 + x.val).rem_euclid(m) as usize;
+            let (mut bin, mut off) = (0, 0);
+            while off + clusters[bin / CLUSTER_SIZE] <= g_idx {
+                off += clusters[bin / CLUSTER_SIZE];
+                bin += CLUSTER_SIZE;
+            }
+            while off + bins[bin].len() <= g_idx {
+                off += bins[bin].len();
+                bin += 1;
+            }
+            off = g_idx - off;
+            let c_id = bin / CLUSTER_SIZE;
+            clusters[c_id] += 1;
+
+            bins[bin].push(Default::default());
+            for i in (off + 1..bins[bin].len()).rev() {
+                bins[bin][i] = bins[bin][i - 1];
+                addrs[bins[bin][i].g_idx].off = i;
+            }
+            bins[bin][off] = x;
+            addrs[k] = Addr { bin, off };
+        }
+        bins = bins
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .inspect(|(i, x)| {
+                addrs[x.g_idx] = Addr {
+                    bin: i / BIN_SIZE,
+                    off: i % BIN_SIZE,
+                }
+            })
+            .map(|x| x.1)
+            .chunks(BIN_SIZE)
+            .into_iter()
+            .map(|c| c.collect())
+            .collect();
+        clusters.iter_mut().for_each(|v| *v = 0);
+        for (i, bin) in bins.iter().enumerate() {
+            clusters[i / CLUSTER_SIZE] += bin.len();
         }
     }
-    let mut cur = ns.iter().position(|&x| x == 0).unwrap() as u16;
-    let mut res = 0;
-    for _ in 0..3 {
-        cur = search(1000, skip_size, cur, &far_next, &next);
-        res += ns[cur as usize];
-    }
-    res
+    let flat: Vec<Item> = bins.into_iter().flatten().collect();
+    let z_idx = flat.iter().position(|x| x.val == 0).unwrap();
+    flat[(z_idx + 1000) % flat.len()].val
+        + flat[(z_idx + 2000) % flat.len()].val
+        + flat[(z_idx + 3000) % flat.len()].val
 }
 
 pub fn part1(input: &str) -> i64 {
