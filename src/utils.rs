@@ -430,6 +430,12 @@ macro_rules! impl_idx {
                 &mut self[r as usize][c as usize]
             }
         }
+
+        impl C<$it> {
+            pub fn index_of<T>(&self, grid: &[Vec<T>]) -> Option<Self> {
+                grid.get(self.0 as usize)?.get(self.1 as usize).map(|_| *self)
+            }
+        }
     )*)
 }
 
