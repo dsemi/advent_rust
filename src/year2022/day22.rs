@@ -2,11 +2,7 @@ use crate::utils::C;
 use itertools::iterate;
 use regex::Regex;
 
-fn valid(grid: &[Vec<char>], pos: C<i32>) -> Option<C<i32>> {
-    pos.index_of(grid).filter(|&p| grid[p] != ' ')
-}
-
-fn walk<F>(input: &str, wrap: F) -> i32
+fn walk<F>(input: &str, step: F) -> i32
 where
     F: Fn(&[Vec<char>], C<i32>, C<i32>) -> (C<i32>, C<i32>),
 {
@@ -21,9 +17,7 @@ where
             "R" => dir *= C(0, -1),
             n => {
                 for _ in 0..n.parse().unwrap() {
-                    let (pos2, dir2) = valid(&grid, pos + dir)
-                        .map(|p| (p, dir))
-                        .unwrap_or_else(|| wrap(&grid, pos, dir));
+                    let (pos2, dir2) = step(&grid, pos, dir);
                     if grid[pos2] == '#' {
                         break;
                     }
@@ -45,34 +39,41 @@ where
 
 pub fn part1(input: &str) -> i32 {
     walk(input, |grid, C(r, c), C(dr, dc)| {
-        let mr = grid.len() as i32;
-        let mc = grid[r as usize].len() as i32;
-        let pts: Box<dyn Iterator<Item = C<i32>>> = if dr != 0 {
-            Box::new(iterate(r, |r| (r + dr).rem_euclid(mr)).map(|r| C(r, c)))
+        let pos = if dr != 0 {
+            let mr = grid.len() as i32;
+            iterate(r, |r| (r + dr).rem_euclid(mr))
+                .map(|r| C(r, c))
+                .skip(1)
+                .find(|&p| p.index_of(grid).filter(|&p| grid[p] != ' ').is_some())
+                .unwrap()
         } else {
-            Box::new(iterate(c, |c| (c + dc).rem_euclid(mc)).map(|c| C(r, c)))
+            let mc = grid[r as usize].len() as i32;
+            iterate(c, |c| (c + dc).rem_euclid(mc))
+                .map(|c| C(r, c))
+                .skip(1)
+                .find(|&p| p.index_of(grid).filter(|&p| grid[p] != ' ').is_some())
+                .unwrap()
         };
-        let pos = pts.skip(1).find(|&p| valid(grid, p).is_some()).unwrap();
         (pos, C(dr, dc))
     })
 }
 
 pub fn part2(input: &str) -> i32 {
     walk(input, |_, pos, dir| match (pos, dir) {
-        (C(0, c), C(-1, 0)) if 50 <= c && c < 100 => (C(c + 100, 0), C(0, 1)),
-        (C(r, 0), C(0, -1)) if 150 <= r && r < 200 => (C(0, r - 100), C(1, 0)),
-        (C(0, c), C(-1, 0)) if 100 <= c && c < 150 => (C(199, c - 100), C(-1, 0)),
-        (C(199, c), C(1, 0)) if 0 <= c && c < 50 => (C(0, c + 100), C(1, 0)),
-        (C(r, 50), C(0, -1)) if 0 <= r && r < 50 => (C(149 - r, 0), C(0, 1)),
-        (C(r, 0), C(0, -1)) if 100 <= r && r < 150 => (C(149 - r, 50), C(0, 1)),
-        (C(r, 149), C(0, 1)) if 0 <= r && r < 50 => (C(149 - r, 99), C(0, -1)),
-        (C(r, 99), C(0, 1)) if 100 <= r && r < 150 => (C(149 - r, 149), C(0, -1)),
-        (C(49, c), C(1, 0)) if 100 <= c && c < 150 => (C(c - 50, 99), C(0, -1)),
-        (C(r, 99), C(0, 1)) if 50 <= r && r < 100 => (C(49, r + 50), C(-1, 0)),
-        (C(r, 50), C(0, -1)) if 50 <= r && r < 100 => (C(100, r - 50), C(1, 0)),
-        (C(100, c), C(-1, 0)) if 0 <= c && c < 50 => (C(c + 50, 50), C(0, 1)),
-        (C(149, c), C(1, 0)) if 50 <= c && c < 100 => (C(c + 100, 49), C(0, -1)),
-        (C(r, 49), C(0, 1)) if 150 <= r && r < 200 => (C(149, r - 100), C(-1, 0)),
-        _ => unreachable!(),
+        (C(0, c), C(-1, 0)) if (50..100).contains(&c) => (C(c + 100, 0), C(0, 1)),
+        (C(r, 0), C(0, -1)) if (150..200).contains(&r) => (C(0, r - 100), C(1, 0)),
+        (C(0, c), C(-1, 0)) if (100..150).contains(&c) => (C(199, c - 100), C(-1, 0)),
+        (C(199, c), C(1, 0)) if (0..50).contains(&c) => (C(0, c + 100), C(1, 0)),
+        (C(r, 50), C(0, -1)) if (0..50).contains(&r) => (C(149 - r, 0), C(0, 1)),
+        (C(r, 0), C(0, -1)) if (100..150).contains(&r) => (C(149 - r, 50), C(0, 1)),
+        (C(r, 149), C(0, 1)) if (0..50).contains(&r) => (C(149 - r, 99), C(0, -1)),
+        (C(r, 99), C(0, 1)) if (100..150).contains(&r) => (C(149 - r, 149), C(0, -1)),
+        (C(49, c), C(1, 0)) if (100..150).contains(&c) => (C(c - 50, 99), C(0, -1)),
+        (C(r, 99), C(0, 1)) if (50..100).contains(&r) => (C(49, r + 50), C(-1, 0)),
+        (C(r, 50), C(0, -1)) if (50..100).contains(&r) => (C(100, r - 50), C(1, 0)),
+        (C(100, c), C(-1, 0)) if (0..50).contains(&c) => (C(c + 50, 50), C(0, 1)),
+        (C(149, c), C(1, 0)) if (50..100).contains(&c) => (C(c + 100, 49), C(0, -1)),
+        (C(r, 49), C(0, 1)) if (150..200).contains(&r) => (C(149, r - 100), C(-1, 0)),
+        _ => (pos + dir, dir),
     })
 }
