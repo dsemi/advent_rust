@@ -18,7 +18,7 @@ fn all_sizes(input: &str) -> Vec<i64> {
             } else {
                 fstree.push(0);
             }
-        } else if (b'0'..=b'9').contains(&line.as_bytes()[0]) {
+        } else if line.as_bytes()[0].is_ascii_digit() {
             *fstree.last_mut().unwrap() += line
                 .split_whitespace()
                 .next()
