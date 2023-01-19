@@ -1,11 +1,72 @@
 use crate::utils::*;
+use ahash::AHashMap;
 use itertools::iterate;
+use num::integer::gcd;
 use regex::Regex;
+use Face::*;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Face {
+    Top,
+    Bottom,
+    Back,
+    Front,
+    Right,
+    Left,
+}
+
+impl Face {
+    fn fall_off(&self, dir: C3<i32>) -> (Face, C3<i32>) {
+        (
+            match dir {
+                C3(0, 0, 1) => Top,
+                C3(0, 0, -1) => Bottom,
+                C3(0, 1, 0) => Back,
+                C3(0, -1, 0) => Front,
+                C3(1, 0, 0) => Right,
+                C3(-1, 0, 0) => Left,
+                _ => unreachable!(),
+            },
+            match self {
+                Top => C3(0, 0, -1),
+                Bottom => C3(0, 0, 1),
+                Back => C3(0, -1, 0),
+                Front => C3(0, 1, 0),
+                Right => C3(-1, 0, 0),
+                Left => C3(1, 0, 0),
+            },
+        )
+    }
+
+    fn rotate_left(&self, C3(x, y, z): C3<i32>) -> C3<i32> {
+        match self {
+            Top => C3(-y, x, z),
+            Bottom => C3(y, -x, z),
+            Back => C3(z, y, -x),
+            Front => C3(-z, y, x),
+            Right => C3(x, -z, y),
+            Left => C3(x, z, -y),
+        }
+    }
+
+    fn rotate_right(&self, C3(x, y, z): C3<i32>) -> C3<i32> {
+        match self {
+            Top => C3(y, -x, z),
+            Bottom => C3(-y, x, z),
+            Back => C3(-z, y, x),
+            Front => C3(z, y, -x),
+            Right => C3(x, z, -y),
+            Left => C3(x, -z, y),
+        }
+    }
+}
 
 enum Instr {
     Turn(bool),
     Step(usize),
 }
+
+type Pt = (C<i32>, C<i32>);
 
 struct Board {
     grid: Vec<Vec<char>>,
@@ -65,6 +126,84 @@ impl Board {
         };
         1000 * row + 4 * col + facing
     }
+
+    fn cube_edges(&self) -> AHashMap<Pt, Pt> {
+        let cube_size = gcd(
+            self.grid.len(),
+            self.grid.iter().map(|r| r.len()).max().unwrap(),
+        ) as i32;
+        let mut edges = AHashMap::new();
+        let mut pos = self.top_left;
+        let mut dir = C(-1, 0);
+        let mut pos3d = C3(0, cube_size - 1, cube_size - 1);
+        let mut dir3d = C3(0, 1, 0);
+        let mut face = Top;
+        let mut first = true;
+        while std::mem::take(&mut first) || pos != self.top_left {
+            let (i, (d2, d3)) = [
+                (dir * C(0, 1), face.rotate_left(dir3d)),
+                (dir, dir3d),
+                (dir * C(0, -1), face.rotate_right(dir3d)),
+            ]
+            .into_iter()
+            .enumerate()
+            .find(|(_, (d2, _))| {
+                (pos + d2)
+                    .index_of(&self.grid)
+                    .filter(|&p| self.grid[p] != ' ')
+                    .is_some()
+            })
+            .unwrap();
+            let e = edges.entry(pos3d).or_insert_with(Vec::new);
+            if i > 0 {
+                e.push(Edge {
+                    pos,
+                    dir: dir * C(0, 1),
+                    src: face,
+                    dest: face.fall_off(face.rotate_left(dir3d)).0,
+                });
+            }
+            if i > 1 {
+                e.push(Edge {
+                    pos,
+                    dir,
+                    src: face,
+                    dest: face.fall_off(dir3d).0,
+                })
+            }
+            ((face, dir3d), pos3d) = if d2.0 == 1 && (pos.0 + 1) % cube_size == 0
+                || d2.1 == 1 && (pos.1 + 1) % cube_size == 0
+                || d2.0 == -1 && pos.0 % cube_size == 0
+                || d2.1 == -1 && pos.1 % cube_size == 0
+            {
+                (face.fall_off(d3), pos3d)
+            } else {
+                ((face, d3), pos3d + d3)
+            };
+            dir = d2;
+            pos += dir;
+        }
+        let mut edge_map = AHashMap::new();
+        for pts in edges.values() {
+            for (i, a) in pts.iter().enumerate() {
+                for b in pts.iter().skip(i + 1) {
+                    if a.src == b.dest && b.src == a.dest {
+                        edge_map.insert((a.pos, a.dir), (b.pos, -b.dir));
+                        edge_map.insert((b.pos, b.dir), (a.pos, -a.dir));
+                    }
+                }
+            }
+        }
+        edge_map
+    }
+}
+
+#[derive(Debug)]
+struct Edge {
+    pos: C<i32>,
+    dir: C<i32>,
+    src: Face,
+    dest: Face,
 }
 
 pub fn part1(input: &str) -> i32 {
@@ -90,21 +229,12 @@ pub fn part1(input: &str) -> i32 {
 
 pub fn part2(input: &str) -> i32 {
     let board = Board::new(input);
-    board.walk(|_, pos, dir| match (pos, dir) {
-        (C(0, c), C(-1, 0)) if (50..100).contains(&c) => (C(c + 100, 0), C(0, 1)),
-        (C(r, 0), C(0, -1)) if (150..200).contains(&r) => (C(0, r - 100), C(1, 0)),
-        (C(0, c), C(-1, 0)) if (100..150).contains(&c) => (C(199, c - 100), C(-1, 0)),
-        (C(199, c), C(1, 0)) if (0..50).contains(&c) => (C(0, c + 100), C(1, 0)),
-        (C(r, 50), C(0, -1)) if (0..50).contains(&r) => (C(149 - r, 0), C(0, 1)),
-        (C(r, 0), C(0, -1)) if (100..150).contains(&r) => (C(149 - r, 50), C(0, 1)),
-        (C(r, 149), C(0, 1)) if (0..50).contains(&r) => (C(149 - r, 99), C(0, -1)),
-        (C(r, 99), C(0, 1)) if (100..150).contains(&r) => (C(149 - r, 149), C(0, -1)),
-        (C(49, c), C(1, 0)) if (100..150).contains(&c) => (C(c - 50, 99), C(0, -1)),
-        (C(r, 99), C(0, 1)) if (50..100).contains(&r) => (C(49, r + 50), C(-1, 0)),
-        (C(r, 50), C(0, -1)) if (50..100).contains(&r) => (C(100, r - 50), C(1, 0)),
-        (C(100, c), C(-1, 0)) if (0..50).contains(&c) => (C(c + 50, 50), C(0, 1)),
-        (C(149, c), C(1, 0)) if (50..100).contains(&c) => (C(c + 100, 49), C(0, -1)),
-        (C(r, 49), C(0, 1)) if (150..200).contains(&r) => (C(149, r - 100), C(-1, 0)),
-        _ => (pos + dir, dir),
+    let edges = board.cube_edges();
+    board.walk(|_, pos, dir| {
+        (pos + dir)
+            .index_of(&board.grid)
+            .filter(|&p| board.grid[p] != ' ')
+            .map(|p| (p, dir))
+            .unwrap_or_else(|| edges[&(pos, dir)])
     })
 }
