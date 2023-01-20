@@ -93,6 +93,10 @@ impl Board {
         }
     }
 
+    fn valid(&self, idx: C<i32>) -> bool {
+        self.grid.get_cell(idx).filter(|&v| *v != ' ').is_some()
+    }
+
     fn walk<F>(&self, step: F) -> i32
     where
         F: Fn(&[Vec<char>], C<i32>, C<i32>) -> (C<i32>, C<i32>),
@@ -140,37 +144,26 @@ impl Board {
         let mut face = Top;
         let mut first = true;
         while std::mem::take(&mut first) || pos != self.top_left {
-            let (i, (d2, d3)) = [
+            let (d2, d3) = [
                 (dir * C(0, 1), face.rotate_left(dir3d)),
                 (dir, dir3d),
                 (dir * C(0, -1), face.rotate_right(dir3d)),
             ]
             .into_iter()
-            .enumerate()
-            .find(|(_, (d2, _))| {
-                (pos + d2)
-                    .index_of(&self.grid)
-                    .filter(|&p| self.grid[p] != ' ')
-                    .is_some()
+            .find(|(d2, d3)| {
+                if self.valid(pos + d2) {
+                    return true;
+                }
+                let e = edges.entry(pos3d).or_insert_with(Vec::new);
+                e.push(Edge {
+                    pos,
+                    dir: *d2,
+                    src: face,
+                    dest: face.fall_off(*d3).0,
+                });
+                false
             })
             .unwrap();
-            let e = edges.entry(pos3d).or_insert_with(Vec::new);
-            if i > 0 {
-                e.push(Edge {
-                    pos,
-                    dir: dir * C(0, 1),
-                    src: face,
-                    dest: face.fall_off(face.rotate_left(dir3d)).0,
-                });
-            }
-            if i > 1 {
-                e.push(Edge {
-                    pos,
-                    dir,
-                    src: face,
-                    dest: face.fall_off(dir3d).0,
-                })
-            }
             ((face, dir3d), pos3d) = if d2.0 == 1 && (pos.0 + 1) % cube_size == 0
                 || d2.1 == 1 && (pos.1 + 1) % cube_size == 0
                 || d2.0 == -1 && pos.0 % cube_size == 0
@@ -207,20 +200,21 @@ struct Edge {
 }
 
 pub fn part1(input: &str) -> i32 {
-    Board::new(input).walk(|grid, C(r, c), C(dr, dc)| {
+    let board = Board::new(input);
+    board.walk(|grid, C(r, c), C(dr, dc)| {
         let pos = if dr != 0 {
             let mr = grid.len() as i32;
             iterate(r, |r| (r + dr).rem_euclid(mr))
                 .map(|r| C(r, c))
                 .skip(1)
-                .find(|&p| p.index_of(grid).filter(|&p| grid[p] != ' ').is_some())
+                .find(|&p| board.valid(p))
                 .unwrap()
         } else {
             let mc = grid[r as usize].len() as i32;
             iterate(c, |c| (c + dc).rem_euclid(mc))
                 .map(|c| C(r, c))
                 .skip(1)
-                .find(|&p| p.index_of(grid).filter(|&p| grid[p] != ' ').is_some())
+                .find(|&p| board.valid(p))
                 .unwrap()
         };
         (pos, C(dr, dc))
@@ -231,10 +225,10 @@ pub fn part2(input: &str) -> i32 {
     let board = Board::new(input);
     let edges = board.cube_edges();
     board.walk(|_, pos, dir| {
-        (pos + dir)
-            .index_of(&board.grid)
-            .filter(|&p| board.grid[p] != ' ')
-            .map(|p| (p, dir))
+        let p = pos + dir;
+        board
+            .valid(p)
+            .then_some((p, dir))
             .unwrap_or_else(|| edges[&(pos, dir)])
     })
 }

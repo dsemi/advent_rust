@@ -430,16 +430,32 @@ macro_rules! impl_idx {
                 &mut self[r as usize][c as usize]
             }
         }
+    )*)
+}
 
-        impl C<$it> {
-            pub fn index_of<T>(&self, grid: &[Vec<T>]) -> Option<Self> {
-                grid.get(self.0 as usize)?.get(self.1 as usize).map(|_| *self)
+impl_idx!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
+
+pub trait GridIdx<I, T> {
+    fn get_cell(&self, idx: C<I>) -> Option<&T>;
+}
+
+macro_rules! impl_get {
+    ($($it:ty),*) => ($(
+        impl<T> GridIdx<$it, T> for Vec<Vec<T>> {
+            fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
+                self.get(r as usize)?.get(c as usize)
+            }
+        }
+
+        impl<T> GridIdx<$it, T> for [Vec<T>] {
+            fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
+                self.get(r as usize)?.get(c as usize)
             }
         }
     )*)
 }
 
-impl_idx!(i8, i16, i32, i64, u8, u16, u32, u64, usize);
+impl_get!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
 
 pub fn adjacents(coord: C<i64>) -> impl Iterator<Item = C<i64>> {
     [
