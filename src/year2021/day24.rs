@@ -97,15 +97,10 @@ impl Prog {
         if d == 0 {
             return (self.regs[3] == 0).then(|| n);
         }
-        if vis.contains(&(self.regs[3], d)) {
+        if !vis.insert((self.regs[3], d)) {
             return None;
         }
-        let ds: Vec<i64> = if p2 {
-            (1..=9).collect()
-        } else {
-            (1..=9).rev().collect()
-        };
-        for i in ds {
+        for i in (1..10).map(|n| if p2 { n } else { 10 - n }) {
             let mut p = self.clone();
             if !p.run_next(instrs, i) {
                 continue;
@@ -114,7 +109,6 @@ impl Prog {
                 return Some(v);
             }
         }
-        vis.insert((self.regs[3], d));
         None
     }
 }
