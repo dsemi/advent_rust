@@ -43,13 +43,10 @@ pub fn part1(n: usize) -> String {
     Step::new().skip(n).take(10).collect()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     let mut rs = String::new();
-    for (i, c) in Step::new().enumerate() {
+    Step::new().enumerate().find_map(|(i, c)| {
         rs.push(c);
-        if rs.ends_with(input) {
-            return i - input.len() + 1;
-        }
-    }
-    unreachable!()
+        rs.ends_with(input).then(|| i - input.len() + 1)
+    })
 }

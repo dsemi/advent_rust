@@ -1,52 +1,32 @@
-struct Tree {
-    visible_from_edge: bool,
-    scenic_score: u32,
-}
+use crate::utils::*;
+use itertools::iterate;
 
-fn trees(input: &str) -> Vec<Tree> {
-    let mut result = Vec::new();
+fn trees(input: &str) -> impl Iterator<Item = (bool, u32)> {
     let grid: Vec<Vec<u32>> = input
         .lines()
         .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect())
         .collect();
-    for r in 0..grid.len() {
-        for c in 0..grid[r].len() {
-            let mut tree = Tree {
-                visible_from_edge: false,
-                scenic_score: 1,
-            };
-            let paths: Vec<Box<dyn Iterator<Item = u32>>> = vec![
-                Box::new((0..r).rev().map(|nr| grid[nr][c])),
-                Box::new((r + 1..grid.len()).into_iter().map(|nr| grid[nr][c])),
-                Box::new((0..c).rev().map(|nc| grid[r][nc])),
-                Box::new((c + 1..grid[0].len()).into_iter().map(|nc| grid[r][nc])),
-            ];
-            for mut path in paths {
+    let size = grid.len();
+    (0..grid.len() * grid[0].len()).map(move |i| {
+        let (r, c) = (i / size, i % size);
+        [C(-1, 0), C(1, 0), C(0, -1), C(0, 1)].into_iter().fold(
+            (false, 1),
+            |(visible_from_edge, scenic_score), d| {
                 let mut cnt = 0;
-                let mut edge = true;
-                for x in path.by_ref() {
-                    cnt += 1;
-                    if x >= grid[r][c] {
-                        edge = false;
-                        break;
-                    }
-                }
-                tree.visible_from_edge |= edge;
-                tree.scenic_score *= cnt;
-            }
-            result.push(tree);
-        }
-    }
-    result
+                let reaches_edge = iterate(C(r as i32, c as i32) + d, |x| x + d)
+                    .scan((), |_, p| grid.get_cell(p))
+                    .inspect(|_| cnt += 1)
+                    .all(|&x| x < grid[r][c]);
+                (visible_from_edge | reaches_edge, scenic_score * cnt)
+            },
+        )
+    })
 }
 
 pub fn part1(input: &str) -> usize {
-    trees(input)
-        .into_iter()
-        .filter(|t| t.visible_from_edge)
-        .count()
+    trees(input).into_iter().filter(|t| t.0).count()
 }
 
 pub fn part2(input: &str) -> Option<u32> {
-    trees(input).into_iter().map(|t| t.scenic_score).max()
+    trees(input).into_iter().map(|t| t.1).max()
 }

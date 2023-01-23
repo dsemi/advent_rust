@@ -16,7 +16,7 @@ fn neighbors(grid: &Vec<Vec<u8>>, pos: &C<i32>) -> Vec<C<i32>> {
         .collect()
 }
 
-fn solve(input: &str, sts: &[u8]) -> usize {
+fn solve(input: &str, sts: &[u8]) -> Option<usize> {
     let mut starts = Vec::new();
     let mut done = C(0, 0);
     let mut grid: Vec<Vec<u8>> = input.lines().map(|l| l.bytes().collect()).collect();
@@ -33,18 +33,13 @@ fn solve(input: &str, sts: &[u8]) -> usize {
             }
         }
     }
-    for (d, p) in bfs_m(starts, |p| neighbors(&grid, p)) {
-        if p == done {
-            return d;
-        }
-    }
-    unreachable!()
+    bfs_m(starts, move |p| neighbors(&grid, p)).find_map(|(d, p)| (p == done).then(|| d))
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> Option<usize> {
     solve(input, &[b'S'])
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     solve(input, &[b'S', b'a'])
 }

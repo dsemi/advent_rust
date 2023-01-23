@@ -52,7 +52,7 @@ fn neighbors(grid: &AHashMap<C<i32>, Node>, st: &(C<i32>, C<i32>)) -> Vec<(C<i32
         .collect()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     let nodes = parse_nodes(input);
     let mut grid = AHashMap::new();
     let mut opn = C(0, 0);
@@ -64,10 +64,6 @@ pub fn part2(input: &str) -> usize {
         }
         mx = max(mx, node.coord);
     }
-    for (d, v) in bfs((opn, C(mx.0, 0)), |st| neighbors(&grid, st)) {
-        if v.1 == C(0, 0) {
-            return d;
-        }
-    }
-    unreachable!()
+    bfs((opn, C(mx.0, 0)), move |st| neighbors(&grid, st))
+        .find_map(|(d, v)| (v.1 == C(0, 0)).then(|| d))
 }

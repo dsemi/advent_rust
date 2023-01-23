@@ -7,7 +7,7 @@ fn move_stacks(input: &str, in_order: bool) -> String {
     let mut stacks = vec![vec![]; (crates[0].len() + 1) / 4];
     for line in crates {
         for (i, c) in line.chars().skip(1).step_by(4).enumerate() {
-            if ('A'..='Z').contains(&c) {
+            if c.is_ascii_uppercase() {
                 stacks[i].push(c);
             }
         }
