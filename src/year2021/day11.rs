@@ -19,9 +19,9 @@ fn flash(grid: &mut Vec<Vec<i32>>, r: usize, c: usize) -> usize {
 fn run(input: &str) -> impl Iterator<Item = usize> {
     let mut grid: Vec<Vec<i32>> = input
         .lines()
-        .map(|line| line.as_bytes().iter().map(|c| (c - b'0') as i32).collect())
+        .map(|line| line.bytes().map(|c| (c - b'0') as i32).collect())
         .collect();
-    (0..).map(move |_| {
+    std::iter::repeat_with(move || {
         grid.iter_mut()
             .for_each(|row| row.iter_mut().for_each(|v| *v = max(0, *v) + 1));
         (0..grid.len())
