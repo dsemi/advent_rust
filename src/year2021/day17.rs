@@ -2,15 +2,14 @@ use scan_fmt::scan_fmt as scanf;
 use std::cmp::max;
 
 fn hits_target(x0: i64, x1: i64, y0: i64, y1: i64, mut vx: i64, mut vy: i64) -> bool {
-    (0..)
-        .scan((0, 0), |p, _| {
-            p.0 += vx;
-            p.1 += vy;
-            vx = max(0, vx - 1);
-            vy -= 1;
-            (p.0 <= x1 && p.1 >= y0).then(|| *p)
-        })
-        .any(|(x, y)| x0 <= x && x <= x1 && y0 <= y && y <= y1)
+    itertools::unfold((0, 0), |p| {
+        p.0 += vx;
+        p.1 += vy;
+        vx = max(0, vx - 1);
+        vy -= 1;
+        (p.0 <= x1 && p.1 >= y0).then(|| *p)
+    })
+    .any(|(x, y)| x0 <= x && x <= x1 && y0 <= y && y <= y1)
 }
 
 pub fn part1(input: &str) -> i64 {
