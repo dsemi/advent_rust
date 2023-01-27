@@ -1,30 +1,26 @@
-fn take<'a>(n: usize, bits: &mut &'a [u64]) -> &'a [u64] {
-    &std::mem::replace(bits, &bits[n..])[..n]
+use itertools::unfold;
+
+fn bin(bs: &mut dyn Iterator<Item = u64>, n: usize) -> u64 {
+    bs.take(n).fold(0, |a, b| a << 1 | b)
 }
 
-fn bin(ds: &[u64]) -> u64 {
-    ds.iter().fold(0, |a, b| a << 1 | b)
-}
-
-fn packet(bs: &mut &[u64], vsum: &mut u64) -> u64 {
-    *vsum += bin(take(3, bs));
-    let type_id = bin(take(3, bs));
+fn packet(bs: &mut dyn Iterator<Item = u64>, vsum: &mut u64) -> u64 {
+    *vsum += bin(bs, 3);
+    let type_id = bin(bs, 3);
     if type_id == 4 {
         let mut n = 0;
-        while take(1, bs)[0] == 1 {
-            n = n << 4 | bin(take(4, bs));
+        while let Some(1) = bs.next() {
+            n = n << 4 | bin(bs, 4);
         }
-        return n << 4 | bin(take(4, bs));
+        return n << 4 | bin(bs, 4);
     }
-    let mut ns = vec![];
-    if take(1, bs)[0] == 0 {
-        let mut r = take(bin(take(15, bs)) as usize, bs);
-        while !r.is_empty() {
-            ns.push(packet(&mut r, vsum));
-        }
+    let ns: Vec<u64> = if let Some(0) = bs.next() {
+        let n = bin(bs, 15);
+        let r = bs.take(n as usize).peekable();
+        unfold(r, |mut r| r.peek().is_some().then(|| packet(&mut r, vsum))).collect()
     } else {
-        (0..bin(take(11, bs))).for_each(|_| ns.push(packet(bs, vsum)));
-    }
+        (0..bin(bs, 11)).map(|_| packet(bs, vsum)).collect()
+    };
     match type_id {
         0 => ns.into_iter().sum(),
         1 => ns.into_iter().product(),
@@ -38,12 +34,12 @@ fn packet(bs: &mut &[u64], vsum: &mut u64) -> u64 {
 }
 
 fn solve(input: &str) -> (u64, u64) {
-    let bits = input
+    let mut bits = input
         .chars()
         .map(|c| c.to_digit(16).unwrap() as u64)
         .flat_map(|n| vec![n >> 3 & 1, n >> 2 & 1, n >> 1 & 1, n & 1]);
     let mut version = 0;
-    let n = packet(&mut &bits.collect::<Vec<_>>()[..], &mut version);
+    let n = packet(&mut bits, &mut version);
     (version, n)
 }
 
