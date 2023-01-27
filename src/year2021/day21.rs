@@ -7,10 +7,10 @@ pub fn part1(input: &str) -> u64 {
     let mut p1 = scanf!(a, "Player {*d} starting position: {}", u64).unwrap() - 1;
     let mut p2 = scanf!(b, "Player {*d} starting position: {}", u64).unwrap() - 1;
     let (mut p1_score, mut p2_score) = (0, 0);
-    let mut gen = (1..=100).cycle();
+    let gen = &mut (1..=100).cycle();
     let mut n = 0;
     while p2_score < 1000 {
-        p1 = (p1 + gen.next().unwrap() + gen.next().unwrap() + gen.next().unwrap()) % 10;
+        p1 = (p1 + gen.take(3).sum::<u64>()) % 10;
         p1_score += p1 + 1;
         n += 3;
         std::mem::swap(&mut p1, &mut p2);
