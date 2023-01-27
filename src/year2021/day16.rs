@@ -1,5 +1,3 @@
-use itertools::unfold;
-
 fn bin(bs: &mut dyn Iterator<Item = u64>, n: usize) -> u64 {
     bs.take(n).fold(0, |a, b| a << 1 | b)
 }
@@ -8,16 +6,15 @@ fn packet(bs: &mut dyn Iterator<Item = u64>, vsum: &mut u64) -> u64 {
     *vsum += bin(bs, 3);
     let type_id = bin(bs, 3);
     if type_id == 4 {
-        let mut n = 0;
-        while let Some(1) = bs.next() {
-            n = n << 4 | bin(bs, 4);
-        }
-        return n << 4 | bin(bs, 4);
+        return itertools::unfold(true, |b| {
+            std::mem::replace(b, *b && bs.next() == Some(1)).then(|| bin(bs, 4))
+        })
+        .fold(0, |a, b| a << 4 | b);
     }
     let ns: Vec<u64> = if let Some(0) = bs.next() {
         let n = bin(bs, 15);
         let r = bs.take(n as usize).peekable();
-        unfold(r, |mut r| r.peek().is_some().then(|| packet(&mut r, vsum))).collect()
+        itertools::unfold(r, |mut r| r.peek().is_some().then(|| packet(&mut r, vsum))).collect()
     } else {
         (0..bin(bs, 11)).map(|_| packet(bs, vsum)).collect()
     };
