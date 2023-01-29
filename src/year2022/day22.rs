@@ -5,6 +5,10 @@ use num::integer::gcd;
 use regex::Regex;
 use Face::*;
 
+const X: C3<i32> = C3(1, 0, 0);
+const Y: C3<i32> = C3(0, 1, 0);
+const Z: C3<i32> = C3(0, 0, 1);
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Face {
     Top,
@@ -16,6 +20,17 @@ enum Face {
 }
 
 impl Face {
+    fn axis(&self) -> C3<i32> {
+        match self {
+            Top => Z,
+            Bottom => -Z,
+            Back => Y,
+            Front => -Y,
+            Right => X,
+            Left => -X,
+        }
+    }
+
     fn fall_off(&self, dir: C3<i32>) -> (Face, C3<i32>) {
         (
             match dir {
@@ -27,18 +42,18 @@ impl Face {
                 C3(-1, 0, 0) => Left,
                 _ => unreachable!(),
             },
-            match self {
-                Top => C3(0, 0, -1),
-                Bottom => C3(0, 0, 1),
-                Back => C3(0, -1, 0),
-                Front => C3(0, 1, 0),
-                Right => C3(-1, 0, 0),
-                Left => C3(1, 0, 0),
-            },
+            -self.axis(),
         )
     }
 
-    fn rotate_left(&self, C3(x, y, z): C3<i32>) -> C3<i32> {
+    fn rotate(&self, C3(x, y, z): C3<i32>) -> C3<i32> {
+        // Could use quaternion: (cos angle/2, x*sin angle/2, y*sin angle/2, z*sin angle/2)
+        // e.g. rotate around Z: (cos pi / 4, 0, 0, sin pi / 4)
+        // def mulQ(r, s):
+        //   return (r[0]*s[0] - r[1]*s[1] - r[2]*s[2] - r[3]*s[3],
+        //           r[0]*s[1] + r[1]*s[0] - r[2]*s[3] + r[3]*s[2],
+        //           r[0]*s[2] + r[1]*s[3] + r[2]*s[0] - r[3]*s[1],
+        //           r[0]*s[3] - r[1]*s[2] + r[2]*s[1] + r[3]*s[0])
         match self {
             Top => C3(-y, x, z),
             Bottom => C3(y, -x, z),
@@ -46,17 +61,6 @@ impl Face {
             Front => C3(-z, y, x),
             Right => C3(x, -z, y),
             Left => C3(x, z, -y),
-        }
-    }
-
-    fn rotate_right(&self, C3(x, y, z): C3<i32>) -> C3<i32> {
-        match self {
-            Top => C3(y, -x, z),
-            Bottom => C3(-y, x, z),
-            Back => C3(-z, y, x),
-            Front => C3(z, y, -x),
-            Right => C3(x, z, -y),
-            Left => C3(x, -z, y),
         }
     }
 }
@@ -145,9 +149,9 @@ impl Board {
         let mut first = true;
         while std::mem::take(&mut first) || pos != self.top_left {
             let (d2, d3) = [
-                (dir * C(0, 1), face.rotate_left(dir3d)),
+                (dir * C(0, 1), face.rotate(dir3d)),
                 (dir, dir3d),
-                (dir * C(0, -1), face.rotate_right(dir3d)),
+                (dir * C(0, -1), face.rotate(-dir3d)),
             ]
             .into_iter()
             .find(|(d2, d3)| {
