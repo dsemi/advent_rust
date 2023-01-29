@@ -1,32 +1,27 @@
 use crate::ocr::*;
-use crate::utils::*;
+use itertools::Itertools;
 
 fn run(input: &str) -> impl Iterator<Item = i32> + '_ {
     input
         .split_whitespace()
-        .map(|tok| match tok {
-            "addx" | "noop" => 0,
-            _ => tok.parse().unwrap(),
-        })
-        .good_scan(1, |x, d| x + d)
-        .take(240)
+        .map(|tok| tok.parse().unwrap_or(0))
+        .scan(1, |x, d| Some(std::mem::replace(x, *x + d)))
 }
 
 pub fn part1(input: &str) -> i32 {
     run(input)
-        .enumerate()
-        .filter_map(|(c, x)| ((c + 1) % 40 == 20).then(|| (c + 1) as i32 * x))
+        .zip(1..)
+        .filter_map(|(x, c)| (c % 40 == 20).then(|| c * x))
         .sum()
 }
 
 pub fn part2(input: &str) -> String {
-    let mut res = String::new();
-    for (c, x) in run(input).enumerate() {
-        let m = c as i32 % 40;
-        if m == 0 {
-            res.push('\n');
-        }
-        res.push(if (m - x).abs() <= 1 { '#' } else { ' ' });
-    }
+    let res = run(input)
+        .collect::<Vec<_>>()
+        .chunks(40)
+        .map(|c| c.into_iter().zip(0..))
+        .map(|c| c.map(|(x, m)| if (m - x).abs() <= 1 { '#' } else { ' ' }))
+        .map(|c| c.collect::<String>())
+        .join("\n");
     parse_letters(&res, None)
 }
