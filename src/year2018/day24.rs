@@ -1,13 +1,12 @@
-use crate::utils::int;
-use lazy_static::lazy_static;
+use itertools::iterate;
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_till, take_while};
+use nom::bytes::complete::{tag, take_till};
+use nom::character::complete::{alpha1, i32};
 use nom::combinator::opt;
 use nom::multi::{separated_list0, separated_list1};
 use nom::sequence::{delimited, preceded, separated_pair, terminated};
 use nom::IResult;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::Relaxed;
+use std::cell::Cell;
 
 #[derive(Clone)]
 struct Group<'a> {
@@ -38,13 +37,9 @@ impl Group<'_> {
     }
 }
 
-lazy_static! {
-    static ref C: AtomicUsize = AtomicUsize::new(0);
-}
-
-fn units<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
-    let (i, units) = int(i)?;
-    let (i, hit_pts) = delimited(tag(" units each with "), int, tag(" hit points "))(i)?;
+fn units<'a>(idx: &Cell<usize>, name: &'a str, i: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
+    let (i, units) = i32(i)?;
+    let (i, hit_pts) = delimited(tag(" units each with "), i32, tag(" hit points "))(i)?;
     let (i, attributes) = opt(delimited(
         tag("("),
         separated_list0(
@@ -52,7 +47,7 @@ fn units<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
             separated_pair(
                 alt((tag("weak"), tag("immune"))),
                 tag(" to "),
-                separated_list1(tag(", "), take_while(|c: char| c.is_ascii_alphabetic())),
+                separated_list1(tag(", "), alpha1),
             ),
         ),
         tag(") "),
@@ -61,11 +56,11 @@ fn units<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
         .unwrap_or_default()
         .into_iter()
         .partition::<Vec<(&str, Vec<&str>)>, _>(|x| x.0 == "weak");
-    let (i, dmg) = delimited(tag("with an attack that does "), int, tag(" "))(i)?;
-    let (i, element) = take_while(|c: char| c.is_ascii_alphabetic())(i)?;
-    let (i, initiative) = preceded(tag(" damage at initiative "), int)(i)?;
+    let (i, dmg) = delimited(tag("with an attack that does "), i32, tag(" "))(i)?;
+    let (i, element) = alpha1(i)?;
+    let (i, initiative) = preceded(tag(" damage at initiative "), i32)(i)?;
     let group = Group {
-        num: C.fetch_add(1, Relaxed),
+        num: idx.replace(idx.get() + 1),
         name,
         units,
         hit_pts,
@@ -78,14 +73,14 @@ fn units<'a>(i: &'a str, name: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
     Ok((i, Some(group)))
 }
 
-fn army(i: &str) -> IResult<&str, Vec<Option<Group>>> {
+fn army<'a>(idx: &Cell<usize>, i: &'a str) -> IResult<&'a str, Vec<Option<Group<'a>>>> {
     let (i, name) = terminated(take_till(|c: char| c == ':'), tag(":\n"))(i)?;
-    separated_list1(tag("\n"), |i| units(i, name))(i)
+    separated_list1(tag("\n"), |i| units(idx, name, i))(i)
 }
 
 fn armies(i: &str) -> IResult<&str, Vec<Option<Group>>> {
-    C.store(0, Relaxed);
-    let (i, (a, b)) = separated_pair(army, tag("\n\n"), army)(i)?;
+    let idx = Cell::new(0);
+    let (i, (a, b)) = separated_pair(|i| army(&idx, i), tag("\n\n"), |i| army(&idx, i))(i)?;
     Ok((i, [a, b].concat()))
 }
 
@@ -156,25 +151,31 @@ pub fn part1(input: &str) -> i32 {
     groups.iter().flatten().map(|g| g.units).sum()
 }
 
-pub fn part2(input: &str) -> i32 {
-    let gps = armies(input).unwrap().1;
-    for n in 0.. {
-        let mut groups = gps.clone();
-        for g in groups.iter_mut().flatten() {
-            if g.name == "Immune System" {
-                g.dmg += n;
-            }
-        }
-        if battle(&mut groups) {
-            let result = groups
+fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
+    let mut groups = gps.to_owned();
+    groups
+        .iter_mut()
+        .flatten()
+        .filter(|g| g.name == "Immune System")
+        .for_each(|g| g.dmg += n);
+    battle(&mut groups)
+        .then_some(
+            groups
                 .iter()
                 .flatten()
                 .filter_map(|g| (g.name == "Immune System").then(|| g.units))
-                .sum();
-            if result > 0 {
-                return result;
-            }
-        }
-    }
-    panic!("No solution found")
+                .sum(),
+        )
+        .unwrap_or(0)
+}
+
+pub fn part2(input: &str) -> i32 {
+    let gps = armies(input).unwrap().1;
+    let hi = iterate(1, |x| x * 2)
+        .map(|n| immune_left(&gps, n))
+        .find(|&left| left > 0)
+        .unwrap();
+    let boosts = (0..hi).collect::<Vec<_>>();
+    let boost = boosts.partition_point(|&n| immune_left(&gps, n) <= 0) as i32;
+    immune_left(&gps, boost)
 }
