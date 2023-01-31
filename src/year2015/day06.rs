@@ -45,10 +45,7 @@ pub fn part1(input: &str) -> u32 {
 pub fn part2(input: &str) -> u32 {
     run_commands(
         input,
-        |s| {
-            s.iter_mut()
-                .for_each(|v| *v = v.checked_sub(1).unwrap_or(0))
-        },
+        |s| s.iter_mut().for_each(|v| *v = v.saturating_sub(1)),
         |s| s.iter_mut().for_each(|v| *v += 1),
         |s| s.iter_mut().for_each(|v| *v += 2),
     )
