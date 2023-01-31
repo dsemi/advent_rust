@@ -1,10 +1,15 @@
-use crate::utils::int;
 use nom::bytes::complete::tag;
+use nom::character::complete::u32;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
+use nom::ToUsize;
+
+pub fn usize(input: &str) -> IResult<&str, usize> {
+    u32(input).map(|(i, x)| (i, x.to_usize()))
+}
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {
-    delimited(tag("("), separated_pair(int, tag("x"), int), tag(")"))(i)
+    delimited(tag("("), separated_pair(usize, tag("x"), usize), tag(")"))(i)
 }
 
 fn decompressed_len(f: fn(&str) -> usize, input: &str) -> usize {

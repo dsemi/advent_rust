@@ -1,6 +1,6 @@
-use crate::utils::int;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::character::complete::u64;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 use rayon::prelude::*;
@@ -17,7 +17,7 @@ struct Snailfish {
 
 fn parse(i: &str, depth: usize) -> IResult<&str, Vec<Num>> {
     alt((
-        |i| int(i).map(|(i, n)| (i, vec![Num { depth, value: n }])),
+        |i| u64(i).map(|(i, n)| (i, vec![Num { depth, value: n }])),
         |i| {
             delimited(
                 tag("["),

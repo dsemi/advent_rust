@@ -1,9 +1,4 @@
 use ahash::{AHashMap, AHashSet};
-use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
-use nom::combinator::{map_res, opt, recognize};
-use nom::sequence::tuple;
-use nom::IResult;
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
 use std::cmp::{max, min, Ordering, Reverse};
@@ -14,7 +9,6 @@ use std::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr, Sub,
     SubAssign,
 };
-use std::str::FromStr;
 use streaming_iterator::StreamingIterator;
 
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
@@ -804,12 +798,6 @@ pub trait IteratorExt: Iterator {
 }
 
 impl<T: Iterator> IteratorExt for T {}
-
-pub fn int<T: FromStr>(i: &str) -> IResult<&str, T> {
-    map_res(recognize(tuple((opt(tag("-")), digit1))), |s: &str| {
-        s.parse()
-    })(i)
-}
 
 pub fn bits<T>(n: T) -> Bits<T> {
     Bits { n }

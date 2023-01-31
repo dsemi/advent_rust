@@ -36,8 +36,8 @@ fn intersect_volume(cubes: &[Cube], bs: &[BitSet], cube: &Cube, set: &BitSet) ->
     let mut vol = cube.volume();
     for idx in set {
         let common = cube.intersect(&cubes[idx]);
-        let int = set.intersection(&bs[idx]).collect();
-        vol -= intersect_volume(cubes, bs, &common, &int);
+        let inter = set.intersection(&bs[idx]).collect();
+        vol -= intersect_volume(cubes, bs, &common, &inter);
     }
     vol
 }

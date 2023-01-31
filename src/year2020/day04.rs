@@ -1,8 +1,7 @@
-use crate::utils::int;
 use ahash::AHashSet;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_till, take_while, take_while_m_n};
-use nom::character::complete::multispace0;
+use nom::character::complete::{i32, multispace0};
 use nom::combinator::verify;
 use nom::sequence::{pair, terminated};
 use nom::IResult;
@@ -15,11 +14,11 @@ fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
         let (i, field) = terminated(take_while(|c: char| c.is_ascii_alphabetic()), tag(":"))(inp)?;
         let i = if validate {
             match field {
-                "byr" => verify(int::<i32>, |n| 1920 <= *n && *n <= 2002)(i)?.0,
-                "iyr" => verify(int::<i32>, |n| 2010 <= *n && *n <= 2020)(i)?.0,
-                "eyr" => verify(int::<i32>, |n| 2020 <= *n && *n <= 2030)(i)?.0,
+                "byr" => verify(i32, |n| 1920 <= *n && *n <= 2002)(i)?.0,
+                "iyr" => verify(i32, |n| 2010 <= *n && *n <= 2020)(i)?.0,
+                "eyr" => verify(i32, |n| 2020 <= *n && *n <= 2030)(i)?.0,
                 "hgt" => {
-                    verify(pair(int, alt((tag("cm"), tag("in")))), |(h, u)| match *u {
+                    verify(pair(i32, alt((tag("cm"), tag("in")))), |(h, u)| match *u {
                         "cm" => 150 <= *h && *h <= 193,
                         "in" => 59 <= *h && *h <= 76,
                         _ => unreachable!(),

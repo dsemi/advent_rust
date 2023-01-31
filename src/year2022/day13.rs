@@ -1,6 +1,6 @@
-use crate::utils::int;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::character::complete::i32;
 use nom::multi::separated_list0;
 use nom::sequence::delimited;
 use nom::IResult;
@@ -16,7 +16,7 @@ enum Packet {
 
 fn parse(i: &str) -> IResult<&str, Packet> {
     alt((
-        |i| int(i).map(|(i, n)| (i, Lit(n))),
+        |i| i32(i).map(|(i, n)| (i, Lit(n))),
         |i| {
             delimited(tag("["), separated_list0(tag(","), parse), tag("]"))(i)
                 .map(|(i, ns)| (i, List(ns)))
