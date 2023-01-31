@@ -664,11 +664,12 @@ where
     }
 
     pub fn get(&mut self, arg: A) -> R {
-        if !self.cache.contains_key(&arg) {
-            let v = (self.func)(self, arg);
-            self.cache.insert(arg, v);
+        if let Some(v) = self.cache.get(&arg) {
+            return *v;
         }
-        self.cache[&arg]
+        let v = (self.func)(self, arg);
+        self.cache.insert(arg, v);
+        v
     }
 }
 
