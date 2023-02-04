@@ -2,14 +2,9 @@ fn all_sizes(input: &str) -> Vec<i64> {
     let mut result = Vec::new();
     let mut fstree = Vec::new();
     let mut size = 0;
-    for line in input.lines() {
+    for line in input.lines().skip(1) {
         if line.starts_with("$ cd ") {
-            if line.ends_with('/') {
-                while let Some(parent_size) = fstree.pop() {
-                    result.push(size);
-                    size += parent_size;
-                }
-            } else if line.ends_with("..") {
+            if line.ends_with("..") {
                 result.push(size);
                 size += fstree.pop().unwrap();
             } else {
@@ -24,11 +19,11 @@ fn all_sizes(input: &str) -> Vec<i64> {
                 .unwrap();
         }
     }
-    while let Some(parent_size) = fstree.pop() {
-        result.push(size);
-        size += parent_size;
-    }
     result.push(size);
+    result.extend(fstree.into_iter().scan(size, |acc, x| {
+        *acc += x;
+        Some(*acc)
+    }));
     result
 }
 
