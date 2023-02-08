@@ -24,9 +24,9 @@ fn trees(input: &str) -> impl Iterator<Item = (bool, u32)> {
 }
 
 pub fn part1(input: &str) -> usize {
-    trees(input).into_iter().filter(|t| t.0).count()
+    trees(input).filter(|t| t.0).count()
 }
 
 pub fn part2(input: &str) -> Option<u32> {
-    trees(input).into_iter().map(|t| t.1).max()
+    trees(input).map(|t| t.1).max()
 }
