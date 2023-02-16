@@ -1,7 +1,5 @@
 use crate::utils::partition_point;
 use ahash::AHashMap;
-use num::integer::div_mod_floor;
-use std::cmp::max;
 
 type Reactions<'a> = AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>;
 
@@ -24,34 +22,33 @@ fn parse_reactions(input: &str) -> Reactions {
 }
 
 fn num_ore(reactions: &Reactions, n: i64) -> i64 {
-    fn go<'a>(
-        reactions: &Reactions<'a>,
-        surplus: &mut AHashMap<&'a str, i64>,
-        ore: &mut i64,
-        k: &'a str,
-        c: i64,
-    ) {
-        if let Some((n, chems)) = reactions.get(&k) {
-            let (q, r) = div_mod_floor(c, *n);
-            for (a, chem) in chems.iter() {
-                let amt = a * if r != 0 { q + 1 } else { q };
-                let val = *surplus.get(chem).unwrap_or(&0);
-                surplus.insert(chem, max(0, val - amt));
-                if amt > val {
-                    go(reactions, surplus, ore, chem, amt - val);
+    let mut incoming = AHashMap::new();
+    reactions.values().for_each(|(_, srcs)| {
+        srcs.iter()
+            .for_each(|(_, src)| *incoming.entry(src).or_insert(0) += 1)
+    });
+    let mut topo = Vec::new();
+    let mut no_incoming = vec!["FUEL"];
+    while let Some(e) = no_incoming.pop() {
+        topo.push(e);
+        if let Some((_, srcs)) = reactions.get(e) {
+            srcs.iter().for_each(|(_, m)| {
+                *incoming.get_mut(m).unwrap() -= 1;
+                if incoming[m] == 0 {
+                    no_incoming.push(m);
                 }
-            }
-            if r != 0 {
-                *surplus.entry(k).or_insert(0) += n - r;
-            }
-        } else {
-            *ore += c;
+            })
         }
     }
-    let mut ore = 0;
-    let mut surplus = AHashMap::new();
-    go(reactions, &mut surplus, &mut ore, "FUEL", n);
-    ore
+    let mut cnts: AHashMap<&str, i64> = vec![("FUEL", n)].into_iter().collect();
+    for e in &topo[..topo.len() - 1] {
+        let (n, srcs) = &reactions[e];
+        let k = (cnts[e] + n - 1) / n;
+        *cnts.get_mut(e).unwrap() -= n * k;
+        srcs.iter()
+            .for_each(|(n, m)| *cnts.entry(m).or_insert(0) += k * n);
+    }
+    cnts["ORE"]
 }
 
 pub fn part1(input: &str) -> i64 {
