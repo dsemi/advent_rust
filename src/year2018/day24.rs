@@ -158,15 +158,15 @@ fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
         .flatten()
         .filter(|g| g.name == "Immune System")
         .for_each(|g| g.dmg += n);
-    battle(&mut groups)
-        .then_some(
-            groups
-                .iter()
-                .flatten()
-                .filter_map(|g| (g.name == "Immune System").then(|| g.units))
-                .sum(),
-        )
-        .unwrap_or(0)
+    if battle(&mut groups) {
+        groups
+            .iter()
+            .flatten()
+            .filter_map(|g| (g.name == "Immune System").then(|| g.units))
+            .sum()
+    } else {
+        0
+    }
 }
 
 pub fn part2(input: &str) -> i32 {

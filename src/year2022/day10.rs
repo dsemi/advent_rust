@@ -19,7 +19,7 @@ pub fn part2(input: &str) -> String {
     let res = run(input)
         .collect::<Vec<_>>()
         .chunks(40)
-        .map(|c| c.into_iter().zip(0..))
+        .map(|c| c.iter().zip(0..))
         .map(|c| c.map(|(x, m)| if (m - x).abs() <= 1 { '#' } else { ' ' }))
         .map(|c| c.collect::<String>())
         .join("\n");
