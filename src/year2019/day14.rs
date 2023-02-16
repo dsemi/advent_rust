@@ -1,3 +1,4 @@
+use crate::utils::partition_point;
 use ahash::AHashMap;
 use num::integer::div_mod_floor;
 use std::cmp::max;
@@ -61,18 +62,5 @@ const TRILLION: i64 = 1_000_000_000_000;
 
 pub fn part2(input: &str) -> i64 {
     let reactions = parse_reactions(input);
-    let (mut a, mut b) = (0, TRILLION);
-    while a < b {
-        let mid = (a + b) / 2;
-        if num_ore(&reactions, mid) > TRILLION {
-            b = mid - 1;
-        } else {
-            a = mid + 1;
-        }
-    }
-    if num_ore(&reactions, a) > TRILLION {
-        a - 1
-    } else {
-        a
-    }
+    partition_point(0, TRILLION, |&fuel| num_ore(&reactions, fuel) <= TRILLION) - 1
 }

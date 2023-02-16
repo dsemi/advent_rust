@@ -1,6 +1,7 @@
 use ahash::{AHashMap, AHashSet};
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
+use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
@@ -910,3 +911,29 @@ pub trait MapWindowsIterator: Iterator {
 }
 
 impl<I: Iterator> MapWindowsIterator for I {}
+
+pub fn binary_search_by<F>(lo: i64, hi: i64, mut f: F) -> Result<i64, i64>
+where
+    F: FnMut(&i64) -> Ordering,
+{
+    let mut size = hi - lo;
+    let mut left = lo;
+    let mut right = hi;
+    while left < right {
+        let mid = left + size / 2;
+        match f(&mid) {
+            Less => left = mid + 1,
+            Greater => right = mid,
+            Equal => return Ok(mid),
+        }
+        size = right - left;
+    }
+    Err(left)
+}
+
+pub fn partition_point<P>(lo: i64, hi: i64, mut pred: P) -> i64
+where
+    P: FnMut(&i64) -> bool,
+{
+    binary_search_by(lo, hi, |x| if pred(x) { Less } else { Greater }).unwrap_or_else(|i| i)
+}
