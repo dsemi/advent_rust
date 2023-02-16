@@ -30,8 +30,8 @@ fn num_ore(reactions: &Reactions, n: i64) -> i64 {
     let mut topo = Vec::new();
     let mut no_incoming = vec!["FUEL"];
     while let Some(e) = no_incoming.pop() {
-        topo.push(e);
         if let Some((_, srcs)) = reactions.get(e) {
+            topo.push(e);
             srcs.iter().for_each(|(_, m)| {
                 *incoming.get_mut(m).unwrap() -= 1;
                 if incoming[m] == 0 {
@@ -41,13 +41,13 @@ fn num_ore(reactions: &Reactions, n: i64) -> i64 {
         }
     }
     let mut cnts: AHashMap<&str, i64> = vec![("FUEL", n)].into_iter().collect();
-    for e in &topo[..topo.len() - 1] {
+    topo.iter().for_each(|e| {
         let (n, srcs) = &reactions[e];
         let k = (cnts[e] + n - 1) / n;
         *cnts.get_mut(e).unwrap() -= n * k;
         srcs.iter()
             .for_each(|(n, m)| *cnts.entry(m).or_insert(0) += k * n);
-    }
+    });
     cnts["ORE"]
 }
 
