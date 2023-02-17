@@ -1,97 +1,58 @@
 use ahash::AHashMap;
+use num_complex::Complex;
+use num_rational::Ratio;
+use std::ops::{Add, Div, Mul, Sub};
 use Monkey::*;
-use Op::*;
 
-#[derive(Clone, Copy)]
-enum Op {
-    Add,
-    Sub,
-    Mul,
-    Div,
+type N = Complex<Ratio<i64>>;
+
+enum Monkey<'a> {
+    Num(N),
+    Math(fn(N, N) -> N, &'a str, &'a str),
 }
 
-enum Monkey {
-    Num(i64),
-    Math(String, Op, String),
-}
-
-fn eval(op: Op, left: i64, right: i64) -> i64 {
-    match op {
-        Add => left + right,
-        Sub => left - right,
-        Mul => left * right,
-        Div => left / right,
+fn eval(m: &AHashMap<&str, Monkey>, k: &str) -> N {
+    match &m[k] {
+        Num(n) => *n,
+        Math(op, l, r) => op(eval(m, l), eval(m, r)),
     }
 }
 
-fn monkeys(input: &str) -> AHashMap<String, Monkey> {
+fn monkeys(input: &str) -> AHashMap<&str, Monkey> {
     input
         .lines()
         .map(|line| {
             let pts = line.split_whitespace().collect::<Vec<_>>();
             let monkey = match pts[1..] {
                 [n] => Num(n.parse().unwrap()),
-                [a, op, b] => Math(
-                    a.to_owned(),
-                    match op.chars().next().unwrap() {
-                        '+' => Add,
-                        '-' => Sub,
-                        '*' => Mul,
-                        '/' => Div,
+                [a, op, b] => {
+                    let f = match op.chars().next().unwrap() {
+                        '+' => Add::add,
+                        '-' => Sub::sub,
+                        '*' => Mul::mul,
+                        '/' => Div::div,
                         _ => panic!("Bad op: {}", op),
-                    },
-                    b.to_owned(),
-                ),
-                _ => panic!("Bad parse {}", line),
+                    };
+                    Math(f, a, b)
+                }
+                _ => panic!("Bad parse: {}", line),
             };
-            (pts[0][..pts[0].len() - 1].to_owned(), monkey)
+            (&pts[0][..pts[0].len() - 1], monkey)
         })
         .collect()
 }
 
 pub fn part1(input: &str) -> i64 {
-    let ms = monkeys(input);
-    fn val(m: &AHashMap<String, Monkey>, k: &str) -> i64 {
-        match &m[k] {
-            Num(n) => *n,
-            Math(a, op, b) => eval(*op, val(m, a), val(m, b)),
-        }
-    }
-    val(&ms, "root")
+    let m = monkeys(input);
+    *eval(&m, "root").re.numer()
 }
 
 pub fn part2(input: &str) -> i64 {
-    let ms = monkeys(input);
-    fn val(m: &AHashMap<String, Monkey>, k: &str) -> Result<i64, Box<dyn Fn(i64) -> i64>> {
-        if k == "humn" {
-            return Err(Box::new(|x| x));
-        }
-        match &m[k] {
-            Num(n) => Ok(*n),
-            Math(a, op, b) => {
-                let left = val(m, a);
-                let right = val(m, b);
-                match (left, right, op) {
-                    (Err(f), Ok(n), Add) => Err(Box::new(move |x| f(x - n))),
-                    (Err(f), Ok(n), Sub) => Err(Box::new(move |x| f(x + n))),
-                    (Err(f), Ok(n), Mul) => Err(Box::new(move |x| f(x / n))),
-                    (Err(f), Ok(n), Div) => Err(Box::new(move |x| f(x * n))),
-                    (Ok(n), Err(f), Add) => Err(Box::new(move |x| f(x - n))),
-                    (Ok(n), Err(f), Sub) => Err(Box::new(move |x| f(n - x))),
-                    (Ok(n), Err(f), Mul) => Err(Box::new(move |x| f(x / n))),
-                    (Ok(n), Err(f), Div) => Err(Box::new(move |x| f(n / x))),
-                    (Ok(a), Ok(b), _) => Ok(eval(*op, a, b)),
-                    _ => unreachable!(),
-                }
-            }
-        }
+    let mut m = monkeys(input);
+    m.insert("humn", Num(Complex::i()));
+    if let Some(Math(f, _, _)) = m.get_mut("root") {
+        *f = Sub::sub;
     }
-    if let Math(l, _, r) = &ms["root"] {
-        return match (val(&ms, l), val(&ms, r)) {
-            (Err(f), Ok(n)) => f(n),
-            (Ok(n), Err(f)) => f(n),
-            _ => unreachable!(),
-        };
-    }
-    unreachable!()
+    let n = eval(&m, "root");
+    *(-n.re / n.im).numer()
 }
