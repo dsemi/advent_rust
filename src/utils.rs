@@ -841,12 +841,17 @@ impl Interval {
         Self::new(max(self.lo, o.lo), min(self.hi, o.hi))
     }
 
-    pub fn union(&self, o: &Self) -> Self {
-        Self::new(min(self.lo, o.lo), max(self.hi, o.hi))
+    pub fn union(&self, o: &Self) -> Option<Self> {
+        (self.lo <= o.hi && o.lo <= self.hi)
+            .then(|| Self::new(min(self.lo, o.lo), max(self.hi, o.hi)))
     }
 
     pub fn len(&self) -> i64 {
         self.hi - self.lo
+    }
+
+    pub fn contains(&self, v: i64) -> bool {
+        self.lo <= v && v < self.hi
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashSet;
+use itertools::Itertools;
 use scan_fmt::scan_fmt as scanf;
 
 struct Scanner {
@@ -7,9 +7,9 @@ struct Scanner {
     dist: i64,
 }
 
-fn parse_scanners(input: &str) -> (Vec<Scanner>, AHashSet<i64>) {
+fn parse_scanners(input: &str) -> (Vec<Scanner>, Vec<C<i64>>) {
     let mut scanners = Vec::new();
-    let mut beacon_xs = AHashSet::new();
+    let mut beacons = Vec::new();
     for line in input.lines() {
         let (sx, sy, bx, by) = scanf!(
             line,
@@ -25,15 +25,29 @@ fn parse_scanners(input: &str) -> (Vec<Scanner>, AHashSet<i64>) {
             pos: C(sx, sy),
             dist,
         });
-        if by == 2000000 {
-            beacon_xs.insert(bx);
+        beacons.push(C(bx, by));
+    }
+    (scanners, beacons)
+}
+
+fn compress(ints: Vec<Interval>) -> Vec<Interval> {
+    let mut gen = ints.into_iter();
+    let mut comp = Vec::new();
+    let mut cur = gen.next().unwrap();
+    for int in gen {
+        if let Some(u) = cur.union(&int) {
+            cur = u;
+        } else {
+            comp.push(cur);
+            cur = int;
         }
     }
-    (scanners, beacon_xs)
+    comp.push(cur);
+    comp
 }
 
 pub fn part1(input: &str) -> i64 {
-    let (sensors, bs) = parse_scanners(input);
+    let (sensors, beacons) = parse_scanners(input);
     const Y: i64 = 2000000;
     let mut intervals = Vec::new();
     for sensor in sensors {
@@ -44,10 +58,12 @@ pub fn part1(input: &str) -> i64 {
         intervals.push(Interval::new(sensor.pos.0 - diff, sensor.pos.0 + diff + 1));
     }
     intervals.sort_unstable_by_key(|i| i.lo);
-    let interval = intervals.iter().fold(intervals[0], |a, b| a.union(b));
-    interval.len()
-        - bs.into_iter()
-            .filter(|&b| b >= interval.lo && b < interval.hi)
+    let comp = compress(intervals);
+    comp.iter().map(|i| i.len()).sum::<i64>()
+        - beacons
+            .into_iter()
+            .filter(|&C(x, y)| y == Y && comp.iter().any(|i| i.contains(x)))
+            .unique()
             .count() as i64
 }
 
