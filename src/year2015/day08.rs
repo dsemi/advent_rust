@@ -4,7 +4,7 @@ fn encoded_len(s: &str) -> usize {
     while let Some(c) = i.next() {
         match c {
             '\\' => {
-                if let Some('x') = i.next() {
+                if Some('x') == i.next() {
                     i.next();
                     i.next();
                 }
