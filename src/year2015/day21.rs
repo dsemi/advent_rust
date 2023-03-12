@@ -56,11 +56,10 @@ lazy_static! {
         let mut v = Vec::new();
         for &weapon in SHOP1.iter() {
             for &armor in SHOP2.iter() {
-                for combo in SHOP3.iter().combinations(2) {
-                    for rings in vec![*combo[0] + *combo[1], *combo[1]].into_iter() {
-                        v.push(person(weapon + armor + rings));
-                    }
+                for rings in SHOP3.iter().combinations(2) {
+                    v.push(person(weapon + armor + *rings[0] + *rings[1]));
                 }
+                v.push(person(weapon + armor));
             }
         }
         v
