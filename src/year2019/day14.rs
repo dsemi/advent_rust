@@ -1,10 +1,13 @@
 use crate::utils::partition_point;
 use ahash::AHashMap;
 
-type Reactions<'a> = AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>;
+struct Reactions<'a> {
+    graph: AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>,
+    topo: Vec<&'a str>,
+}
 
 fn parse_reactions(input: &str) -> Reactions {
-    input
+    let graph = input
         .lines()
         .map(|line| {
             let pts = line.split(" => ").collect::<Vec<_>>();
@@ -14,23 +17,20 @@ fn parse_reactions(input: &str) -> Reactions {
                     let pts2 = inp.split_whitespace().collect::<Vec<_>>();
                     (pts2[0].parse().unwrap(), pts2[1])
                 })
-                .collect();
+                .collect::<Vec<_>>();
             let outp = pts[1].split_whitespace().collect::<Vec<_>>();
             (outp[1], (outp[0].parse().unwrap(), inps))
         })
-        .collect()
-}
-
-fn num_ore(reactions: &Reactions, n: i64) -> i64 {
+        .collect::<AHashMap<_, _>>();
     let mut incoming = AHashMap::new();
-    reactions.values().for_each(|(_, srcs)| {
+    graph.values().for_each(|(_, srcs)| {
         srcs.iter()
             .for_each(|(_, src)| *incoming.entry(src).or_insert(0) += 1)
     });
     let mut topo = Vec::new();
     let mut no_incoming = vec!["FUEL"];
     while let Some(e) = no_incoming.pop() {
-        if let Some((_, srcs)) = reactions.get(e) {
+        if let Some((_, srcs)) = graph.get(e) {
             topo.push(e);
             srcs.iter().for_each(|(_, m)| {
                 *incoming.get_mut(m).unwrap() -= 1;
@@ -40,11 +40,16 @@ fn num_ore(reactions: &Reactions, n: i64) -> i64 {
             })
         }
     }
+
+    Reactions { graph, topo }
+}
+
+fn num_ore(reactions: &Reactions, n: i64) -> i64 {
     let mut cnts: AHashMap<&str, i64> = vec![("FUEL", n)].into_iter().collect();
-    topo.iter().for_each(|e| {
-        let (n, srcs) = &reactions[e];
+    reactions.topo.iter().for_each(|e| {
+        let (n, srcs) = &reactions.graph[e];
+        // Num reactions required to produce n of e.
         let k = (cnts[e] + n - 1) / n;
-        *cnts.get_mut(e).unwrap() -= n * k;
         srcs.iter()
             .for_each(|(n, m)| *cnts.entry(m).or_insert(0) += k * n);
     });
