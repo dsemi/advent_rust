@@ -2,6 +2,7 @@ use crate::utils::partition_point;
 use ahash::AHashMap;
 
 struct Reactions<'a> {
+    #[allow(clippy::type_complexity)]
     graph: AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>,
     topo: Vec<&'a str>,
 }
