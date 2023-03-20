@@ -67,12 +67,26 @@ impl Prog {
         }
     }
 
+    #[rustfmt::skip]
     fn run(&mut self, debug: bool) -> usize {
         let mut result = 0;
         while self.line >= 0 && self.line < self.instrs.len() as i64 {
             if !debug && self.line + 14 <= self.instrs.len() as i64 {
                 match self.instrs[self.line as usize..self.line as usize + 14] {
-                    [Set(e, Lit(2)), Set(g, Reg(d)), Mul(g2, Reg(e2)), Sub(g3, Reg(b)), Jnz(Reg(g4), Lit(2)), Set(f, Lit(0)), Sub(e3, Lit(-1)), Set(g5, Reg(e4)), Sub(g6, Reg(b2)), Jnz(Reg(g7), Lit(-8)), Sub(d2, Lit(-1)), Set(g8, Reg(d3)), Sub(g9, Reg(b3)), Jnz(Reg(g10), Lit(-13))]
+                    [Set(e, Lit(2)),
+                     Set(g, Reg(d)),
+                     Mul(g2, Reg(e2)),
+                     Sub(g3, Reg(b)),
+                     Jnz(Reg(g4), Lit(2)),
+                     Set(f, Lit(0)),
+                     Sub(e3, Lit(-1)),
+                     Set(g5, Reg(e4)),
+                     Sub(g6, Reg(b2)),
+                     Jnz(Reg(g7), Lit(-8)),
+                     Sub(d2, Lit(-1)),
+                     Set(g8, Reg(d3)),
+                     Sub(g9, Reg(b3)),
+                     Jnz(Reg(g10), Lit(-13))]
                         if b == b2
                             && b == b3
                             && d == d2
