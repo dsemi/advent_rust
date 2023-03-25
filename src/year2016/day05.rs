@@ -1,22 +1,22 @@
-use crypto::digest::Digest;
-use crypto::md5::Md5;
+use generic_array::GenericArray;
+use md5::{Digest, Md5};
 use rayon::prelude::*;
 
 const CHUNK_SIZE: usize = 64_000;
 
 pub fn part1(input: &str) -> String {
     let mut hasher = Md5::new();
-    hasher.input_str(input);
+    hasher.update(input);
     (0..)
         .step_by(CHUNK_SIZE)
         .flat_map(|n| {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .filter_map(|i| {
-                    let mut h = hasher;
-                    h.input_str(&i.to_string());
-                    let mut output = [0; 16];
-                    h.result(&mut output);
+                    let mut h = hasher.clone();
+                    h.update(&i.to_string());
+                    let mut output = GenericArray::default();
+                    h.finalize_into(&mut output);
                     (output[0] == 0 && output[1] == 0 && output[2] < 16)
                         .then(|| std::char::from_digit(output[2] as u32, 16).unwrap())
                 })
@@ -28,17 +28,17 @@ pub fn part1(input: &str) -> String {
 
 pub fn part2(input: &str) -> String {
     let mut hasher = Md5::new();
-    hasher.input_str(input);
+    hasher.update(input);
     (0..)
         .step_by(CHUNK_SIZE)
         .flat_map(|n| {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .filter_map(|i| {
-                    let mut h = hasher;
-                    h.input_str(&i.to_string());
-                    let mut output = [0; 16];
-                    h.result(&mut output);
+                    let mut h = hasher.clone();
+                    h.update(&i.to_string());
+                    let mut output = GenericArray::default();
+                    h.finalize_into(&mut output);
                     (output[0] == 0 && output[1] == 0 && output[2] < 8).then(|| {
                         (
                             output[2] as usize,

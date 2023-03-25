@@ -1,5 +1,5 @@
-use crypto::digest::Digest;
-use crypto::md5::Md5;
+use generic_array::GenericArray;
+use md5::{Digest, Md5};
 use rayon::prelude::*;
 use safe_arch::*;
 
@@ -31,24 +31,23 @@ fn idx(byte: u8) -> usize {
 
 fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
     let mut hasher = Md5::new();
-    hasher.input_str(seed);
+    hasher.update(seed);
     (0..)
         .step_by(CHUNK_SIZE)
         .flat_map(move |n| {
             (n..n + CHUNK_SIZE)
                 .into_par_iter()
                 .map(|i| {
-                    let mut h = hasher;
-                    h.input_str(&i.to_string());
-                    let mut res = [0; 16];
+                    let mut h = hasher.clone();
+                    h.update(&i.to_string());
+                    let mut res = GenericArray::default();
                     let mut out = zeroed_m256i();
-                    h.result(&mut res);
-                    write(res.into(), &mut out);
+                    h.finalize_into_reset(&mut res);
+                    write(<[u8; 16]>::from(res).into(), &mut out);
                     for _ in 0..num {
-                        h.reset();
-                        h.input(&<[u8; 32]>::from(out));
-                        h.result(&mut res);
-                        write(res.into(), &mut out);
+                        h.update(&<[u8; 32]>::from(out));
+                        h.finalize_into_reset(&mut res);
+                        write(<[u8; 16]>::from(res).into(), &mut out);
                     }
                     (i, <[u8; 32]>::from(out))
                 })

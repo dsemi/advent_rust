@@ -1,6 +1,5 @@
 use crate::utils::*;
-use crypto::digest::Digest;
-use crypto::md5::Md5;
+use md5::{Digest, Md5};
 
 #[derive(Clone, Eq, Hash, PartialEq)]
 struct Path {
@@ -20,8 +19,8 @@ fn neighbors(path: &Path) -> Vec<Path> {
     }
     let mut result = Vec::new();
     let mut md5 = Md5::new();
-    md5.input_str(&path.st);
-    for (c, d) in md5.result_str().chars().zip("UDLR".chars()) {
+    md5.update(&path.st);
+    for (c, d) in hex::encode(md5.finalize()).chars().zip("UDLR".chars()) {
         if "bcdef".contains(c) {
             let mut path2 = path.clone();
             match d {

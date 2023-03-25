@@ -1,5 +1,4 @@
-use crypto::digest::Digest;
-use crypto::md5::Md5;
+use md5::{Digest, Md5};
 use rayon::prelude::*;
 
 const CHUNK_SIZE: usize = 64_000;
@@ -9,12 +8,9 @@ fn find_num(f: fn(&[u8]) -> bool, key: &str) -> Option<usize> {
     (0..).step_by(CHUNK_SIZE).find_map(|n| {
         (n..n + CHUNK_SIZE).into_par_iter().find_first(|i: &usize| {
             let mut hasher = Md5::new();
-            hasher.input(keyb);
-            hasher.input_str(&i.to_string());
-
-            let mut output = [0; 16];
-            hasher.result(&mut output);
-            f(&output)
+            hasher.update(keyb);
+            hasher.update(&i.to_string());
+            f(hasher.finalize().as_slice())
         })
     })
 }
