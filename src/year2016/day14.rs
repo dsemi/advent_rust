@@ -45,7 +45,7 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                     h.finalize_into_reset(&mut res);
                     write(<[u8; 16]>::from(res).into(), &mut out);
                     for _ in 0..num {
-                        h.update(&<[u8; 32]>::from(out));
+                        h.update(<[u8; 32]>::from(out));
                         h.finalize_into_reset(&mut res);
                         write(<[u8; 16]>::from(res).into(), &mut out);
                     }
