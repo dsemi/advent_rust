@@ -21,15 +21,15 @@ fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
     b || f(c)
 }
 
-fn num_valid(input: &str, f: fn(u32) -> bool) -> usize {
+fn num_valid(input: &str, f: fn(u8) -> bool) -> usize {
     let pts: Vec<u32> = input.split('-').map(|x| x.parse().unwrap()).collect();
-    (pts[0]..pts[1] + 1).filter(|&v| f(v)).count()
+    (pts[0]..pts[1] + 1).filter(|&v| solve(v, f)).count()
 }
 
 pub fn part1(input: &str) -> usize {
-    num_valid(input, |n| solve(n, |x| x >= 2))
+    num_valid(input, |x| x >= 2)
 }
 
 pub fn part2(input: &str) -> usize {
-    num_valid(input, |n| solve(n, |x| x == 2))
+    num_valid(input, |x| x == 2)
 }
