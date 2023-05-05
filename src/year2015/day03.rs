@@ -12,8 +12,12 @@ fn unit_dir(c: char) -> C<i64> {
 }
 
 fn locations(inp: impl Iterator<Item = char>) -> AHashSet<C<i64>> {
-    inp.good_scan(C(0, 0), |loc, c| *loc + unit_dir(c))
-        .collect()
+    let mut s: AHashSet<C<i64>> = [C(0, 0)].into();
+    s.extend(inp.scan(C(0, 0), |loc, c| {
+        *loc += unit_dir(c);
+        Some(*loc)
+    }));
+    s
 }
 
 pub fn part1(input: &str) -> usize {

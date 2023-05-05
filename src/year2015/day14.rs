@@ -17,8 +17,10 @@ fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
                 .into_iter()
                 .chain(vec![0; rest_time as usize].into_iter())
                 .cycle()
-                .good_scan(0, |state, x| *state + x)
-                .skip(1)
+                .scan(0, |state, x| {
+                    *state += x;
+                    Some(*state)
+                })
                 .take(2503)
                 .collect()
         })

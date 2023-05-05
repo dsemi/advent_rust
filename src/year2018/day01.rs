@@ -1,4 +1,3 @@
-use crate::utils::*;
 use ahash::AHashSet;
 
 pub fn part1(ns: Vec<i64>) -> i64 {
@@ -9,6 +8,6 @@ pub fn part2(ns: Vec<i64>) -> Option<i64> {
     let mut s = AHashSet::new();
     ns.into_iter()
         .cycle()
-        .good_scan(0, |st, x| *st + x)
+        .scan(0, |st, x| Some(std::mem::replace(st, *st + x)))
         .find(|&x| !s.insert(x))
 }

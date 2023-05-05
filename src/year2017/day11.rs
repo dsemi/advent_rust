@@ -18,7 +18,10 @@ fn ap(p: &C3<i64>, d: &str) -> C3<i64> {
 }
 
 fn path(input: &str) -> impl Iterator<Item = C3<i64>> + '_ {
-    input.split(',').good_scan(C3(0, 0, 0), ap)
+    input.split(',').scan(C3(0, 0, 0), |acc, p| {
+        *acc = ap(acc, p);
+        Some(*acc)
+    })
 }
 
 pub fn part1(input: &str) -> Option<i64> {

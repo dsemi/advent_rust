@@ -5,7 +5,7 @@ use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
 use std::hash::Hash;
-use std::iter::{Fuse, Sum};
+use std::iter::Sum;
 use std::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr, Sub,
     SubAssign,
@@ -761,45 +761,6 @@ impl<T> ResultExt<T> for Result<T, T> {
         }
     }
 }
-
-pub struct GoodScan<I, V, F> {
-    iter: Fuse<I>,
-    state: Option<V>,
-    f: F,
-}
-
-impl<I, V, F> Iterator for GoodScan<I, V, F>
-where
-    I: Iterator,
-    F: FnMut(&V, I::Item) -> V,
-{
-    type Item = V;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.iter.next() {
-            None => self.state.take(),
-            Some(v) => self
-                .state
-                .replace((self.f)(self.state.as_ref().unwrap(), v)),
-        }
-    }
-}
-
-pub trait IteratorExt: Iterator {
-    fn good_scan<V, F>(self, initial_state: V, f: F) -> GoodScan<Self, V, F>
-    where
-        Self: Sized,
-        F: FnMut(&V, Self::Item) -> V,
-    {
-        GoodScan {
-            iter: self.fuse(),
-            state: Some(initial_state),
-            f,
-        }
-    }
-}
-
-impl<T: Iterator> IteratorExt for T {}
 
 pub fn bits<T>(n: T) -> Bits<T> {
     Bits { n }
