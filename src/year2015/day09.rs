@@ -1,10 +1,10 @@
-use crate::utils::UniqueIdx;
-use itertools::Itertools;
-use std::cmp::max;
+use crate::utils::{held_karp, UniqueIdx};
+use std::cmp::{max, min};
 
-fn all_path_distances(input: &str) -> impl Iterator<Item = usize> {
+fn all_path_distances(input: &str, f: fn(usize, usize) -> usize) -> Option<usize> {
     let mut adj = Vec::new();
     let mut ui = UniqueIdx::new();
+    let fake = ui.idx("fake");
     for line in input.lines() {
         let parts = line.split_whitespace().collect::<Vec<_>>();
         let (k1, k2, v) = (parts[0], parts[2], parts[4].parse().unwrap());
@@ -22,15 +22,15 @@ fn all_path_distances(input: &str) -> impl Iterator<Item = usize> {
         adj[n1][n2] = v;
         adj[n2][n1] = v;
     }
-    (0..adj.len())
-        .permutations(adj.len())
-        .map(move |perm| perm.windows(2).map(|p| adj[p[0]][p[1]]).sum())
+    let len = adj.len();
+    adj[fake].extend(vec![0; len]);
+    held_karp(&adj, f)
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    all_path_distances(input).min()
+    all_path_distances(input, min)
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    all_path_distances(input).max()
+    all_path_distances(input, max)
 }

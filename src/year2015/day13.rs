@@ -1,5 +1,5 @@
-use crate::utils::UniqueIdx;
-use itertools::Itertools;
+use crate::utils::{held_karp, UniqueIdx};
+use std::cmp::max;
 
 fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
     let mut ui = UniqueIdx::new();
@@ -25,27 +25,13 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
     result
 }
 
-fn max_happiness(d: Vec<Vec<i32>>, p2: bool) -> Option<i32> {
-    (0..d.len())
-        .permutations(d.len())
-        .map(|perm| {
-            let mut curr = if !p2 {
-                d[perm[0]][perm[d.len() - 1]]
-            } else {
-                0
-            };
-            for i in 1..d.len() {
-                curr += d[perm[i]][perm[i - 1]];
-            }
-            curr
-        })
-        .max()
-}
-
 pub fn part1(input: &str) -> Option<i32> {
-    max_happiness(parse_happiness(input), false)
+    held_karp(&parse_happiness(input), max)
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    max_happiness(parse_happiness(input), true)
+    let mut adj = parse_happiness(input);
+    adj.iter_mut().for_each(|row| row.push(0));
+    adj.push(vec![0; adj.len()]);
+    held_karp(&adj, max)
 }

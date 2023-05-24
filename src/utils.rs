@@ -1,4 +1,5 @@
 use ahash::{AHashMap, AHashSet};
+use itertools::Itertools;
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
 use std::cmp::Ordering::*;
@@ -902,4 +903,36 @@ where
     P: FnMut(&i64) -> bool,
 {
     binary_search_by(lo, hi, |x| if pred(x) { Less } else { Greater }).unwrap_or_else(|i| i)
+}
+
+pub fn held_karp<T: Copy + Add<Output = T>>(
+    adj: &[impl Index<usize, Output = T>],
+    f: fn(T, T) -> T,
+) -> Option<T> {
+    let len = adj.len();
+    let mut g = AHashMap::new();
+    for k in 1..len {
+        g.insert((vec![k], k), adj[0][k]);
+    }
+    for s in 2..len {
+        for set in (1..len).combinations(s) {
+            for k in &set {
+                g.insert(
+                    (set.clone(), *k),
+                    set.iter()
+                        .filter(|&m| m != k)
+                        .map(|&m| {
+                            let mut set_not_k = set.clone();
+                            set_not_k.retain(|i| i != k);
+                            g[&(set_not_k, m)] + adj[m][*k]
+                        })
+                        .reduce(f)
+                        .unwrap(),
+                );
+            }
+        }
+    }
+    (1..len)
+        .map(move |k| g[&((1..len).collect(), k)] + adj[k][0])
+        .reduce(f)
 }
