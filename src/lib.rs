@@ -1,7 +1,6 @@
 #![allow(clippy::many_single_char_names)]
 #![deny(clippy::disallowed_types)]
 
-use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
 use scan_fmt::scan_fmt as scanf;
@@ -10,9 +9,7 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::sync::Mutex;
 
-lazy_static! {
-    static ref PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
-}
+static PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
 
 #[proc_macro]
 pub fn make_problems(_item: TokenStream) -> TokenStream {

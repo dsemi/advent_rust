@@ -1,5 +1,5 @@
 use crate::utils::*;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::cmp::max;
 
 struct Spell {
@@ -20,14 +20,16 @@ struct Game {
     recharge_turns: i32,
 }
 
-lazy_static! {
-    static ref SPELLS: Vec<Spell> = vec![
-        Spell { // Magic Missile
+static SPELLS: Lazy<Vec<Spell>> = Lazy::new(|| {
+    vec![
+        Spell {
+            // Magic Missile
             cost: 53,
             effect: |state| state.boss_health -= 4,
             active: |_| false,
         },
-        Spell { // Drain
+        Spell {
+            // Drain
             cost: 73,
             effect: |state| {
                 state.player_health += 2;
@@ -35,7 +37,8 @@ lazy_static! {
             },
             active: |_| false,
         },
-        Spell { // Shield
+        Spell {
+            // Shield
             cost: 113,
             effect: |state| {
                 state.player_armor += 7;
@@ -43,18 +46,20 @@ lazy_static! {
             },
             active: |state| state.shield_turns > 0,
         },
-        Spell { // Poison
+        Spell {
+            // Poison
             cost: 173,
             effect: |state| state.poison_turns = 6,
             active: |state| state.poison_turns > 0,
         },
-        Spell { // Recharge
+        Spell {
+            // Recharge
             cost: 229,
             effect: |state| state.recharge_turns = 5,
             active: |state| state.recharge_turns > 0,
         },
-    ];
-}
+    ]
+});
 
 fn apply_effects(state: &mut Game) {
     if state.shield_turns > 0 {

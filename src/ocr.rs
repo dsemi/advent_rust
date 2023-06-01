@@ -1,5 +1,5 @@
 use ahash::AHashMap;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 const SMALL_K: &str = "
  ##  ###   ##  #### ####  ##  #  # ###   ## #  # #     ##  ###  ###   ### #  # #   # ####
@@ -62,20 +62,24 @@ fn separate_letters(input: &str, fill_opt: Option<char>) -> Vec<String> {
     res
 }
 
-lazy_static! {
-    static ref SMALL_LETTERS: AHashMap<String, char> = separate_letters(SMALL_K, None)
+static SMALL_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+    separate_letters(SMALL_K, None)
         .into_iter()
         .zip(SMALL_V.chars())
-        .collect();
-    static ref LARGE_LETTERS: AHashMap<String, char> = separate_letters(LARGE_K, None)
+        .collect()
+});
+static LARGE_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+    separate_letters(LARGE_K, None)
         .into_iter()
         .zip(LARGE_V.chars())
-        .collect();
-    static ref SPECIAL_LETTERS: AHashMap<String, char> = separate_letters(SPECIAL_K, None)
+        .collect()
+});
+static SPECIAL_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+    separate_letters(SPECIAL_K, None)
         .into_iter()
         .zip(SPECIAL_V.chars())
-        .collect();
-}
+        .collect()
+});
 
 pub fn parse_letters(input: &str, fill_opt: Option<char>) -> String {
     let mut res = String::new();

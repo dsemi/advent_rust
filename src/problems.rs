@@ -1,5 +1,4 @@
 use advent::make_problems;
-use lazy_static::lazy_static;
 use reqwest::blocking::Client;
 use serde::Serialize;
 use std::collections::BTreeSet;
@@ -14,15 +13,13 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const RATE_LIMIT: Duration = Duration::from_secs(5);
+static LAST: Mutex<Option<Instant>> = Mutex::new(None);
 
 pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, impl Error> {
     let path = format!("inputs/{year}/input{day}.txt");
     let input_file = Path::new(&path);
     if !input_file.exists() && download {
         println!("Downloading input for Year {year} Day {day}");
-        lazy_static! {
-            static ref LAST: Mutex<Option<Instant>> = Mutex::new(None);
-        }
         let mut last = LAST.lock().unwrap();
         let now = Instant::now();
         if last.is_some() && last.unwrap() + RATE_LIMIT > now {
@@ -168,7 +165,7 @@ make_problems!();
 #[cfg(test)]
 mod tests {
     use advent::make_tests;
-    use lazy_static::lazy_static;
+    use once_cell::sync::Lazy;
     use std::error::Error;
     use toml::value::Table;
     use toml::value::Value;
@@ -176,11 +173,9 @@ mod tests {
     use super::{get_file_input, get_prob};
 
     const EXP: &'static str = include_str!("../test/expectedAnswers.toml");
+    static DICT: Lazy<Table> = Lazy::new(|| toml::from_str(EXP).unwrap());
 
     fn get_expected_solutions(year: i64, day: i64) -> Result<(String, String), String> {
-        lazy_static! {
-            static ref DICT: Table = toml::from_str(EXP).unwrap();
-        }
         match &DICT[&year.to_string()][day.to_string()] {
             Value::Table(t) => match (&t["part1"], &t["part2"]) {
                 (Value::String(a), Value::String(b)) => Ok((a.to_string(), b.to_string())),

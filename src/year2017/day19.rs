@@ -1,6 +1,5 @@
 use crate::utils::*;
 use ahash::AHashMap;
-use lazy_static::lazy_static;
 
 fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
     input
@@ -14,16 +13,14 @@ fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
         .collect()
 }
 
-fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
-    lazy_static! {
-        static ref LEFT: C<i32> = C(0, 1);
-        static ref RIGHT: C<i32> = C(0, -1);
-    }
+const LEFT: C<i32> = C(0, 1);
+const RIGHT: C<i32> = C(0, -1);
 
-    if grid.contains_key(&(*LEFT * dir + pos)) {
-        *LEFT * dir
+fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
+    if grid.contains_key(&(LEFT * dir + pos)) {
+        LEFT * dir
     } else {
-        *RIGHT * dir
+        RIGHT * dir
     }
 }
 

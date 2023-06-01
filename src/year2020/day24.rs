@@ -1,21 +1,19 @@
 use crate::utils::C;
 use ahash::{AHashMap, AHashSet};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::cmp::{max, min};
 
-lazy_static! {
-    static ref DIRS: AHashMap<&'static str, C<i32>> = {
-        let mut m = AHashMap::new();
-        m.insert("e", C(1, -1));
-        m.insert("se", C(0, -1));
-        m.insert("sw", C(-1, 0));
-        m.insert("w", C(-1, 1));
-        m.insert("nw", C(0, 1));
-        m.insert("ne", C(1, 0));
-        m
-    };
-}
+static DIRS: Lazy<AHashMap<&'static str, C<i32>>> = Lazy::new(|| {
+    let mut m = AHashMap::new();
+    m.insert("e", C(1, -1));
+    m.insert("se", C(0, -1));
+    m.insert("sw", C(-1, 0));
+    m.insert("w", C(-1, 1));
+    m.insert("nw", C(0, 1));
+    m.insert("ne", C(1, 0));
+    m
+});
 
 fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
     let re = Regex::new(
