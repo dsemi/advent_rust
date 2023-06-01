@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::cmp::{max, min};
 
-static DIRS: Lazy<AHashMap<&'static str, C<i32>>> = Lazy::new(|| {
+static DIRS: Lazy<AHashMap<&str, C<i32>>> = Lazy::new(|| {
     let mut m = AHashMap::new();
     m.insert("e", C(1, -1));
     m.insert("se", C(0, -1));
