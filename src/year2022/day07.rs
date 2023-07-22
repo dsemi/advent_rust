@@ -20,7 +20,7 @@ fn all_sizes(input: &str) -> Vec<i64> {
         }
     }
     result.push(size);
-    result.extend(fstree.into_iter().scan(size, |acc, x| {
+    result.extend(fstree.into_iter().rev().scan(size, |acc, x| {
         *acc += x;
         Some(*acc)
     }));
