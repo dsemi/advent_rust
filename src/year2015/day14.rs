@@ -15,7 +15,7 @@ fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
             .unwrap();
             vec![speed; fly_time as usize]
                 .into_iter()
-                .chain(vec![0; rest_time as usize].into_iter())
+                .chain(vec![0; rest_time as usize])
                 .cycle()
                 .scan(0, |state, x| {
                     *state += x;

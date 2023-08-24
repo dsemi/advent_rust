@@ -17,7 +17,7 @@ fn parse_ingredients(s: &str) -> Vec<Vec<i32>> {
 fn max_score(total: i32, cal_pred: fn(i32) -> bool, ings: Vec<Vec<i32>>) -> Option<i32> {
     Partitions::new(ings.len(), total)
         .filter_map_deref(|ms| {
-            let mut v = vec![0; 5];
+            let mut v = [0; 5];
             for i in 0..ms.len() {
                 for (j, e) in v.iter_mut().enumerate() {
                     *e += ms[i] * ings[i][j];

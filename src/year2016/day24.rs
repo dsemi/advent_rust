@@ -5,7 +5,7 @@ use itertools::Itertools;
 type Adj = AHashMap<(char, char), usize>;
 
 fn neighbors(grid: &[Vec<char>], xy: &C<i32>) -> Vec<C<i32>> {
-    vec![C(1, 0), C(-1, 0), C(0, 1), C(0, -1)]
+    [C(1, 0), C(-1, 0), C(0, 1), C(0, -1)]
         .iter()
         .filter_map(|d| {
             let c = xy + d;

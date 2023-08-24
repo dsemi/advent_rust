@@ -21,9 +21,10 @@ fn step(grid: &mut [u128]) {
     for i in 0..grid.len() {
         let mut curr = grid[i];
         let next = *grid.get(i + 1).unwrap_or(&0);
-        let mut adjs = vec![prev << 2, prev, prev >> 2,
-                            curr << 2,       curr >> 2,
-                            next << 2, next, next >> 2];
+        #[rustfmt::skip]
+        let mut adjs = [prev << 2, prev, prev >> 2,
+                        curr << 2,       curr >> 2,
+                        next << 2, next, next >> 2];
         let mut curr2 = 0;
         for _ in 0..grid.len() {
             curr2 <<= 2;
