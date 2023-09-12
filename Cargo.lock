@@ -30,7 +30,6 @@ dependencies = [
  "rayon",
  "regex",
  "reqwest",
- "safe_arch",
  "scan_fmt",
  "serde",
  "serde_json",
@@ -1054,12 +1053,6 @@ name = "ryu"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
-
-[[package]]
-name = "safe_arch"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "794821e4ccb0d9f979512f9c1973480123f9bd62a90d74ab0f9426fcf8f4a529"
 
 [[package]]
 name = "scan_fmt"
