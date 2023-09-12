@@ -5,7 +5,6 @@ use core::arch::x86_64::*;
 use generic_array::GenericArray;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
-use std::mem::transmute;
 
 const CHUNK_SIZE: usize = 8000;
 
@@ -23,7 +22,7 @@ union Sum {
 fn write(res: [u8; 16], out: &mut Sum) {
     unsafe {
         // Scale up for 32 chars
-        out.avx2 = _mm256_cvtepu8_epi16(transmute(res));
+        out.avx2 = _mm256_cvtepu8_epi16(std::mem::transmute(res));
         // Swap half byte pairs to get proper ordering
         out.avx2 = _mm256_or_si256(
             _mm256_srli_epi16(out.avx2, 4),
