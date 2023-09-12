@@ -63,7 +63,7 @@ mod simd {
             // get_sign_bits_of_4_lanes(v & cmp == 0)
             _mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(
                 _mm256_and_si256(v, cmp),
-                splat(0),
+                _mm256_setzero_si256(),
             )))
         }
     }
