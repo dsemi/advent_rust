@@ -5,6 +5,7 @@ use core::arch::x86_64::*;
 use generic_array::GenericArray;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
+use std::mem::transmute;
 
 const CHUNK_SIZE: usize = 8000;
 
@@ -20,10 +21,9 @@ union Sum {
 
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
 fn write(res: [u8; 16], out: &mut Sum) {
-    todo!("Verify this works");
     unsafe {
         // Scale up for 32 chars
-        out.avx2 = _mm256_cvtepu8_epi16(res);
+        out.avx2 = _mm256_cvtepu8_epi16(transmute(res));
         // Swap half byte pairs to get proper ordering
         out.avx2 = _mm256_or_si256(
             _mm256_srli_epi16(out.avx2, 4),
@@ -104,11 +104,11 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                     let mut res = GenericArray::default();
                     let mut out = Sum { hex: [0; 32] };
                     h.finalize_into_reset(&mut res);
-                    write(<[u8; 16]>::from(res).into(), &mut out);
+                    write(<[u8; 16]>::from(res), &mut out);
                     for _ in 0..num {
                         h.update(unsafe { out.hex });
                         h.finalize_into_reset(&mut res);
-                        write(<[u8; 16]>::from(res).into(), &mut out);
+                        write(<[u8; 16]>::from(res), &mut out);
                     }
                     (i, unsafe { out.hex })
                 })

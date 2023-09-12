@@ -37,8 +37,7 @@ mod simd {
     pub const MOD: __m256i = unsafe { transmute([0x7fffffff_u64; 4]) };
     const LOWER_16: __m256i = unsafe { transmute([0xffff_u64; 4]) };
 
-    pub fn generate4(v: &mut __m256i, factor: __m256i) -> __m256i {
-        todo!("Verify this works");
+    pub fn generate4(v: &mut __m256i, factor: __m256i) {
         unsafe {
             // u64x4(v) * factor - Only multiplies lower 32
             *v = _mm256_mul_epu32(*v, factor);

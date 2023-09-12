@@ -47,6 +47,7 @@ mod simd {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn or8(
         a: __m256i,
         b: __m256i,
@@ -64,7 +65,10 @@ mod simd {
                     b,
                     _mm256_or_si256(
                         c,
-                        _mm256_or_si256(d, _mm256_or_si256(f, _mm256_or_si256(g, h))),
+                        _mm256_or_si256(
+                            d,
+                            _mm256_or_si256(e, _mm256_or_si256(f, _mm256_or_si256(g, h))),
+                        ),
                     ),
                 ),
             )
@@ -72,7 +76,7 @@ mod simd {
     }
 
     pub fn or4(a: __m256i, b: __m256i, c: __m256i, d: __m256i) -> __m256i {
-        unsafe { _mm256_or_si256(a, _mm256_or_si256(b, (_mm256_or_si256(c, d)))) }
+        unsafe { _mm256_or_si256(a, _mm256_or_si256(b, _mm256_or_si256(c, d))) }
     }
 
     pub fn or3(a: __m256i, b: __m256i, c: __m256i) -> __m256i {
@@ -88,7 +92,7 @@ mod simd {
     }
 
     pub fn not(a: __m256i) -> __m256i {
-        unsafe { _mm256_xor_si256(a, set_splat_i16_m256i(-1)) }
+        unsafe { _mm256_xor_si256(a, _mm256_set1_epi16(-1)) }
     }
 }
 
@@ -138,6 +142,7 @@ mod simd {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn or8(
         a: uint8x16x2_t,
         b: uint8x16x2_t,
