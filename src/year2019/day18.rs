@@ -77,24 +77,23 @@ impl Maze {
                                 edge.dest + self.cols,
                             ]
                             .into_iter()
-                            .filter_map(|p| {
-                                (p != *from && self.grid[p] != Tile::Wall).then(|| {
-                                    let mut edge = Edge {
-                                        dest: p,
-                                        doors: edge.doors,
-                                        keys: edge.keys,
-                                    };
-                                    match self.grid[p] {
-                                        Tile::Key(k) => {
-                                            edge.keys |= k;
-                                        }
-                                        Tile::Door(k) => {
-                                            edge.doors |= k;
-                                        }
-                                        _ => {}
+                            .filter(|&p| p != *from && self.grid[p] != Tile::Wall)
+                            .map(|p| {
+                                let mut edge = Edge {
+                                    dest: p,
+                                    doors: edge.doors,
+                                    keys: edge.keys,
+                                };
+                                match self.grid[p] {
+                                    Tile::Key(k) => {
+                                        edge.keys |= k;
                                     }
-                                    edge
-                                })
+                                    Tile::Door(k) => {
+                                        edge.doors |= k;
+                                    }
+                                    _ => {}
+                                }
+                                edge
                             })
                             .collect::<Vec<_>>()
                         },
@@ -105,19 +104,19 @@ impl Maze {
                 }
                 self.moves[from]
                     .iter()
-                    .filter_map(move |(len, edge)| {
-                        (node.keys & edge.doors == edge.doors && node.keys & edge.keys != edge.keys)
-                            .then(|| {
-                                let mut poss = node.poss.clone();
-                                poss[i] = edge.dest;
-                                (
-                                    *len,
-                                    Node {
-                                        poss,
-                                        keys: node.keys | edge.keys,
-                                    },
-                                )
-                            })
+                    .filter(|&(_, edge)| {
+                        node.keys & edge.doors == edge.doors && node.keys & edge.keys != edge.keys
+                    })
+                    .map(move |(len, edge)| {
+                        let mut poss = node.poss.clone();
+                        poss[i] = edge.dest;
+                        (
+                            *len,
+                            Node {
+                                poss,
+                                keys: node.keys | edge.keys,
+                            },
+                        )
                     })
                     .collect::<Vec<_>>()
             })
@@ -130,7 +129,8 @@ fn search(mut maze: Maze) -> Option<usize> {
         .grid
         .iter()
         .enumerate()
-        .filter_map(|(i, v)| (v == &Tile::Start).then(|| i))
+        .filter(|&(_, v)| v == &Tile::Start)
+        .map(|(i, _)| i)
         .collect();
     let ks = maze
         .grid

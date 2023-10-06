@@ -55,9 +55,9 @@ where
     bss.enumerate()
         .flat_map(|(r, bs)| {
             bs.into_iter().enumerate().flat_map(move |(c, w)| {
-                (0..8).filter_map(move |i| {
-                    (w & (1 << i) != 0).then(|| (r as i32, (c * 8 + 7 - i) as i32))
-                })
+                (0..8)
+                    .filter(move |&i| w & (1 << i) != 0)
+                    .map(move |i| (r as i32, (c * 8 + 7 - i) as i32))
             })
         })
         .collect()

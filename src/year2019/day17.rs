@@ -17,12 +17,12 @@ pub fn part1(input: &str) -> usize {
     (0..grid.len())
         .map(|y| {
             (0..grid[y].len())
-                .filter_map(|x| {
+                .filter(|&x| {
                     [(x, y), (x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
                         .iter()
                         .all(|pos| is_scaffold(&grid, *pos))
-                        .then(|| x * y)
                 })
+                .map(|x| x * y)
                 .sum::<usize>()
         })
         .sum()

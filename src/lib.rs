@@ -58,7 +58,7 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
         if let Ok((year, day)) = scanf!(path, "src/year{}/day{}.rs", i64, i64) {
             let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
             let day = scanf!(&m.to_string(), "day{}", i64).unwrap();
-            map.entry(year).or_insert_with(BTreeSet::new).insert(day);
+            map.entry(year).or_default().insert(day);
             mods.extend(quote! {
                 pub mod #m;
             });

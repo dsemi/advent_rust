@@ -49,7 +49,8 @@ fn all_paths_and_dist_map(input: &str) -> (Adj, Vec<Vec<char>>) {
         .flat_map(|(r, line)| {
             line.chars()
                 .enumerate()
-                .filter_map(move |(c, v)| v.is_ascii_digit().then(|| (C(r as i32, c as i32), v)))
+                .filter(|(_, v)| v.is_ascii_digit())
+                .map(move |(c, v)| (C(r as i32, c as i32), v))
         })
         .collect::<Vec<_>>();
     pts.sort_by_key(|x| x.1);

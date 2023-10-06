@@ -64,15 +64,14 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
         .flat_map(|(r, row)| {
             row.iter()
                 .enumerate()
-                .filter_map(|(c, v)| {
-                    "EG".contains(v.0).then(|| {
-                        if v.0 == 'E' {
-                            elves += 1;
-                        } else {
-                            goblins += 1;
-                        }
-                        C(r as i32, c as i32)
-                    })
+                .filter(|&(_, v)| "EG".contains(v.0))
+                .map(|(c, v)| {
+                    if v.0 == 'E' {
+                        elves += 1;
+                    } else {
+                        goblins += 1;
+                    }
+                    C(r as i32, c as i32)
                 })
                 .collect::<Vec<_>>()
         })
