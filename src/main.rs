@@ -1,3 +1,4 @@
+#![allow(clippy::filter_map_bool_then)]
 #![allow(clippy::many_single_char_names)]
 #![deny(clippy::disallowed_types)]
 

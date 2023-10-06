@@ -52,9 +52,7 @@ fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
                 } else {
                     (vec![grid[r][c], grid[r][c + 1]], c == 0, (r, c + 2))
                 };
-                let e = portals
-                    .entry(k.into_iter().collect())
-                    .or_insert_with(Vec::new);
+                let e = portals.entry(k.into_iter().collect()).or_default();
                 e.push(if b { Outer(coord) } else { Inner(coord) });
             }
         }
