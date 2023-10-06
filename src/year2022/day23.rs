@@ -275,8 +275,6 @@ impl Grid {
         res
     }
 
-    // Can remove once map_windows is stabilized.
-    #[allow(unstable_name_collisions)]
     fn step(&mut self, dirs: &mut [Dir; 4]) -> bool {
         let mut next = self.clone();
         let mut moved = false;

@@ -72,10 +72,10 @@ pub fn part1(input: &str) -> u32 {
         .into_iter()
         .enumerate()
         .flat_map(|(x, row)| {
-            row.into_iter()
-                .enumerate()
-                .filter(move |&(y, _)| x as i32 <= target.0 && y as i32 <= target.1)
-                .map(|(_, v)| ToPrimitive::to_u32(&v).unwrap())
+            row.into_iter().enumerate().filter_map(move |(y, v)| {
+                (x as i32 <= target.0 && y as i32 <= target.1)
+                    .then(|| ToPrimitive::to_u32(&v).unwrap())
+            })
         })
         .sum()
 }

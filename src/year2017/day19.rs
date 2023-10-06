@@ -8,8 +8,7 @@ fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
         .flat_map(|(r, line)| {
             line.chars()
                 .enumerate()
-                .filter(|&(_, v)| v != ' ')
-                .map(move |(c, v)| (C(r as i32, c as i32), v))
+                .filter_map(move |(c, v)| (v != ' ').then(|| (C(r as i32, c as i32), v)))
         })
         .collect()
 }

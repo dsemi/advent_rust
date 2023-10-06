@@ -116,13 +116,15 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
         .scan(vec![Vec::new(); 16], |pot, (i, hashed)| {
             let fives: Vec<usize> = hashed
                 .windows(5)
-                .filter(|&w| w[0] == w[1] && w[0] == w[2] && w[0] == w[3] && w[0] == w[4])
-                .flat_map(|w| {
-                    pot[idx(w[0])]
-                        .drain(..)
-                        .filter(|&v| i - v <= 1000)
-                        .collect::<Vec<_>>()
+                .filter_map(|w| {
+                    (w[0] == w[1] && w[0] == w[2] && w[0] == w[3] && w[0] == w[4]).then(|| {
+                        pot[idx(w[0])]
+                            .drain(..)
+                            .filter(|&v| i - v <= 1000)
+                            .collect::<Vec<_>>()
+                    })
                 })
+                .flatten()
                 .collect();
             for w in hashed.windows(3) {
                 if w[0] == w[1] && w[0] == w[2] {

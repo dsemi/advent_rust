@@ -32,13 +32,13 @@ fn run_factory(input: &str) -> AHashMap<String, Vec<i64>> {
     for line in input.lines() {
         match line.split_whitespace().collect::<Vec<_>>()[..] {
             ["bot", n, _, _, _, o1, n1, _, _, _, o2, n2] => {
-                let e = tbl.entry(format!("{o1} {n1}")).or_default();
+                let e = tbl.entry(format!("{o1} {n1}")).or_insert_with(Vec::new);
                 e.push(Bot(format!("bot {n}"), min));
-                let e = tbl.entry(format!("{o2} {n2}")).or_default();
+                let e = tbl.entry(format!("{o2} {n2}")).or_insert_with(Vec::new);
                 e.push(Bot(format!("bot {n}"), max));
             }
             ["value", v, _, _, o, n] => {
-                let e = tbl.entry(format!("{o} {n}")).or_default();
+                let e = tbl.entry(format!("{o} {n}")).or_insert_with(Vec::new);
                 e.push(Value(v.parse().unwrap()));
             }
             _ => panic!("Parse failed: {line}"),

@@ -60,7 +60,7 @@ fn visibilities(pt: &C<i32>, pts: &[C<i32>]) -> Vec<Vec<C<i32>>> {
     let mut m: BTreeMap<Angle, Vec<C<i32>>> = BTreeMap::new();
     for p in pts.iter() {
         if p != pt {
-            let e = m.entry(Angle::new(pt, p)).or_default();
+            let e = m.entry(Angle::new(pt, p)).or_insert_with(Vec::new);
             let idx = e
                 .binary_search_by_key(&pt.dist(p), |x| pt.dist(x))
                 .collapse();

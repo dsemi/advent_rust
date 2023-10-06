@@ -27,8 +27,7 @@ fn parse_steps(input: &str, workers: usize) -> Scheduler {
     Scheduler {
         avail: succs
             .keys()
-            .filter(|&c| !preds.contains_key(c))
-            .map(|c| Reverse(*c))
+            .filter_map(|c| (!preds.contains_key(c)).then(|| Reverse(*c)))
             .collect(),
         preds,
         succs,

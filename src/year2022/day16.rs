@@ -31,8 +31,7 @@ impl Graph {
         let mut working_valves = flow_rates
             .iter()
             .enumerate()
-            .filter(|&(_, &r)| r > 0)
-            .map(|(i, _)| i)
+            .filter_map(|(i, &r)| (r > 0).then(|| i))
             .collect::<Vec<_>>();
         working_valves.sort_unstable_by_key(|&i| Reverse(flow_rates[i]));
         for k in 0..dist.len() {
@@ -87,8 +86,9 @@ impl Graph {
                 self.working_valves
                     .iter()
                     .enumerate()
-                    .filter(|&(i, _)| open_valves & (1 << i) == 0)
-                    .map(|(_, &j)| self.flow_rates[j]),
+                    .filter_map(|(i, &j)| {
+                        (open_valves & (1 << i) == 0).then(|| self.flow_rates[j])
+                    }),
             )
             .map(|(min, flow)| min as u16 * flow as u16)
             .chain(std::iter::once(pressure))
@@ -107,8 +107,7 @@ pub fn part2(input: &str) -> u16 {
         .sim(26, u16::MAX as usize)
         .into_iter()
         .enumerate()
-        .filter(|&(_, best)| best > 0)
-        .map(|(i, best)| (i as u16, best))
+        .filter_map(|(i, best)| (best > 0).then(|| (i as u16, best)))
         .sorted_unstable_by_key(|p| Reverse(p.1))
         .collect::<Vec<_>>();
     best_pressures

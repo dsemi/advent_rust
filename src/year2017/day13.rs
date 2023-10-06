@@ -7,8 +7,7 @@ fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + '_ {
 
 pub fn part1(input: &str) -> i64 {
     parse_firewall(input)
-        .filter(|&(a, b)| a % b == 0)
-        .map(|(a, b)| a * (b + 2) / 2)
+        .filter_map(|(a, b)| (a % b == 0).then(|| a * (b + 2) / 2))
         .sum()
 }
 

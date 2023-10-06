@@ -13,9 +13,11 @@ fn neighbs<'a>(grid: &'a [Vec<u32>], c: &C<usize>) -> impl Iterator<Item = C<usi
 
 fn lows(grid: &[Vec<u32>]) -> impl Iterator<Item = C<usize>> + '_ {
     (0..grid.len()).flat_map(move |r| {
-        (0..grid[r].len())
-            .filter(move |&c| neighbs(grid, &C(r, c)).all(|p| grid[r][c] < grid[p]))
-            .map(move |c| C(r, c))
+        (0..grid[r].len()).filter_map(move |c| {
+            neighbs(grid, &C(r, c))
+                .all(|p| grid[r][c] < grid[p])
+                .then(|| C(r, c))
+        })
     })
 }
 
