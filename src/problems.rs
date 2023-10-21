@@ -91,6 +91,12 @@ impl<T: POutput> POutput for Option<T> {
     }
 }
 
+impl<T: POutput, E: std::fmt::Debug> POutput for Result<T, E> {
+    fn to(&self) -> String {
+        self.as_ref().unwrap().to()
+    }
+}
+
 impl<T: POutput, S: POutput> POutput for (T, S) {
     fn to(&self) -> String {
         format!("{},{}", self.0.to(), self.1.to())

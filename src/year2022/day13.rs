@@ -1,11 +1,13 @@
+use itertools::Itertools;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::i32;
-use nom::multi::separated_list0;
+use nom::combinator::map;
+use nom::error::Error;
+use nom::multi::separated_list0 as s_list;
 use nom::sequence::delimited;
-use nom::IResult;
+use nom::{Err, IResult};
 use std::cmp::Ordering;
-use std::cmp::Ordering::*;
 use Packet::*;
 
 #[derive(Clone, Eq, PartialEq)]
@@ -16,11 +18,8 @@ enum Packet {
 
 fn parse(i: &str) -> IResult<&str, Packet> {
     alt((
-        |i| i32(i).map(|(i, n)| (i, Lit(n))),
-        |i| {
-            delimited(tag("["), separated_list0(tag(","), parse), tag("]"))(i)
-                .map(|(i, ns)| (i, List(ns)))
-        },
+        map(i32, Lit),
+        map(delimited(tag("["), s_list(tag(","), parse), tag("]")), List),
     ))(i)
 }
 
@@ -38,7 +37,7 @@ impl Ord for Packet {
                 .iter()
                 .zip(b.iter())
                 .map(|(x, y)| x.cmp(y))
-                .find(|&c| c != Equal)
+                .find(|&c| c != Ordering::Equal)
                 .unwrap_or_else(|| a.len().cmp(&b.len())),
             (Lit(_), List(_)) => List(vec![self.clone()]).cmp(other),
             (List(_), Lit(_)) => self.cmp(&List(vec![other.clone()])),
@@ -49,30 +48,20 @@ impl Ord for Packet {
 pub fn part1(input: &str) -> usize {
     input
         .split("\n\n")
+        .flat_map(|seg| seg.lines().map(|line| parse(line).unwrap().1))
+        .collect::<Vec<_>>()
+        .chunks(2)
         .enumerate()
-        .filter_map(|(i, seg)| {
-            let pkts = seg
-                .lines()
-                .map(|line| parse(line).unwrap().1)
-                .collect::<Vec<_>>();
-            (pkts[0] < pkts[1]).then(|| i + 1)
-        })
+        .filter_map(|(i, pkts)| (pkts[0] < pkts[1]).then(|| i + 1))
         .sum()
 }
 
-pub fn part2(input: &str) -> usize {
-    let mut packets = input
+pub fn part2(input: &str) -> Result<usize, Err<Error<&str>>> {
+    let packets = input
         .split("\n\n")
         .flat_map(|seg| seg.lines().map(|line| parse(line).unwrap().1))
+        .sorted_unstable()
         .collect::<Vec<_>>();
-    let a = parse("[[2]]").unwrap().1;
-    let b = parse("[[6]]").unwrap().1;
-    packets.push(a.clone());
-    packets.push(b.clone());
-    packets.sort_unstable();
-    packets
-        .into_iter()
-        .enumerate()
-        .filter_map(|(i, p)| (p == a || p == b).then(|| i + 1))
-        .product()
+    Ok((packets.binary_search(&parse("[[2]]")?.1).unwrap_err() + 1)
+        * (packets.binary_search(&parse("[[6]]")?.1).unwrap_err() + 2))
 }
