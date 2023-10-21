@@ -39,12 +39,11 @@ pub fn part2(input: &str) -> usize {
         hi = hi.swol(&(*c + C3(1, 1, 1)));
     }
     let air = bfs_m([lo, hi], |pos| {
-        adj(pos).into_iter().filter_map(|p| {
-            ((lo.0..=hi.0).contains(&p.0)
+        adj(pos).into_iter().filter(|p| {
+            (lo.0..=hi.0).contains(&p.0)
                 && (lo.1..=hi.1).contains(&p.1)
                 && (lo.2..=hi.2).contains(&p.2)
-                && !lava.contains(&p))
-            .then(|| p)
+                && !lava.contains(p)
         })
     })
     .map(|(_, p)| p)

@@ -14,7 +14,7 @@ fn neighbors(grid: &[Vec<char>], xy: &C<i32>) -> Vec<C<i32>> {
                 && c.1 >= 0
                 && c.1 < grid[c.0 as usize].len() as i32
                 && grid[c] != '#')
-                .then(|| c)
+                .then_some(c)
         })
         .collect()
 }
@@ -49,7 +49,7 @@ fn all_paths_and_dist_map(input: &str) -> (Adj, Vec<Vec<char>>) {
         .flat_map(|(r, line)| {
             line.chars()
                 .enumerate()
-                .filter_map(move |(c, v)| v.is_ascii_digit().then(|| (C(r as i32, c as i32), v)))
+                .filter_map(move |(c, v)| v.is_ascii_digit().then_some((C(r as i32, c as i32), v)))
         })
         .collect::<Vec<_>>();
     pts.sort_by_key(|x| x.1);

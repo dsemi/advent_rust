@@ -107,12 +107,12 @@ fn neighbors(floors: &Floors) -> Vec<Floors> {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    bfs(parse_floors(input), neighbors).find_map(|(d, st)| st.is_done().then(|| d))
+    bfs(parse_floors(input), neighbors).find_map(|(d, st)| st.is_done().then_some(d))
 }
 
 pub fn part2(input: &str) -> Option<usize> {
     let mut floors = parse_floors(input);
     floors.flrs.insert(0, Pair { chip: 1, gen: 1 });
     floors.flrs.insert(0, Pair { chip: 1, gen: 1 });
-    bfs(floors, neighbors).find_map(|(d, st)| st.is_done().then(|| d))
+    bfs(floors, neighbors).find_map(|(d, st)| st.is_done().then_some(d))
 }

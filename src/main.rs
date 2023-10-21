@@ -77,9 +77,8 @@ fn print_output(part: usize, output: &str, t: f64) {
 }
 
 fn parse_day(daystr: &str) -> Vec<i64> {
-    if daystr.contains('-') {
-        let v: Vec<i64> = daystr.splitn(2, '-').map(|x| x.parse().unwrap()).collect();
-        (v[0]..=v[1]).collect()
+    if let Some((lo, hi)) = daystr.split_once('-') {
+        (lo.parse().unwrap()..=hi.parse().unwrap()).collect()
     } else {
         vec![daystr.parse().unwrap()]
     }
@@ -88,7 +87,7 @@ fn parse_day(daystr: &str) -> Vec<i64> {
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     if args[0] == "submit" {
-        assert!(args.len() == 3);
+        assert_eq!(args.len(), 3);
         let year = args[1].parse().unwrap();
         let day = args[2].parse().unwrap();
         if let Some((_, a1, a2)) = run_problem(year, day) {

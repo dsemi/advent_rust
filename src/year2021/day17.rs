@@ -7,7 +7,7 @@ fn hits_target(x0: i64, x1: i64, y0: i64, y1: i64, mut vx: i64, mut vy: i64) -> 
         p.1 += vy;
         vx = max(0, vx - 1);
         vy -= 1;
-        (p.0 <= x1 && p.1 >= y0).then(|| *p)
+        (p.0 <= x1 && p.1 >= y0).then_some(*p)
     })
     .any(|(x, y)| x0 <= x && x <= x1 && y0 <= y && y <= y1)
 }

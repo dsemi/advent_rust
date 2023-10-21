@@ -95,7 +95,7 @@ impl Prog {
         p2: bool,
     ) -> Option<i64> {
         if d == 0 {
-            return (self.regs[3] == 0).then(|| n);
+            return (self.regs[3] == 0).then_some(n);
         }
         if !vis.insert((self.regs[3], d)) {
             return None;

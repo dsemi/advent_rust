@@ -162,7 +162,7 @@ fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
         groups
             .iter()
             .flatten()
-            .filter_map(|g| (g.name == "Immune System").then(|| g.units))
+            .filter_map(|g| (g.name == "Immune System").then_some(g.units))
             .sum()
     } else {
         0

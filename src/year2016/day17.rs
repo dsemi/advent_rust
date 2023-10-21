@@ -58,6 +58,6 @@ pub fn part2(input: &str) -> Option<usize> {
         },
         neighbors,
     )
-    .filter_map(|(d, p)| p.is_done().then(|| d))
+    .filter_map(|(d, p)| p.is_done().then_some(d))
     .max()
 }

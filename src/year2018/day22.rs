@@ -72,10 +72,10 @@ pub fn part1(input: &str) -> u32 {
         .into_iter()
         .enumerate()
         .flat_map(|(x, row)| {
-            row.into_iter().enumerate().filter_map(move |(y, v)| {
-                (x as i32 <= target.0 && y as i32 <= target.1)
-                    .then(|| ToPrimitive::to_u32(&v).unwrap())
-            })
+            row.into_iter()
+                .enumerate()
+                .filter(move |(y, _)| x as i32 <= target.0 && *y as i32 <= target.1)
+                .map(|(_, v)| ToPrimitive::to_u32(&v).unwrap())
         })
         .sum()
 }
@@ -97,7 +97,7 @@ pub fn part2(input: &str) -> usize {
                     && n_node.pos.1 >= 0
                     && n_node.pos.1 < els.len() as i32
                     && n_node.tool != els[n_node.pos])
-                    .then(|| (1, n_node))
+                    .then_some((1, n_node))
             })
             .chain(
                 vec![next(&node.tool), next(&next(&node.tool))]
@@ -107,7 +107,7 @@ pub fn part2(input: &str) -> usize {
                             pos: node.pos,
                             tool: t,
                         };
-                        (n_node.tool != els[n_node.pos]).then(|| (7, n_node))
+                        (n_node.tool != els[n_node.pos]).then_some((7, n_node))
                     }),
             )
             .collect()

@@ -52,7 +52,7 @@ pub fn part1(input: &str) -> usize {
         .collect::<Vec<_>>()
         .chunks(2)
         .enumerate()
-        .filter_map(|(i, pkts)| (pkts[0] < pkts[1]).then(|| i + 1))
+        .filter_map(|(i, pkts)| (pkts[0] < pkts[1]).then_some(i + 1))
         .sum()
 }
 

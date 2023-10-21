@@ -47,6 +47,6 @@ pub fn part2(input: &str) -> Option<usize> {
     let mut rs = String::new();
     Step::new().enumerate().find_map(|(i, c)| {
         rs.push(c);
-        rs.ends_with(input).then(|| i - input.len() + 1)
+        rs.ends_with(input).then_some(i - input.len() + 1)
     })
 }

@@ -24,7 +24,7 @@ pub fn part2(input: &str) -> Option<String> {
             let common = b1
                 .chars()
                 .zip(b2.chars())
-                .filter_map(|(a, b)| (a == b).then(|| a))
+                .filter_map(|(a, b)| (a == b).then_some(a))
                 .collect::<String>();
             if common.len() + 1 == b1.len() {
                 return Some(common);

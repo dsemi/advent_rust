@@ -60,6 +60,6 @@ pub fn part2(input: &str) -> Option<usize> {
     claims.into_iter().find_map(|claim| {
         (claim.x0..claim.x1)
             .all(|x| (claim.y0..claim.y1).all(|y| grid[x][y] == 1))
-            .then(|| claim.num)
+            .then_some(claim.num)
     })
 }

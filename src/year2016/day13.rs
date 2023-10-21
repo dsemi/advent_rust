@@ -3,10 +3,8 @@ use crate::utils::*;
 fn neighbors(n: i32, pos: C<i32>) -> Vec<C<i32>> {
     vec![pos + C(1, 0), pos + C(-1, 0), pos + C(0, 1), pos + C(0, -1)]
         .into_iter()
-        .filter_map(|p| {
-            let C(x, y) = p;
-            (x >= 0 && y >= 0 && (x * x + 3 * x + 2 * x * y + y + y * y + n).count_ones() % 2 == 0)
-                .then(|| p)
+        .filter(|&C(x, y)| {
+            x >= 0 && y >= 0 && (x * x + 3 * x + 2 * x * y + y + y * y + n).count_ones() % 2 == 0
         })
         .collect()
 }

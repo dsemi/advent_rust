@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 fn solve(input: &str, nchars: usize) -> Option<usize> {
-    (nchars..=input.len()).find_map(|i| input[i - nchars..i].chars().all_unique().then(|| i))
+    (nchars..=input.len()).find(|&i| input[i - nchars..i].chars().all_unique())
 }
 
 pub fn part1(input: &str) -> Option<usize> {

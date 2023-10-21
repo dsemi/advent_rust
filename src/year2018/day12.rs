@@ -34,7 +34,7 @@ fn next_gen(m: &Map, s: Vec<(i64, char)>) -> Vec<(i64, char)> {
 }
 
 fn sum_indices(s: &[(i64, char)]) -> i64 {
-    s.iter().filter_map(|(i, c)| (*c == '#').then(|| i)).sum()
+    s.iter().filter_map(|(i, c)| (*c == '#').then_some(i)).sum()
 }
 
 pub fn part1(input: &str) -> i64 {

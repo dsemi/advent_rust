@@ -35,7 +35,8 @@ pub fn part1(input: &str) -> usize {
 
 fn abas(s: &[u8]) -> impl Iterator<Item = (u8, u8)> + '_ {
     (0..s.len() - 2)
-        .filter_map(move |i| (s[i] != s[i + 1] && s[i] == s[i + 2]).then(|| (s[i], s[i + 1])))
+        .filter(|&i| s[i] != s[i + 1] && s[i] == s[i + 2])
+        .map(|i| (s[i], s[i + 1]))
 }
 
 pub fn part2(input: &str) -> usize {

@@ -21,7 +21,7 @@ pub fn part1(input: &str) -> usize {
                     [(x, y), (x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
                         .iter()
                         .all(|pos| is_scaffold(&grid, *pos))
-                        .then(|| x * y)
+                        .then_some(x * y)
                 })
                 .sum::<usize>()
         })

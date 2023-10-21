@@ -56,7 +56,7 @@ where
         .flat_map(|(r, bs)| {
             bs.into_iter().enumerate().flat_map(move |(c, w)| {
                 (0..8).filter_map(move |i| {
-                    (w & (1 << i) != 0).then(|| (r as i32, (c * 8 + 7 - i) as i32))
+                    (w & (1 << i) != 0).then_some((r as i32, (c * 8 + 7 - i) as i32))
                 })
             })
         })
@@ -68,7 +68,7 @@ fn adjacents(c: (i32, i32)) -> impl Iterator<Item = (i32, i32)> {
         .into_iter()
         .filter_map(move |d| {
             let c2 = (c.0 + d.0, c.1 + d.1);
-            (c2.0 >= 0 && c2.0 < 128 && c2.1 >= 0 && c2.1 < 128).then(|| c2)
+            (c2.0 >= 0 && c2.0 < 128 && c2.1 >= 0 && c2.1 < 128).then_some(c2)
         })
 }
 

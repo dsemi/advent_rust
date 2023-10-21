@@ -11,7 +11,7 @@ fn neighbors(grid: &Vec<Vec<u8>>, pos: &C<i32>) -> Vec<C<i32>> {
                 && pos2.1 >= 0
                 && pos2.1 < grid[0].len() as i32
                 && grid[pos2] <= curr_h + 1)
-                .then(|| pos2)
+                .then_some(pos2)
         })
         .collect()
 }
@@ -33,7 +33,7 @@ fn solve(input: &str, sts: &[u8]) -> Option<usize> {
             }
         }
     }
-    bfs_m(starts, move |p| neighbors(&grid, p)).find_map(|(d, p)| (p == done).then(|| d))
+    bfs_m(starts, move |p| neighbors(&grid, p)).find_map(|(d, p)| (p == done).then_some(d))
 }
 
 pub fn part1(input: &str) -> Option<usize> {

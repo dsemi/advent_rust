@@ -65,5 +65,5 @@ pub fn part2(input: &str) -> Option<usize> {
         mx = max(mx, node.coord);
     }
     bfs((opn, C(mx.0, 0)), move |st| neighbors(&grid, st))
-        .find_map(|(d, v)| (v.1 == C(0, 0)).then(|| d))
+        .find_map(|(d, v)| (v.1 == C(0, 0)).then_some(d))
 }
