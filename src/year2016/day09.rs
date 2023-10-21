@@ -1,11 +1,12 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::u32;
+use nom::combinator::map;
 use nom::sequence::{delimited, separated_pair};
 use nom::IResult;
 use nom::ToUsize;
 
 pub fn usize(input: &str) -> IResult<&str, usize> {
-    u32(input).map(|(i, x)| (i, x.to_usize()))
+    map(u32, |x| x.to_usize())(input)
 }
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {

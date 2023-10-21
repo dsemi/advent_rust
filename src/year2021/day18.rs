@@ -1,7 +1,9 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::u64;
-use nom::sequence::{delimited, separated_pair};
+use nom::combinator::map;
+use nom::multi::separated_list1 as s_list;
+use nom::sequence::delimited;
 use nom::IResult;
 use rayon::prelude::*;
 
@@ -15,17 +17,13 @@ struct Snailfish {
     ns: Vec<Num>,
 }
 
-fn parse(i: &str, depth: usize) -> IResult<&str, Vec<Num>> {
+fn parse(i: &str, d: usize) -> IResult<&str, Vec<Num>> {
     alt((
-        |i| u64(i).map(|(i, n)| (i, vec![Num { depth, value: n }])),
-        |i| {
-            delimited(
-                tag("["),
-                separated_pair(|i| parse(i, depth + 1), tag(","), |i| parse(i, depth + 1)),
-                tag("]"),
-            )(i)
-            .map(|(i, (a, b))| (i, [a, b].concat()))
-        },
+        map(u64, |n| vec![Num { depth: d, value: n }]),
+        map(
+            delimited(tag("["), s_list(tag(","), |i| parse(i, d + 1)), tag("]")),
+            |ns| ns.concat(),
+        ),
     ))(i)
 }
 
