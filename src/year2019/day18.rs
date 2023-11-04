@@ -1,5 +1,6 @@
 use crate::utils::*;
 use ahash::AHashMap;
+use Tile::*;
 
 fn conv(c: char) -> u32 {
     1 << (c as u32 - 'a' as u32)
@@ -23,11 +24,11 @@ enum Tile {
 
 fn tile(c: char) -> Tile {
     match c {
-        'a'..='z' => Tile::Key(conv(c)),
-        'A'..='Z' => Tile::Door(conv(c.to_ascii_lowercase())),
-        '@' => Tile::Start,
-        '#' => Tile::Wall,
-        _ => Tile::Floor,
+        'a'..='z' => Key(conv(c)),
+        'A'..='Z' => Door(conv(c.to_ascii_lowercase())),
+        '@' => Start,
+        '#' => Wall,
+        _ => Floor,
     }
 }
 
@@ -60,49 +61,38 @@ impl Maze {
         node.poss
             .iter()
             .enumerate()
-            .flat_map(|(i, from)| {
-                if !self.moves.contains_key(from) {
-                    let moves = bfs_on(
-                        |e| e.dest,
-                        [Edge {
-                            dest: *from,
-                            doors: 0,
-                            keys: 0,
-                        }],
-                        |edge| {
-                            vec![
-                                edge.dest - self.cols,
-                                edge.dest - 1,
-                                edge.dest + 1,
-                                edge.dest + self.cols,
-                            ]
-                            .into_iter()
-                            .filter(|&p| p != *from && self.grid[p] != Tile::Wall)
-                            .map(|p| {
-                                let mut edge = Edge {
+            .flat_map(|(i, &from)| {
+                self.moves
+                    .entry(from)
+                    .or_insert_with(|| {
+                        bfs_on(
+                            |e| e.dest,
+                            [Edge {
+                                dest: from,
+                                doors: 0,
+                                keys: 0,
+                            }],
+                            |edge| {
+                                vec![
+                                    edge.dest - self.cols,
+                                    edge.dest - 1,
+                                    edge.dest + 1,
+                                    edge.dest + self.cols,
+                                ]
+                                .into_iter()
+                                .filter(|&p| p != from && self.grid[p] != Wall)
+                                .map(|p| Edge {
                                     dest: p,
-                                    doors: edge.doors,
-                                    keys: edge.keys,
-                                };
-                                match self.grid[p] {
-                                    Tile::Key(k) => {
-                                        edge.keys |= k;
-                                    }
-                                    Tile::Door(k) => {
-                                        edge.doors |= k;
-                                    }
-                                    _ => {}
-                                }
-                                edge
-                            })
-                            .collect::<Vec<_>>()
-                        },
-                    )
-                    .filter(|(_, edge)| matches!(self.grid[edge.dest], Tile::Key(_)))
-                    .collect();
-                    self.moves.insert(*from, moves);
-                }
-                self.moves[from]
+                                    doors: edge.doors
+                                        | if let Door(k) = self.grid[p] { k } else { 0 },
+                                    keys: edge.keys | if let Key(k) = self.grid[p] { k } else { 0 },
+                                })
+                                .collect::<Vec<_>>()
+                            },
+                        )
+                        .filter(|(_, edge)| matches!(self.grid[edge.dest], Key(_)))
+                        .collect()
+                    })
                     .iter()
                     .filter(|(_, e)| node.keys & e.doors == e.doors && node.keys & e.keys != e.keys)
                     .map(|(len, edge)| {
@@ -127,13 +117,13 @@ fn search(mut maze: Maze) -> Option<usize> {
         .grid
         .iter()
         .enumerate()
-        .filter_map(|(i, v)| (v == &Tile::Start).then_some(i))
+        .filter_map(|(i, v)| (v == &Start).then_some(i))
         .collect();
     let ks = maze
         .grid
         .iter()
         .filter_map(|v| match v {
-            Tile::Key(k) => Some(k),
+            Key(k) => Some(k),
             _ => None,
         })
         .fold(0, |a, b| a | b);
