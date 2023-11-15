@@ -1,32 +1,45 @@
 use ahash::AHashMap;
+use nom::branch::alt;
+use nom::bytes::complete::{tag, take_while1};
+use nom::character::complete::{alpha1, i64, space1};
+use nom::combinator::{map_res, value};
+use nom::sequence::{delimited, separated_pair, terminated};
+use nom::IResult;
+
+fn parse<'a>(reg: &AHashMap<&str, i64>, i: &'a str) -> IResult<&'a str, (bool, &'a str, i64)> {
+    let (i, mut_r) = terminated(alpha1, space1)(i)?;
+    let (i, sgn) = alt((value(1, tag("inc")), value(-1, tag("dec"))))(i)?;
+    let (i, mut_n) = delimited(space1, i64, tag(" if "))(i)?;
+    let (i, cmp_r) = terminated(alpha1, space1)(i)?;
+    let rv = *reg.get(cmp_r).unwrap_or(&0);
+    let (i, cond) = map_res(
+        separated_pair(take_while1(|c| c != ' '), space1, i64),
+        |(cmp, cmp_n)| match cmp {
+            "==" => Ok(rv == cmp_n),
+            "!=" => Ok(rv != cmp_n),
+            ">" => Ok(rv > cmp_n),
+            ">=" => Ok(rv >= cmp_n),
+            "<" => Ok(rv < cmp_n),
+            "<=" => Ok(rv <= cmp_n),
+            _ => Err("Parse error"),
+        },
+    )(i)?;
+    Ok((i, (cond, mut_r, sgn * mut_n)))
+}
 
 fn run_cmd<'a>(reg: &mut AHashMap<&'a str, i64>, line: &'a str) -> i64 {
-    match line.split_whitespace().collect::<Vec<_>>()[..] {
-        [r, op, n, "if", r2, cond, n2] => {
-            let cmp_fn: fn(i64, i64) -> bool = match cond {
-                "==" => |a, b| a == b,
-                "!=" => |a, b| a != b,
-                ">" => |a, b| a > b,
-                ">=" => |a, b| a >= b,
-                "<" => |a, b| a < b,
-                "<=" => |a, b| a <= b,
-                _ => panic!("Parse cond error: {}", cond),
-            };
-            if cmp_fn(*reg.get(r2).unwrap_or(&0), n2.parse().unwrap()) {
-                let e = reg.entry(r).or_insert(0);
-                *e += (if op == "inc" { 1 } else { -1 }) * n.parse::<i64>().unwrap();
-            }
-            *reg.get(r).unwrap_or(&0)
-        }
-        _ => panic!("Parse error: {}", line),
+    let (cond, mut_r, mut_n) = parse(reg, line).unwrap().1;
+    if cond {
+        *reg.entry(mut_r).or_insert(0) += mut_n;
     }
+    *reg.get(mut_r).unwrap_or(&0)
 }
 
 pub fn part1(input: &str) -> Option<i64> {
     let mut tbl = AHashMap::new();
-    for line in input.lines() {
+    input.lines().for_each(|line| {
         run_cmd(&mut tbl, line);
-    }
+    });
     tbl.into_iter().map(|x| x.1).max()
 }
 
