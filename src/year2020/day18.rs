@@ -1,6 +1,6 @@
 fn ap(nums: &mut Vec<i64>, ops: &mut Vec<char>) {
-    let a = nums.pop().unwrap();
     let b = nums.pop().unwrap();
+    let a = nums.pop().unwrap();
     match ops.pop().unwrap() {
         '+' => nums.push(a + b),
         '*' => nums.push(a * b),
@@ -8,7 +8,7 @@ fn ap(nums: &mut Vec<i64>, ops: &mut Vec<char>) {
     }
 }
 
-fn calc<I>(s: &mut I, prec: fn(char) -> u8) -> i64 where I: Iterator<Item = char> {
+fn calc<I: Iterator<Item = char>>(s: &mut I, prec: fn(char) -> u8) -> i64 {
     let mut nums = vec![];
     let mut ops = vec![];
     while let Some(c) = s.next() {
@@ -21,7 +21,7 @@ fn calc<I>(s: &mut I, prec: fn(char) -> u8) -> i64 where I: Iterator<Item = char
                     ap(&mut nums, &mut ops);
                 }
                 ops.push(c);
-            },
+            }
             _ => (),
         }
     }
@@ -32,13 +32,15 @@ fn calc<I>(s: &mut I, prec: fn(char) -> u8) -> i64 where I: Iterator<Item = char
 }
 
 pub fn part1(input: &str) -> i64 {
-    input.lines()
+    input
+        .lines()
         .map(|line| calc(&mut line.chars(), |_| 1))
         .sum()
 }
 
 pub fn part2(input: &str) -> i64 {
-    input.lines()
+    input
+        .lines()
         .map(|line| calc(&mut line.chars(), |x| if x == '+' { 2 } else { 1 }))
         .sum()
 }

@@ -1,52 +1,49 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
-use nom::branch::alt;
-use nom::bytes::complete::{tag, take_till, take_while, take_while_m_n};
-use nom::character::complete::{i32, multispace0};
-use nom::combinator::verify;
-use nom::sequence::{pair, terminated};
-use nom::IResult;
+
+fn validate_val(field: &str) -> impl FnMut(&str) -> IResult<&str, ()> + '_ {
+    move |i| {
+        let i = match field {
+            "byr" => verify(i32, |n| (1920..=2002).contains(n))(i)?.0,
+            "iyr" => verify(i32, |n| (2010..=2020).contains(n))(i)?.0,
+            "eyr" => verify(i32, |n| (2020..=2030).contains(n))(i)?.0,
+            "hgt" => {
+                alt((
+                    pair(verify(i32, |h| (150..=193).contains(h)), tag("cm")),
+                    pair(verify(i32, |h| (59..=76).contains(h)), tag("in")),
+                ))(i)?
+                .0
+            }
+            "hcl" => preceded(tag("#"), verify(hex_digit1, |h: &str| h.len() == 6))(i)?.0,
+            "ecl" => {
+                alt((
+                    tag("amb"),
+                    tag("blu"),
+                    tag("brn"),
+                    tag("gry"),
+                    tag("grn"),
+                    tag("hzl"),
+                    tag("oth"),
+                ))(i)?
+                .0
+            }
+            "pid" => verify(digit1, |h: &str| h.len() == 9)(i)?.0,
+            _ => rest(i)?.0,
+        };
+        Ok((i, ()))
+    }
+}
 
 fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
     let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
         .into_iter()
         .collect();
     while !req_fields.is_empty() {
-        let (i, field) = terminated(take_while(|c: char| c.is_ascii_alphabetic()), tag(":"))(inp)?;
-        let i = if validate {
-            match field {
-                "byr" => verify(i32, |n| 1920 <= *n && *n <= 2002)(i)?.0,
-                "iyr" => verify(i32, |n| 2010 <= *n && *n <= 2020)(i)?.0,
-                "eyr" => verify(i32, |n| 2020 <= *n && *n <= 2030)(i)?.0,
-                "hgt" => {
-                    verify(pair(i32, alt((tag("cm"), tag("in")))), |(h, u)| match *u {
-                        "cm" => 150 <= *h && *h <= 193,
-                        "in" => 59 <= *h && *h <= 76,
-                        _ => unreachable!(),
-                    })(i)?
-                    .0
-                }
-                "hcl" => {
-                    let i = tag("#")(i)?.0;
-                    take_while_m_n(6, 6, |c: char| c.is_ascii_hexdigit())(i)?.0
-                }
-                "ecl" => {
-                    alt((
-                        tag("amb"),
-                        tag("blu"),
-                        tag("brn"),
-                        tag("gry"),
-                        tag("grn"),
-                        tag("hzl"),
-                        tag("oth"),
-                    ))(i)?
-                    .0
-                }
-                "pid" => take_while_m_n(9, 9, |c: char| c.is_ascii_digit())(i)?.0,
-                _ => take_till(|c: char| c.is_ascii_whitespace())(i)?.0,
-            }
-        } else {
-            take_till(|c: char| c.is_ascii_whitespace())(i)?.0
-        };
+        let (i, (field, val)) =
+            separated_pair(alpha1, tag(":"), take_till(char::is_whitespace))(inp)?;
+        if validate {
+            all_consuming(validate_val(field))(val)?;
+        }
         inp = multispace0(i)?.0;
         req_fields.remove(&field);
     }

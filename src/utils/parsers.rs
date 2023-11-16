@@ -1,12 +1,15 @@
 pub use nom::branch::alt;
 pub use nom::bytes::complete::{tag, take_till};
-pub use nom::character::complete::{alpha1, anychar, i32, i64, one_of, space0, space1, u32, u64};
-pub use nom::combinator::{map, opt, value};
-use nom::error::ParseError;
+pub use nom::character::complete::{
+    alpha1, anychar, digit1, hex_digit1, i32, i64, multispace0, one_of, space0, space1, u32, u64,
+};
+pub use nom::character::{is_hex_digit, is_space};
+pub use nom::combinator::{all_consuming, map, opt, recognize, rest, value, verify};
+pub use nom::error::{Error, ParseError};
 pub use nom::multi::{separated_list0, separated_list1};
 pub use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 pub use nom::IResult;
-use nom::Parser;
+pub use nom::Parser;
 
 pub fn usize(i: &str) -> IResult<&str, usize> {
     map(u64, |n| n as usize)(i)

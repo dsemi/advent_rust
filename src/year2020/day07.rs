@@ -1,20 +1,23 @@
+use crate::utils::parsers::*;
 use ahash::{AHashMap, AHashSet};
+
+fn bag(i: &str) -> IResult<&str, &str> {
+    terminated(
+        recognize(tuple((alpha1, space1, alpha1))),
+        alt((tag(" bags"), tag(" bag"))),
+    )(i)
+}
 
 fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
     s.lines()
         .map(|line| {
-            let (outer_bag, inner_bags) = line.split_once(" bags contain ").unwrap();
-            (
-                outer_bag,
-                inner_bags
-                    .split(", ")
-                    .filter(|&bag| bag != "no other bags.")
-                    .map(|bag| {
-                        let (n, name) = bag.rsplit_once(' ').unwrap().0.split_once(' ').unwrap();
-                        (n.parse().unwrap(), name)
-                    })
-                    .collect(),
-            )
+            separated_pair(
+                bag,
+                tag(" contain "),
+                list(separated_pair(u32, space1, bag)),
+            )(line)
+            .unwrap()
+            .1
         })
         .collect()
 }

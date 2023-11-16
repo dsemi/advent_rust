@@ -1,7 +1,3 @@
-#![allow(clippy::filter_map_bool_then)]
-#![allow(clippy::many_single_char_names)]
-#![deny(clippy::disallowed_types)]
-
 use proc_macro::TokenStream;
 use quote::quote;
 use scan_fmt::scan_fmt as scanf;

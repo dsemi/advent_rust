@@ -16,8 +16,7 @@ fn play(mut a_s: VecDeque<i64>, mut b_s: VecDeque<i64>, p2: bool, sub: bool) -> 
     }
     while !a_s.is_empty() && !b_s.is_empty() {
         if p2 {
-            let key: (VecDeque<i64>, VecDeque<i64>) = (a_s.clone(), b_s.clone());
-            if !s.insert(key) {
+            if !s.insert((a_s.clone(), b_s.clone())) {
                 return (0, true);
             }
         }
@@ -35,9 +34,9 @@ fn play(mut a_s: VecDeque<i64>, mut b_s: VecDeque<i64>, p2: bool, sub: bool) -> 
             a > b
         };
         if p1_win {
-            a_s.extend([a, b].iter());
+            a_s.extend([a, b]);
         } else {
-            b_s.extend([b, a].iter());
+            b_s.extend([b, a]);
         }
     }
     let win = b_s.is_empty();

@@ -24,7 +24,7 @@ fn eval(m: &AHashMap<&str, Monkey>, k: &str) -> N {
 }
 
 fn num(i: &str) -> IResult<&str, Monkey> {
-    Ok(map(i64, |n| Monkey::Num(Ratio::from_integer(n).into()))(i)?)
+    map(i64, |n| Monkey::Num(Ratio::from_integer(n).into()))(i)
 }
 
 fn math(i: &str) -> IResult<&str, Monkey> {

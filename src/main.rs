@@ -1,14 +1,10 @@
-#![allow(clippy::filter_map_bool_then)]
-#![allow(clippy::many_single_char_names)]
-#![deny(clippy::disallowed_types)]
-
 use std::cmp::max_by;
 use std::cmp::Ordering::Equal;
 use std::env;
 use std::time::Instant;
 
-#[macro_use]
 mod utils;
+
 mod ocr;
 mod year2015;
 mod year2016;

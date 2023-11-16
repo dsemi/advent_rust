@@ -12,6 +12,7 @@ fn chemical(i: &str) -> IResult<&str, (i64, &str)> {
     separated_pair(i64, space1, alpha1)(i)
 }
 
+#[allow(clippy::type_complexity)]
 fn parse(i: &str) -> IResult<&str, (&str, (i64, Vec<(i64, &str)>))> {
     map(
         separated_pair(list(chemical), tag(" => "), chemical),

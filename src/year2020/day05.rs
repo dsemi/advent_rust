@@ -18,10 +18,6 @@ pub fn part1(input: &str) -> Option<i64> {
 pub fn part2(input: &str) -> Option<i64> {
     let mut ids = seat_ids(input);
     ids.sort_unstable();
-    for i in 0..ids.len() {
-        if ids[i] + 2 == ids[i + 1] {
-            return Some(ids[i] + 1);
-        }
-    }
-    None
+    ids.windows(2)
+        .find_map(|wind| (wind[0] + 2 == wind[1]).then_some(wind[0] + 1))
 }

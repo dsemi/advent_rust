@@ -42,3 +42,8 @@ streaming-iterator = "0.1.9"
 syn = "2.0.39"
 take-until = "0.2.0"
 toml = "0.8.8"
+
+[lints.clippy]
+filter_map_bool_then = "allow"
+many_single_char_names = "allow"
+disallowed_types = "deny"

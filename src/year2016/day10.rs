@@ -33,7 +33,7 @@ fn populate_ins<'a>(m: &mut AHashMap<&'a str, Vec<i64>>, t: &AHashMap<&str, Node
     m.insert(k, inps);
 }
 
-fn bot<'a>(i: &'a str) -> IResult<&str, Vec<(&'a str, Src<'a>)>> {
+fn bot(i: &str) -> IResult<&str, Vec<(&str, Src<'_>)>> {
     let loc = |i| recognize(separated_pair(alpha1, space1, u8))(i);
     let (i, name) = loc(i)?;
     let (i, lo) = preceded(tag(" gives low to "), loc)(i)?;
@@ -41,20 +41,20 @@ fn bot<'a>(i: &'a str) -> IResult<&str, Vec<(&'a str, Src<'a>)>> {
     Ok((i, vec![(lo, Bot(name, min)), (hi, Bot(name, max))]))
 }
 
-fn value<'a>(i: &'a str) -> IResult<&str, Vec<(&'a str, Src<'a>)>> {
+fn value(i: &str) -> IResult<&str, Vec<(&str, Src<'_>)>> {
     let (i, val) = preceded(tag("value "), i64)(i)?;
     let (i, b) = preceded(tag(" goes to "), recognize(pair(tag("bot "), u8)))(i)?;
     Ok((i, vec![(b, Value(val))]))
 }
 
-fn run_factory<'a>(input: &'a str) -> AHashMap<&'a str, Vec<i64>> {
+fn run_factory(input: &str) -> AHashMap<&str, Vec<i64>> {
     let mut tbl: AHashMap<&str, Node> = AHashMap::new();
     for line in input.lines() {
         for (k, src) in alt((value, bot))(line).unwrap().1 {
             tbl.entry(k).or_default().push(src);
         }
     }
-    let mut result: AHashMap<&'a str, Vec<i64>> = AHashMap::new();
+    let mut result: AHashMap<&str, Vec<i64>> = AHashMap::new();
     for k in tbl.keys() {
         populate_ins(&mut result, &tbl, k);
     }
