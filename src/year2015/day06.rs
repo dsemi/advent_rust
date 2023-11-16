@@ -1,30 +1,28 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 
-fn run_commands(
-    input: &str,
-    off: fn(&mut [u32]),
-    on: fn(&mut [u32]),
-    toggle: fn(&mut [u32]),
-) -> u32 {
+type Switch = fn(&mut [u32]);
+type Coord = (usize, usize);
+
+fn parse(
+    off: Switch,
+    on: Switch,
+    toggle: Switch,
+    i: &str,
+) -> IResult<&str, (Switch, (Coord, Coord))> {
+    let (i, f) = alt((
+        value(off, tag("turn off ")),
+        value(on, tag("turn on ")),
+        value(toggle, tag("toggle ")),
+    ))(i)?;
+    let num = |i| map(u32, |n| n as usize)(i);
+    let (i, pts) = separated_pair(coord(num), tag(" through "), coord(num))(i)?;
+    Ok((i, (f, pts)))
+}
+
+fn run_commands(input: &str, off: Switch, on: Switch, toggle: Switch) -> u32 {
     let mut grid = vec![0; 1000000];
     for line in input.lines() {
-        let (cmdstr, x0, y0, x1, y1) = scanf!(
-            line,
-            "{[^0-9]}{},{} through {},{}",
-            String,
-            usize,
-            usize,
-            usize,
-            usize
-        )
-        .unwrap();
-        let f = match &cmdstr[..] {
-            "turn off " => off,
-            "turn on " => on,
-            "toggle " => toggle,
-            _ => panic!("unknown action: {}", cmdstr),
-        };
-
+        let (f, ((x0, y0), (x1, y1))) = parse(off, on, toggle, line).unwrap().1;
         for x in x0..=x1 {
             let row = 1000 * x;
             f(&mut grid[row + y0..=row + y1]);

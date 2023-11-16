@@ -1,12 +1,5 @@
+use crate::utils::parsers::*;
 use itertools::Itertools;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::i32;
-use nom::combinator::map;
-use nom::error::Error;
-use nom::multi::separated_list0 as s_list;
-use nom::sequence::delimited;
-use nom::{Err, IResult};
 use std::cmp::Ordering;
 use Packet::*;
 
@@ -19,7 +12,7 @@ enum Packet {
 fn parse(i: &str) -> IResult<&str, Packet> {
     alt((
         map(i32, Lit),
-        map(delimited(tag("["), s_list(tag(","), parse), tag("]")), List),
+        map(delimited(tag("["), list(parse), tag("]")), List),
     ))(i)
 }
 
@@ -56,12 +49,13 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-pub fn part2(input: &str) -> Result<usize, Err<Error<&str>>> {
+pub fn part2(input: &str) -> usize {
     let packets = input
         .split("\n\n")
         .flat_map(|seg| seg.lines().map(|line| parse(line).unwrap().1))
         .sorted_unstable()
         .collect::<Vec<_>>();
-    Ok((packets.binary_search(&parse("[[2]]")?.1).unwrap_err() + 1)
-        * (packets.binary_search(&parse("[[6]]")?.1).unwrap_err() + 2))
+    let a = parse("[[2]]").unwrap().1;
+    let b = parse("[[6]]").unwrap().1;
+    (packets.binary_search(&a).unwrap_err() + 1) * (packets.binary_search(&b).unwrap_err() + 2)
 }

@@ -92,3 +92,13 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
     }
     result.into()
 }
+
+#[proc_macro]
+pub fn lower(item: TokenStream) -> TokenStream {
+    let mut result = proc_macro2::TokenStream::new();
+    let i = syn::parse_macro_input!(item as syn::Ident)
+        .to_string()
+        .to_lowercase();
+    result.extend(quote! { #i });
+    result.into()
+}

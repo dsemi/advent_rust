@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use Instr::*;
 use Value::*;
 
@@ -59,27 +60,29 @@ fn optimize(instrs: &mut [Instr]) {
     }
 }
 
-pub fn parse_instrs(input: &str) -> Sim {
-    fn value(x: &str) -> Value {
-        match x.chars().next().unwrap() {
-            c @ 'a'..='d' => Reg(c as usize - 'a' as usize),
-            _ => Lit(x.parse().unwrap()),
-        }
-    }
+fn reg(i: &str) -> IResult<&str, usize> {
+    map(one_of("abcd"), |c| c as usize - 'a' as usize)(i)
+}
 
+fn val(i: &str) -> IResult<&str, Value> {
+    alt((map(i64, Lit), map(reg, Reg)))(i)
+}
+
+fn parse_instr(i: &str) -> IResult<&str, Instr> {
+    alt((
+        cons2!(Cpy, val, val),
+        cons1!(Inc, reg),
+        cons1!(Dec, reg),
+        cons1!(Tgl, reg),
+        cons1!(Out, val),
+        cons2!(Jnz, val, val),
+    ))(i)
+}
+
+pub fn parse_instrs(input: &str) -> Sim {
     let mut instrs = input
         .lines()
-        .map(
-            |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                ["cpy", a, b] => Cpy(value(a), value(b)),
-                ["inc", a] => Inc(a.chars().next().unwrap() as usize - 'a' as usize),
-                ["dec", a] => Dec(a.chars().next().unwrap() as usize - 'a' as usize),
-                ["tgl", a] => Tgl(a.chars().next().unwrap() as usize - 'a' as usize),
-                ["out", a] => Out(value(a)),
-                ["jnz", a, b] => Jnz(value(a), value(b)),
-                _ => panic!("Invalid instruction {}", line),
-            },
-        )
+        .map(|line| parse_instr(line).unwrap().1)
         .collect::<Vec<_>>();
     optimize(&mut instrs);
     Sim {

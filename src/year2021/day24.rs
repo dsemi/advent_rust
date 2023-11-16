@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use Instr::*;
 use Value::*;
@@ -24,26 +25,29 @@ struct Prog {
     pc: usize,
 }
 
+fn reg(i: &str) -> IResult<&str, usize> {
+    map(one_of("wxyz"), |c| c as usize - 'w' as usize)(i)
+}
+
+fn val(i: &str) -> IResult<&str, Value> {
+    alt((map(i64, Lit), map(reg, Reg)))(i)
+}
+
+fn parse_instr(i: &str) -> IResult<&str, Instr> {
+    alt((
+        cons1!(Inp, reg),
+        cons2!(Add, reg, val),
+        cons2!(Mul, reg, val),
+        cons2!(Div, reg, val),
+        cons2!(Mod, reg, val),
+        cons2!(Eql, reg, val),
+    ))(i)
+}
+
 fn parse(input: &str) -> Vec<Instr> {
-    fn value(x: &str) -> Value {
-        match x.as_bytes()[0] {
-            c @ b'w'..=b'z' => Reg((c - b'w') as usize),
-            _ => Lit(x.parse().unwrap()),
-        }
-    }
     input
         .lines()
-        .map(
-            |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                ["inp", a] => Inp((a.as_bytes()[0] - b'w') as usize),
-                ["add", a, b] => Add((a.as_bytes()[0] - b'w') as usize, value(b)),
-                ["mul", a, b] => Mul((a.as_bytes()[0] - b'w') as usize, value(b)),
-                ["div", a, b] => Div((a.as_bytes()[0] - b'w') as usize, value(b)),
-                ["mod", a, b] => Mod((a.as_bytes()[0] - b'w') as usize, value(b)),
-                ["eql", a, b] => Eql((a.as_bytes()[0] - b'w') as usize, value(b)),
-                _ => panic!("Invalid input: {}", line),
-            },
-        )
+        .map(|line| parse_instr(line).unwrap().1)
         .collect()
 }
 

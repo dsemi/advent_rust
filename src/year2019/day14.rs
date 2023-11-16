@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::partition_point;
 use ahash::AHashMap;
 
@@ -7,21 +8,21 @@ struct Reactions<'a> {
     topo: Vec<&'a str>,
 }
 
+fn chemical(i: &str) -> IResult<&str, (i64, &str)> {
+    separated_pair(i64, space1, alpha1)(i)
+}
+
+fn parse(i: &str) -> IResult<&str, (&str, (i64, Vec<(i64, &str)>))> {
+    map(
+        separated_pair(list(chemical), tag(" => "), chemical),
+        |(srcs, (n, out))| (out, (n, srcs)),
+    )(i)
+}
+
 fn parse_reactions(input: &str) -> Reactions {
     let graph = input
         .lines()
-        .map(|line| {
-            let pts = line.split(" => ").collect::<Vec<_>>();
-            let inps = pts[0]
-                .split(", ")
-                .map(|inp| {
-                    let pts2 = inp.split_whitespace().collect::<Vec<_>>();
-                    (pts2[0].parse().unwrap(), pts2[1])
-                })
-                .collect::<Vec<_>>();
-            let outp = pts[1].split_whitespace().collect::<Vec<_>>();
-            (outp[1], (outp[0].parse().unwrap(), inps))
-        })
+        .map(|line| parse(line).unwrap().1)
         .collect::<AHashMap<_, _>>();
     let mut incoming = AHashMap::new();
     graph.values().for_each(|(_, srcs)| {

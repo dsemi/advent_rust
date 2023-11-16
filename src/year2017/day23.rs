@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use Instr::*;
 use Val::*;
 
@@ -19,29 +20,27 @@ struct Prog {
     instrs: Vec<Instr>,
 }
 
-fn reg(s: &str) -> usize {
-    s.chars().next().unwrap() as usize - 'a' as usize
+fn reg(i: &str) -> IResult<&str, usize> {
+    map(anychar, |c| c as usize - 'a' as usize)(i)
 }
 
-fn val(s: &str) -> Val {
-    match s.parse() {
-        Ok(n) => Lit(n),
-        Err(_) => Reg(reg(s)),
-    }
+fn val(i: &str) -> IResult<&str, Val> {
+    alt((map(i64, Lit), map(reg, Reg)))(i)
+}
+
+fn parse_instr(i: &str) -> IResult<&str, Instr> {
+    alt((
+        cons2!(Set, reg, val),
+        cons2!(Sub, reg, val),
+        cons2!(Mul, reg, val),
+        cons2!(Jnz, val, val),
+    ))(i)
 }
 
 fn parse_instrs(input: &str) -> Prog {
     let instrs = input
         .lines()
-        .map(
-            |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                ["set", r, v] => Set(reg(r), val(v)),
-                ["sub", r, v] => Sub(reg(r), val(v)),
-                ["mul", r, v] => Mul(reg(r), val(v)),
-                ["jnz", a, b] => Jnz(val(a), val(b)),
-                _ => panic!("Invalid instr: {}", line),
-            },
-        )
+        .map(|line| parse_instr(line).unwrap().1)
         .collect();
     Prog {
         reg: [0; 8],

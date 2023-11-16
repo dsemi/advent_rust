@@ -1,5 +1,25 @@
 use crate::utils::{held_karp, UniqueIdx};
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::{alpha1, i32};
+use nom::combinator::{map, value};
+use nom::sequence::tuple;
+use nom::IResult;
 use std::cmp::max;
+
+fn parse(i: &str) -> IResult<&str, (&str, i32, &str)> {
+    map(
+        tuple((
+            alpha1,
+            tag(" would "),
+            alt((value(1, tag("gain ")), value(-1, tag("lose ")))),
+            i32,
+            tag(" happiness units by sitting next to "),
+            alpha1,
+        )),
+        |(p1, _, sgn, n, _, p2)| (p1, sgn * n, p2),
+    )(i)
+}
 
 fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
     let mut ui = UniqueIdx::new();
@@ -9,16 +29,7 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
         result.push(vec![0; l]);
     }
     for line in input.lines() {
-        let parts = line.split_whitespace().collect::<Vec<_>>();
-        let (p1, n, p2) = (
-            parts[0],
-            if parts[2] == "gain" {
-                parts[3].parse::<i32>().unwrap()
-            } else {
-                -parts[3].parse::<i32>().unwrap()
-            },
-            &parts[10][..parts[10].len() - 1],
-        );
+        let (p1, n, p2) = parse(line).unwrap().1;
         result[ui.idx(p1)][ui.idx(p2)] += n;
         result[ui.idx(p2)][ui.idx(p1)] += n;
     }

@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use std::cell::Cell;
 use std::collections::VecDeque;
 use Instr::*;
@@ -28,15 +29,24 @@ struct Sim {
     sends: usize,
 }
 
-fn reg(s: &str) -> usize {
-    s.chars().next().unwrap() as usize - 'a' as usize
+fn reg(i: &str) -> IResult<&str, usize> {
+    map(anychar, |c| c as usize - 'a' as usize)(i)
 }
 
-fn val(s: &str) -> Val {
-    match s.parse::<i64>() {
-        Ok(n) => Lit(n),
-        Err(_) => Reg(reg(s)),
-    }
+fn val(i: &str) -> IResult<&str, Val> {
+    alt((map(i64, Lit), map(reg, Reg)))(i)
+}
+
+fn parse_instr(i: &str) -> IResult<&str, Instr> {
+    alt((
+        cons1!(Snd, val),
+        cons2!(Set, reg, val),
+        cons2!(Add, reg, val),
+        cons2!(Mul, reg, val),
+        cons2!(Mod, reg, val),
+        cons1!(Rcv, reg),
+        cons2!(Jgz, val, val),
+    ))(i)
 }
 
 impl Sim {
@@ -46,18 +56,7 @@ impl Sim {
             reg: [0; 26],
             instrs: input
                 .lines()
-                .map(
-                    |line| match line.split_whitespace().collect::<Vec<_>>()[..] {
-                        ["snd", v] => Snd(val(v)),
-                        ["set", r, v] => Set(reg(r), val(v)),
-                        ["add", r, v] => Add(reg(r), val(v)),
-                        ["mul", r, v] => Mul(reg(r), val(v)),
-                        ["mod", r, v] => Mod(reg(r), val(v)),
-                        ["rcv", r] => Rcv(reg(r)),
-                        ["jgz", a, b] => Jgz(val(a), val(b)),
-                        _ => panic!("Parse error: {}", line),
-                    },
-                )
+                .map(|line| parse_instr(line).unwrap().1)
                 .collect(),
             sends: 0,
         }

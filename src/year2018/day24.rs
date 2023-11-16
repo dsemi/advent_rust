@@ -1,11 +1,5 @@
+use crate::utils::parsers::*;
 use itertools::iterate;
-use nom::branch::alt;
-use nom::bytes::complete::{tag, take_till};
-use nom::character::complete::{alpha1, i32};
-use nom::combinator::opt;
-use nom::multi::{separated_list0, separated_list1};
-use nom::sequence::{delimited, preceded, separated_pair, terminated};
-use nom::IResult;
 use std::cell::Cell;
 
 #[derive(Clone)]
@@ -44,11 +38,7 @@ fn units<'a>(idx: &Cell<usize>, name: &'a str, i: &'a str) -> IResult<&'a str, O
         tag("("),
         separated_list0(
             tag("; "),
-            separated_pair(
-                alt((tag("weak"), tag("immune"))),
-                tag(" to "),
-                separated_list1(tag(", "), alpha1),
-            ),
+            separated_pair(alt((tag("weak"), tag("immune"))), tag(" to "), list(alpha1)),
         ),
         tag(") "),
     ))(i)?;

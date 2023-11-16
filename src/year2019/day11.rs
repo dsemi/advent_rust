@@ -10,14 +10,11 @@ fn run_robot(mut prog: intcode::Program, t: &mut AHashMap<C<i64>, i64>) {
     while !prog.done {
         prog.input.push_back(*t.get(&pos).unwrap_or(&0));
         prog.run();
-        match prog.output.drain(..).collect::<Vec<_>>()[..] {
-            [col, d] => {
-                t.insert(pos, col);
-                dir *= if d == 1 { C(0, 1) } else { C(0, -1) };
-                pos += dir;
-            }
-            _ => panic!("Invalid response"),
-        }
+        let col = prog.output.pop_front().unwrap();
+        t.insert(pos, col);
+        let d = prog.output.pop_front().unwrap();
+        dir *= if d == 1 { C(0, 1) } else { C(0, -1) };
+        pos += dir;
     }
 }
 

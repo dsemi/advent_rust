@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use Op::*;
 
@@ -30,46 +31,42 @@ pub struct Prog {
     pub reg: [i64; 6],
 }
 
+macro_rules! match_op {
+    ($n:ident) => {
+        value($n, tag(advent::lower!($n)))
+    };
+}
+
+fn parse_instr(i: &str) -> IResult<&str, Instr> {
+    let (i, op) = alt((
+        match_op!(Addr),
+        match_op!(Addi),
+        match_op!(Mulr),
+        match_op!(Muli),
+        match_op!(Banr),
+        match_op!(Bani),
+        match_op!(Borr),
+        match_op!(Bori),
+        match_op!(Setr),
+        match_op!(Seti),
+        match_op!(Gtir),
+        match_op!(Gtri),
+        match_op!(Gtrr),
+        match_op!(Eqir),
+        match_op!(Eqri),
+        match_op!(Eqrr),
+    ))(i)?;
+    let (i, a) = preceded(space1, i64)(i)?;
+    let (i, b) = preceded(space1, i64)(i)?;
+    let (i, c) = preceded(space1, i64)(i)?;
+    Ok((i, Instr(op, a, b, c)))
+}
+
 impl Prog {
     pub fn parse_instrs(input: &str) -> Self {
         let mut gen = input.lines();
-        let ip = gen
-            .next()
-            .unwrap()
-            .split_once(' ')
-            .unwrap()
-            .1
-            .parse()
-            .unwrap();
-        let instrs = gen
-            .map(|line| {
-                let (cmd, rest) = line.split_once(' ').unwrap();
-                let op = match cmd {
-                    "addr" => Addr,
-                    "addi" => Addi,
-                    "mulr" => Mulr,
-                    "muli" => Muli,
-                    "banr" => Banr,
-                    "bani" => Bani,
-                    "borr" => Borr,
-                    "bori" => Bori,
-                    "setr" => Setr,
-                    "seti" => Seti,
-                    "gtir" => Gtir,
-                    "gtri" => Gtri,
-                    "gtrr" => Gtrr,
-                    "eqir" => Eqir,
-                    "eqri" => Eqri,
-                    "eqrr" => Eqrr,
-                    _ => panic!("Invalid instruction"),
-                };
-                let ns = rest
-                    .split_whitespace()
-                    .map(|x| x.parse().unwrap())
-                    .collect::<Vec<_>>();
-                Instr(op, ns[0], ns[1], ns[2])
-            })
-            .collect();
+        let ip = preceded(tag("#ip "), usize)(gen.next().unwrap()).unwrap().1;
+        let instrs = gen.map(|line| parse_instr(line).unwrap().1).collect();
         Self {
             ip,
             instrs,

@@ -1,10 +1,4 @@
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::u64;
-use nom::combinator::map;
-use nom::multi::separated_list1 as s_list;
-use nom::sequence::delimited;
-use nom::IResult;
+use crate::utils::parsers::*;
 use rayon::prelude::*;
 
 #[derive(Clone)]
@@ -21,7 +15,7 @@ fn parse(i: &str, d: usize) -> IResult<&str, Vec<Num>> {
     alt((
         map(u64, |n| vec![Num { depth: d, value: n }]),
         map(
-            delimited(tag("["), s_list(tag(","), |i| parse(i, d + 1)), tag("]")),
+            delimited(tag("["), list(|i| parse(i, d + 1)), tag("]")),
             |ns| ns.concat(),
         ),
     ))(i)
