@@ -1,13 +1,4 @@
-use nom::bytes::complete::tag;
-use nom::character::complete::u32;
-use nom::combinator::map;
-use nom::sequence::{delimited, separated_pair};
-use nom::IResult;
-use nom::ToUsize;
-
-pub fn usize(input: &str) -> IResult<&str, usize> {
-    map(u32, |x| x.to_usize())(input)
-}
+use crate::utils::parsers::*;
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {
     delimited(tag("("), separated_pair(usize, tag("x"), usize), tag(")"))(i)
