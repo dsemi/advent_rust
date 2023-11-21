@@ -938,3 +938,62 @@ pub fn held_karp<T: Copy + Add<Output = T>>(
         .map(move |k| g[&((1..len).collect(), k)] + adj[k][0])
         .reduce(f)
 }
+
+struct UnionFindNode<T> {
+    val: T,
+    parent: usize,
+    rank: usize,
+}
+
+pub struct UnionFind<T> {
+    nodes: Vec<UnionFindNode<T>>,
+}
+
+impl<T> UnionFind<T> {
+    pub fn new() -> Self {
+        UnionFind { nodes: Vec::new() }
+    }
+
+    pub fn push(&mut self, val: T) {
+        self.nodes.push(UnionFindNode {
+            val,
+            parent: self.nodes.len(),
+            rank: 0,
+        })
+    }
+
+    pub fn find(&self, mut k: usize) -> usize {
+        while k != self.nodes[k].parent {
+            k = self.nodes[k].parent;
+        }
+        k
+    }
+
+    pub fn union(&mut self, x: usize, y: usize) {
+        let x_root = self.find(x);
+        let y_root = self.find(y);
+        if x_root == y_root {
+            return;
+        }
+        match self.nodes[x_root].rank.cmp(&self.nodes[y_root].rank) {
+            Less => self.nodes[x_root].parent = y_root,
+            Greater => self.nodes[y_root].parent = x_root,
+            Equal => {
+                self.nodes[y_root].parent = x_root;
+                self.nodes[x_root].rank += 1;
+            }
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.nodes.len()
+    }
+}
+
+impl<T> Index<usize> for UnionFind<T> {
+    type Output = T;
+
+    fn index(&self, idx: usize) -> &Self::Output {
+        &self.nodes[idx].val
+    }
+}
