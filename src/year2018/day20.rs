@@ -30,7 +30,7 @@ fn parse_edges(input: &str) -> AHashMap<C<i32>, usize> {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    parse_edges(input).values().copied().max()
+    parse_edges(input).into_values().max()
 }
 
 pub fn part2(input: &str) -> usize {

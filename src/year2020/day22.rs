@@ -15,10 +15,8 @@ fn play(mut a_s: VecDeque<i64>, mut b_s: VecDeque<i64>, p2: bool, sub: bool) -> 
         return (0, true);
     }
     while !a_s.is_empty() && !b_s.is_empty() {
-        if p2 {
-            if !s.insert((a_s.clone(), b_s.clone())) {
-                return (0, true);
-            }
+        if p2 && !s.insert((a_s.clone(), b_s.clone())) {
+            return (0, true);
         }
         let a = a_s.pop_front().unwrap();
         let b = b_s.pop_front().unwrap();

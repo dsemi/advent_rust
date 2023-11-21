@@ -11,10 +11,7 @@ impl Tree {
 
 fn parse_nodes(input: &str) -> Tree {
     let mut ns = input.split_whitespace().map(|x| x.parse().unwrap());
-    fn parse_node<I>(ns: &mut I) -> Tree
-    where
-        I: Iterator<Item = usize>,
-    {
+    fn parse_node<I: Iterator<Item = usize>>(ns: &mut I) -> Tree {
         let n = ns.next().unwrap();
         let m = ns.next().unwrap();
         let nodes = (0..n).map(|_| parse_node(ns)).collect();
@@ -41,8 +38,8 @@ pub fn part2(input: &str) -> usize {
             continue;
         }
         for i in &node.val {
-            if i-1 < node.children.len() {
-                stack.push(&node.children[i-1]);
+            if i - 1 < node.children.len() {
+                stack.push(&node.children[i - 1]);
             }
         }
     }
