@@ -3,6 +3,7 @@ use num::integer::gcd;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use std::collections::BTreeMap;
+use std::convert::identity;
 
 fn parse_coords(input: &str) -> Vec<C<i32>> {
     input
@@ -63,7 +64,7 @@ fn visibilities(pt: &C<i32>, pts: &[C<i32>]) -> Vec<Vec<C<i32>>> {
             let e = m.entry(Angle::new(pt, p)).or_default();
             let idx = e
                 .binary_search_by_key(&pt.dist(p), |x| pt.dist(x))
-                .collapse();
+                .map_or_else(identity, identity);
             e.insert(idx, *p);
         }
     }

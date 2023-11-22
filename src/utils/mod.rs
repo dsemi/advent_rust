@@ -725,7 +725,7 @@ impl<'a, T> Combinations<'a, T> {
     pub fn new(input: &'a [T], len: usize) -> Self {
         Self {
             buf: vec![&input[0]; len + 1],
-            stack: vec![(input, &input[0], len)],
+            stack: vec![(input, &input[0], 0)],
             in_progress: true,
         }
     }
@@ -737,31 +737,18 @@ impl<'a, T> StreamingIterator for Combinations<'a, T> {
     fn advance(&mut self) {
         while let Some((xs, v, n)) = self.stack.pop() {
             self.buf[n] = v;
-            if n == 0 {
+            if n == self.buf.len() - 1 {
                 return;
             }
-            for i in 0..xs.len() {
-                self.stack.push((&xs[i + 1..], &xs[i], n - 1))
+            for i in (0..xs.len()).rev() {
+                self.stack.push((&xs[i + 1..], &xs[i], n + 1))
             }
         }
         self.in_progress = false;
     }
 
     fn get(&self) -> Option<&Self::Item> {
-        self.in_progress.then(|| &self.buf[..self.buf.len() - 1])
-    }
-}
-
-pub trait ResultExt<T> {
-    fn collapse(self) -> T;
-}
-
-impl<T> ResultExt<T> for Result<T, T> {
-    fn collapse(self) -> T {
-        match self {
-            Ok(v) => v,
-            Err(v) => v,
-        }
+        self.in_progress.then(|| &self.buf[1..])
     }
 }
 
