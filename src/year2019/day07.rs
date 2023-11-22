@@ -23,10 +23,10 @@ fn chain(p: &intcode::Program, phases: Vec<i64>, cycle: bool) -> Vec<i64> {
                 progs[i + 1].input.append(&mut vs);
             }
         }
-        let mut vs: VecDeque<i64> = progs[last].output.drain(..).collect();
-        result.extend(vs.iter().copied());
+        let vs: VecDeque<i64> = progs[last].output.drain(..).collect();
+        result.extend(&vs);
         if cycle {
-            progs[0].input.append(&mut vs);
+            progs[0].input.extend(vs);
         }
     }
 }
@@ -35,7 +35,7 @@ pub fn part1(input: &str) -> Option<i64> {
     let prog = intcode::new(input);
     (0..5)
         .permutations(5)
-        .map(|perm| chain(&prog, perm, false)[0])
+        .map(|perm| *chain(&prog, perm, false).first().unwrap())
         .max()
 }
 
@@ -43,9 +43,6 @@ pub fn part2(input: &str) -> Option<i64> {
     let prog = intcode::new(input);
     (5..10)
         .permutations(5)
-        .map(|perm| {
-            let ns = chain(&prog, perm, true);
-            ns[ns.len() - 1]
-        })
+        .map(|perm| *chain(&prog, perm, true).last().unwrap())
         .max()
 }

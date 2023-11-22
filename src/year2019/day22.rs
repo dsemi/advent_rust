@@ -1,30 +1,23 @@
 use scan_fmt::scan_fmt as scanf;
 
 #[derive(Clone, Copy)]
-struct LinearTrans {
+struct LinearTrans<const M: i64> {
     a: i64,
     b: i64,
-    modulus: i64,
 }
 
-impl LinearTrans {
+impl<const M: i64> LinearTrans<M> {
     fn mappend(self, other: Self) -> Self {
-        assert!(self.modulus == other.modulus);
         Self {
-            a: times(self.modulus, other.a, self.a),
-            b: (times(self.modulus, other.a, self.b) + other.b).rem_euclid(self.modulus),
-            modulus: self.modulus,
+            a: times::<M>(other.a, self.a),
+            b: (times::<M>(other.a, self.b) + other.b).rem_euclid(M),
         }
     }
 
     fn invert(self) -> Self {
-        let a = mod_inv(self.a, self.modulus);
-        let b = times(self.modulus, -a, self.b);
-        Self {
-            a,
-            b,
-            modulus: self.modulus,
-        }
+        let a = mod_inv(self.a, M);
+        let b = times::<M>(-a, self.b);
+        Self { a, b }
     }
 
     fn pow(self, n: i64) -> Self {
@@ -43,17 +36,17 @@ impl LinearTrans {
 
     fn shuffle(self, n: i64, i: i64) -> i64 {
         let t2 = self.pow(n);
-        (t2.a * i + t2.b).rem_euclid(t2.modulus)
+        (t2.a * i + t2.b).rem_euclid(M)
     }
 }
 
-fn times(m: i64, mut a: i64, mut b: i64) -> i64 {
+fn times<const M: i64>(mut a: i64, mut b: i64) -> i64 {
     let mut result = 0;
     while b > 0 {
         if b.rem_euclid(2) == 1 {
-            result = (result + a).rem_euclid(m);
+            result = (result + a).rem_euclid(M);
         }
-        a = (2 * a).rem_euclid(m);
+        a = (2 * a).rem_euclid(M);
         b = b.div_euclid(2);
     }
     result
@@ -77,28 +70,22 @@ fn mod_inv(a0: i64, b0: i64) -> i64 {
     result
 }
 
-fn parse_techs(input: &str, modulus: i64) -> LinearTrans {
+fn parse_techs<const M: i64>(input: &str) -> LinearTrans<M> {
     input
         .lines()
         .map(|line| {
             if line == "deal into new stack" {
-                LinearTrans {
-                    a: modulus - 1,
-                    b: modulus - 1,
-                    modulus,
-                }
+                LinearTrans { a: M - 1, b: M - 1 }
             } else if let Ok(n) = scanf!(line, "cut {}", i64) {
                 LinearTrans {
                     a: 1,
-                    b: (-n).rem_euclid(modulus),
-                    modulus,
+                    b: (-n).rem_euclid(M),
                 }
             } else {
                 let n = scanf!(line, "deal with increment {}", i64).unwrap();
                 LinearTrans {
-                    a: n.rem_euclid(modulus),
+                    a: n.rem_euclid(M),
                     b: 0,
-                    modulus,
                 }
             }
         })
@@ -107,11 +94,9 @@ fn parse_techs(input: &str, modulus: i64) -> LinearTrans {
 }
 
 pub fn part1(input: &str) -> i64 {
-    let modulus = 10007;
-    parse_techs(input, modulus).shuffle(1, 2019)
+    parse_techs::<10007>(input).shuffle(1, 2019)
 }
 
 pub fn part2(input: &str) -> i64 {
-    let modulus = 119315717514047;
-    parse_techs(input, modulus).shuffle(-101741582076661, 2020)
+    parse_techs::<119315717514047>(input).shuffle(-101741582076661, 2020)
 }

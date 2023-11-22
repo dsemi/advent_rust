@@ -1,22 +1,19 @@
 use crate::ocr::*;
-use ahash::AHashMap;
 use itertools::Itertools;
 
 pub fn part1(input: &str) -> i32 {
     let cnts = input
-        .chars()
+        .bytes()
         .chunks(150)
         .into_iter()
         .map(|x| {
-            let mut t = AHashMap::new();
-            for c in x {
-                *t.entry(c).or_insert(0) += 1;
-            }
+            let mut t = [0; 3];
+            x.for_each(|c| t[(c - b'0') as usize] += 1);
             t
         })
-        .min_by_key(|x| x[&'0'])
+        .min_by_key(|x| x[0])
         .unwrap();
-    cnts[&'1'] * cnts[&'2']
+    cnts[1] * cnts[2]
 }
 
 pub fn part2(input: &str) -> String {

@@ -38,16 +38,15 @@ fn path_from_com<'a>(t: &'a AHashMap<&str, &str>, key: &'a str) -> Vec<&'a str> 
     result
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     let t = parse_orbits(input)
         .map(|(k, v)| (v, k))
         .collect::<AHashMap<_, _>>();
     let xs = path_from_com(&t, "YOU");
     let ys = path_from_com(&t, "SAN");
-    for (i, (x, y)) in xs.iter().zip(ys.iter()).enumerate() {
-        if x != y {
-            return xs.len() + ys.len() - 2 * i;
-        }
-    }
-    0
+    xs.iter()
+        .zip(ys.iter())
+        .enumerate()
+        .find(|(_, (x, y))| x != y)
+        .map(|(i, _)| xs.len() + ys.len() - 2 * i)
 }

@@ -1,12 +1,16 @@
 use super::intcode;
+use crate::utils::*;
 
 fn parse_grid(input: Vec<i64>) -> Vec<Vec<char>> {
     let inp: String = input.into_iter().map(|x| x as u8 as char).collect();
     inp.lines().map(|line| line.chars().collect()).collect()
 }
 
-fn is_scaffold(grid: &[Vec<char>], pos: (usize, usize)) -> bool {
-    pos.1 < grid.len() && pos.0 < grid[pos.1].len() && "#^<>v".contains(grid[pos.1][pos.0])
+fn is_scaffold<I, T>(grid: &T, pos: C<I>) -> bool
+where
+    T: GridIdx<I, char> + ?Sized,
+{
+    grid.get_cell(pos).is_some_and(|&c| "#^<>v".contains(c))
 }
 
 pub fn part1(input: &str) -> usize {
@@ -18,9 +22,9 @@ pub fn part1(input: &str) -> usize {
         .map(|y| {
             (0..grid[y].len())
                 .filter_map(|x| {
-                    [(x, y), (x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
-                        .iter()
-                        .all(|pos| is_scaffold(&grid, *pos))
+                    [C(y, x), C(y, x + 1), C(y + 1, x), C(y, x - 1), C(y - 1, x)]
+                        .into_iter()
+                        .all(|pos| is_scaffold(&grid, pos))
                         .then_some(x * y)
                 })
                 .sum::<usize>()
@@ -28,26 +32,23 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-fn keep_moving(grid: &[Vec<char>], pos: (i64, i64), c: &str, d: (i64, i64)) -> Vec<String> {
-    let mut p = (pos.0 + d.0, pos.1 + d.1);
-    if !is_scaffold(grid, (p.0 as usize, p.1 as usize)) {
+fn keep_moving(grid: &[Vec<char>], pos: C<i64>, c: &str, d: C<i64>) -> Vec<String> {
+    let mut p = pos + d;
+    if !is_scaffold(grid, p) {
         return vec![];
     }
-    while is_scaffold(grid, ((p.0 + d.0) as usize, (p.1 + d.1) as usize)) {
-        p = (p.0 + d.0, p.1 + d.1);
+    while is_scaffold(grid, p + d) {
+        p += d;
     }
-    let mut result = vec![
-        c.to_string(),
-        ((p.0 - pos.0).abs() + (p.1 - pos.1).abs()).to_string(),
-    ];
-    result.extend_from_slice(&go(grid, p, d));
+    let mut result = vec![c.to_string(), pos.dist(&p).to_string()];
+    result.extend(go(grid, p, d));
     result
 }
 
-fn go(grid: &[Vec<char>], pos: (i64, i64), (x, y): (i64, i64)) -> Vec<String> {
-    keep_moving(grid, pos, "L", (y, -x))
+fn go(grid: &[Vec<char>], pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
+    keep_moving(grid, pos, "L", C(-y, x))
         .into_iter()
-        .chain(keep_moving(grid, pos, "R", (-y, x)))
+        .chain(keep_moving(grid, pos, "R", C(y, -x)))
         .collect()
 }
 
@@ -57,7 +58,7 @@ fn find_path(grid: &[Vec<char>]) -> Vec<String> {
             (0..grid[r].len()).find_map(|c| {
                 "^><v"
                     .contains(grid[r][c])
-                    .then(|| ((c as i64, r as i64), grid[r][c]))
+                    .then(|| (C(r as i64, c as i64), grid[r][c]))
             })
         })
         .unwrap();
@@ -65,10 +66,10 @@ fn find_path(grid: &[Vec<char>]) -> Vec<String> {
         grid,
         pos,
         match dir {
-            '^' => (0, -1),
-            'v' => (0, 1),
-            '<' => (-1, 0),
-            '>' => (1, 0),
+            '^' => C(-1, 0),
+            'v' => C(1, 0),
+            '<' => C(0, -1),
+            '>' => C(0, 1),
             _ => panic!("Bad dir: {}", dir),
         },
     );

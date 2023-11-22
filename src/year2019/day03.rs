@@ -28,11 +28,11 @@ fn parse_wires(input: &str) -> Vec<Wire> {
                 parts: line
                     .split(',')
                     .map(|p| {
-                        let (o, d) = match &p[..1] {
-                            "U" => (Orientation::V, C(0, 1)),
-                            "D" => (Orientation::V, C(0, -1)),
-                            "L" => (Orientation::H, C(-1, 0)),
-                            "R" => (Orientation::H, C(1, 0)),
+                        let (o, d) = match p.as_bytes()[0] {
+                            b'U' => (Orientation::V, C(0, 1)),
+                            b'D' => (Orientation::V, C(0, -1)),
+                            b'L' => (Orientation::H, C(-1, 0)),
+                            b'R' => (Orientation::H, C(1, 0)),
                             _ => panic!("Unknown direction: {}", p),
                         };
                         let n = p[1..].parse::<i32>().unwrap();
