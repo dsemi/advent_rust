@@ -1,7 +1,8 @@
 pub use nom::branch::alt;
 pub use nom::bytes::complete::{tag, take_till};
 pub use nom::character::complete::{
-    alpha1, anychar, digit1, hex_digit1, i32, i64, multispace0, one_of, space0, space1, u32, u64,
+    alpha1, anychar, digit1, hex_digit1, i16, i32, i64, i8, multispace0, one_of, space0, space1,
+    u16, u32, u64, u8,
 };
 pub use nom::character::{is_hex_digit, is_space};
 pub use nom::combinator::{all_consuming, map, opt, recognize, rest, value, verify};

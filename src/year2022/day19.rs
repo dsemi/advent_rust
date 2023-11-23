@@ -1,32 +1,40 @@
+use derive_more::{Add, AddAssign, Constructor, Sub};
 use scan_fmt::scan_fmt as scanf;
-use std::cmp::max;
+use std::cmp::{max, Ordering, Ordering::*, PartialOrd};
+use std::mem::replace;
 
 const TMPL: &str = "Blueprint {}: Each ore robot costs {} ore. Each clay robot costs {} ore. Each obsidian robot costs {} ore and {} clay. Each geode robot costs {} ore and {} obsidian.";
+const ORE_BOT: Res = Res::new(1, 0, 0, 0);
+const CLAY_BOT: Res = Res::new(0, 1, 0, 0);
+const OBS_BOT: Res = Res::new(0, 0, 1, 0);
+const GEODE_BOT: Res = Res::new(0, 0, 0, 1);
 
-fn gte(a: &[i32; 4], b: &[i32; 4]) -> bool {
-    a.iter().zip(b).all(|(a, b)| a >= b)
+#[derive(Add, AddAssign, Clone, Constructor, Copy, PartialEq, Sub)]
+struct Res {
+    ore: u16,
+    clay: u16,
+    obs: u16,
+    geode: u16,
 }
 
-fn add(a: &[i32; 4], b: &[i32; 4]) -> [i32; 4] {
-    combine(a.iter().zip(b).map(|(a, b)| a + b))
-}
-
-fn sub(a: &[i32; 4], b: &[i32; 4]) -> [i32; 4] {
-    combine(a.iter().zip(b).map(|(a, b)| a - b))
-}
-
-fn combine<I: Iterator<Item = i32>>(src: I) -> [i32; 4] {
-    let mut result = [0, 0, 0, 0];
-    for (r, v) in result.iter_mut().zip(src) {
-        *r = v;
+impl PartialOrd for Res {
+    fn partial_cmp(&self, rhs: &Self) -> Option<Ordering> {
+        let a = self.ore.cmp(&rhs.ore);
+        let b = self.clay.cmp(&rhs.clay);
+        let c = self.obs.cmp(&rhs.obs);
+        (a.min(b).min(c) != Less || a.max(b).max(c) != Greater).then_some(a.then(b).then(c))
     }
-    result
 }
 
 struct Blueprint {
-    num: i32,
-    costs: [[i32; 4]; 4],
-    max_costs: [i32; 4],
+    num: u16,
+    ore_cost: Res,
+    clay_cost: Res,
+    obs_cost: Res,
+    geode_cost: Res,
+    max_ore: u16,
+    max_clay: u16,
+    max_obs: u16,
 }
 
 fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
@@ -39,74 +47,81 @@ fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
             obs_bot_clay,
             geode_bot_ore,
             geode_bot_obs,
-        ) = scanf!(line, TMPL, i32, i32, i32, i32, i32, i32, i32).unwrap();
-        let costs = [
-            [0, geode_bot_obs, 0, geode_bot_ore],
-            [0, 0, obs_bot_clay, obs_bot_ore],
-            [0, 0, 0, clay_bot_ore],
-            [0, 0, 0, ore_bot_ore],
-        ];
+        ) = scanf!(line, TMPL, u16, u16, u16, u16, u16, u16, u16).unwrap();
         Blueprint {
             num,
-            costs,
-            max_costs: costs.iter().fold([0; 4], |mc, c| {
-                combine(mc.iter().zip(c).map(|(a, b)| *max(a, b)))
-            }),
+            ore_cost: Res::new(ore_bot_ore, 0, 0, 0),
+            clay_cost: Res::new(clay_bot_ore, 0, 0, 0),
+            obs_cost: Res::new(obs_bot_ore, obs_bot_clay, 0, 0),
+            geode_cost: Res::new(geode_bot_ore, 0, geode_bot_obs, 0),
+            max_ore: ore_bot_ore
+                .max(clay_bot_ore)
+                .max(obs_bot_ore)
+                .max(geode_bot_ore),
+            max_clay: obs_bot_clay,
+            max_obs: geode_bot_obs,
         }
     })
 }
 
 impl Blueprint {
-    fn dfs(&self, res: &mut i32, time: i32, amts: [i32; 4], bots: [i32; 4], mut bans: u8) {
-        let geodes = amts[0];
-        let geode_bots = bots[0];
-        if time == 0 {
-            *res = max(*res, geodes);
+    fn dfs(&self, max_geode: &mut u16, time: u16, amts: Res, bots: Res) {
+        *max_geode = max(*max_geode, amts.geode + time * bots.geode);
+        if self.upper_bd(time, amts, bots) <= *max_geode {
             return;
         }
-        let mut upper_bd = geodes + time * geode_bots;
-        let (mut obs, mut obs_rate, obs_cost) = (amts[1], bots[1], self.costs[0][1]);
-        for t in (0..time).rev() {
-            if obs >= obs_cost {
-                obs += obs_rate - obs_cost;
-                upper_bd += t;
-            } else {
-                obs += obs_rate;
-                obs_rate += 1;
-            }
+
+        if bots.obs > 0 && time > 1 {
+            self.make_bot(max_geode, time, amts, bots, GEODE_BOT, self.geode_cost);
         }
-        if upper_bd <= *res {
-            return;
+        if bots.obs < self.max_obs && bots.clay > 0 && time > 3 {
+            self.make_bot(max_geode, time, amts, bots, OBS_BOT, self.obs_cost);
         }
-        for (i, costs) in self.costs.iter().enumerate() {
-            if bans & (1 << i) == 0 && (i == 0 || bots[i] < self.max_costs[i]) && gte(&amts, costs)
-            {
-                let mut new_bots = [0; 4];
-                new_bots[i] = 1;
-                self.dfs(
-                    res,
-                    time - 1,
-                    sub(&add(&amts, &bots), costs),
-                    add(&bots, &new_bots),
-                    0,
-                );
-                bans |= 1 << i;
-            }
+        if bots.ore < self.max_ore && time > 3 {
+            self.make_bot(max_geode, time, amts, bots, ORE_BOT, self.ore_cost);
         }
-        self.dfs(res, time - 1, add(&amts, &bots), bots, bans);
+        if bots.clay < self.max_clay && time > 5 {
+            self.make_bot(max_geode, time, amts, bots, CLAY_BOT, self.clay_cost);
+        }
     }
 
-    fn sim(&self, time: i32) -> i32 {
+    fn upper_bd(&self, time: u16, mut amts: Res, mut bots: Res) -> u16 {
+        for _ in 0..time {
+            amts.ore = self.max_ore;
+            if self.geode_cost <= amts {
+                amts += bots - self.geode_cost;
+                bots += GEODE_BOT;
+            } else if self.obs_cost <= amts {
+                amts += bots - self.obs_cost;
+                bots += OBS_BOT;
+            } else {
+                amts += bots;
+            }
+            bots += CLAY_BOT;
+        }
+        amts.geode
+    }
+
+    fn make_bot(&self, max: &mut u16, time: u16, amts: Res, bots: Res, new_bot: Res, cost: Res) {
+        if let Some((t, amts)) = (1..time)
+            .scan((1, amts), |a, _| Some(replace(a, (a.0 + 1, a.1 + bots))))
+            .find(|&(_, amts)| cost <= amts)
+        {
+            self.dfs(max, time - t, amts + bots - cost, bots + new_bot);
+        }
+    }
+
+    fn sim(&self, time: u16) -> u16 {
         let mut res = 0;
-        self.dfs(&mut res, time, [0, 0, 0, 0], [0, 0, 0, 1], 0);
+        self.dfs(&mut res, time, Res::new(0, 0, 0, 0), ORE_BOT);
         res
     }
 }
 
-pub fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> u16 {
     blueprints(input).map(|b| b.num * b.sim(24)).sum()
 }
 
-pub fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> u16 {
     blueprints(input).take(3).map(|b| b.sim(32)).product()
 }

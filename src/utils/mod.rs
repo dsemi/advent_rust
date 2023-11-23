@@ -2,6 +2,7 @@ use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
 use num::{Num, PrimInt, Signed};
 use num_traits::cast::FromPrimitive;
+use num_traits::ops::saturating::SaturatingAdd;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
@@ -892,6 +893,25 @@ where
     P: FnMut(&i64) -> bool,
 {
     binary_search_by(lo, hi, |x| if pred(x) { Less } else { Greater }).unwrap_or_else(|i| i)
+}
+
+pub fn floyd_warshall<T, U>(dists: &mut [U])
+where
+    T: Ord + SaturatingAdd,
+    U: AsRef<[T]> + AsMut<[T]>,
+{
+    // Assumes dists is square.
+    for k in 0..dists.len() {
+        for i in 0..dists.len() {
+            for j in 0..dists.len() {
+                let dist = dists[i].as_ref()[k].saturating_add(&dists[k].as_ref()[j]);
+                let e = &mut dists[i].as_mut()[j];
+                if dist < *e {
+                    *e = dist;
+                }
+            }
+        }
+    }
 }
 
 pub fn held_karp<T: Copy + Add<Output = T>>(
