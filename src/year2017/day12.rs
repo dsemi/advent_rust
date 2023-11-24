@@ -1,30 +1,22 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::{AHashMap, AHashSet};
 
-fn parse_pipes(input: &str) -> AHashMap<i64, Vec<i64>> {
-    input
-        .lines()
-        .map(|line| {
-            let (a, b) = line.split_once(" <-> ").unwrap();
-            (
-                a.parse().unwrap(),
-                b.split(", ").map(|x| x.parse().unwrap()).collect(),
-            )
-        })
-        .collect()
+fn parse_pipes(input: &str) -> Vec<Vec<usize>> {
+    let pipe = |i| preceded(pair(digit1, tag(" <-> ")), list(usize))(i);
+    input.lines().map(|line| pipe(line).unwrap().1).collect()
 }
 
 pub fn part1(input: &str) -> usize {
     let m = parse_pipes(input);
-    bfs(0, |n| m[n].clone()).count()
+    bfs(0, |&n| m[n].iter().copied()).count()
 }
 
 pub fn part2(input: &str) -> usize {
     let m = parse_pipes(input);
-    let mut seen = AHashSet::new();
-    m.keys()
+    let mut seen = vec![false; m.len()];
+    (0..m.len())
         .filter_map(|n| {
-            (!seen.contains(n)).then(|| seen.extend(bfs(*n, |x| m[x].clone()).map(|x| x.1)))
+            (!seen[n]).then(|| bfs(n, |&x| m[x].iter().copied()).for_each(|(_, x)| seen[x] = true))
         })
         .count()
 }

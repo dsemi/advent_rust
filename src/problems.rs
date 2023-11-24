@@ -85,6 +85,12 @@ macro_rules! make_poutputs {
 
 make_poutputs!(i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, String);
 
+impl POutput for &str {
+    fn to(&self) -> String {
+        self.to_string()
+    }
+}
+
 impl<T: POutput> POutput for Option<T> {
     fn to(&self) -> String {
         self.as_ref().unwrap().to()
@@ -106,6 +112,12 @@ impl<T: POutput, S: POutput> POutput for (T, S) {
 impl<T: POutput, S: POutput, U: POutput> POutput for (T, S, U) {
     fn to(&self) -> String {
         format!("{},{},{}", self.0.to(), self.1.to(), self.2.to())
+    }
+}
+
+impl<const N: usize> POutput for [u8; N] {
+    fn to(&self) -> String {
+        std::str::from_utf8(self).to()
     }
 }
 
