@@ -1,5 +1,5 @@
-use ahash::AHashSet;
-use itertools::Itertools;
+use num::Integer;
+use rayon::prelude::*;
 
 fn reverse<T>(v: &mut [T], mut lo: usize, mut hi: usize) {
     let len = v.len();
@@ -10,8 +10,8 @@ fn reverse<T>(v: &mut [T], mut lo: usize, mut hi: usize) {
     }
 }
 
-fn hash(n: usize, lens: Vec<usize>) -> Vec<usize> {
-    let mut result: Vec<usize> = (0..256).collect();
+fn hash(n: usize, lens: Vec<usize>) -> Vec<u8> {
+    let mut result: Vec<u8> = (0..=255).collect();
     let mut pos = 0;
     let mut skip_size = 0;
     for _ in 0..n {
@@ -24,75 +24,52 @@ fn hash(n: usize, lens: Vec<usize>) -> Vec<usize> {
     result
 }
 
-fn knot_hash(input: &str) -> Vec<usize> {
+fn knot_hash(key: &str, i: usize) -> u128 {
     let res = hash(
         64,
-        input
-            .chars()
-            .map(|x| x as u8 as usize)
+        format!("{key}-{i}")
+            .bytes()
+            .map(|x| x as usize)
             .chain(vec![17, 31, 73, 47, 23])
             .collect(),
     );
     res.chunks(res.len() / 16)
-        .map(|x| x.iter().fold(0, |a, b| a ^ *b))
-        .collect()
+        .map(|x| x.iter().fold(0, |a, &b| a ^ b))
+        .fold(0, |acc, x| (acc << 8) | x as u128)
 }
 
-fn hashes(key: &str) -> impl Iterator<Item = Vec<usize>> + '_ {
-    (0..128).map(move |i| knot_hash(&format!("{key}-{i}")))
+fn hashes(key: &str) -> impl ParallelIterator<Item = u128> + '_ {
+    (0..128).into_par_iter().map(move |i| knot_hash(key, i))
 }
 
 pub fn part1(input: &str) -> u32 {
-    hashes(input)
-        .map(|h| h.into_iter().fold(0, |a, b| a + b.count_ones()))
-        .sum()
+    hashes(input).map(|h| h.count_ones()).sum()
 }
 
-fn grid<I>(bss: I) -> AHashSet<(i32, i32)>
-where
-    I: Iterator<Item = Vec<usize>>,
-{
-    bss.enumerate()
-        .flat_map(|(r, bs)| {
-            bs.into_iter().enumerate().flat_map(move |(c, w)| {
-                (0..8).filter_map(move |i| {
-                    (w & (1 << i) != 0).then_some((r as i32, (c * 8 + 7 - i) as i32))
-                })
-            })
-        })
-        .collect()
-}
-
-fn adjacents(c: (i32, i32)) -> impl Iterator<Item = (i32, i32)> {
-    vec![(1, 0), (-1, 0), (0, 1), (0, -1)]
-        .into_iter()
-        .filter_map(move |d| {
-            let c2 = (c.0 + d.0, c.1 + d.1);
-            (c2.0 >= 0 && c2.0 < 128 && c2.1 >= 0 && c2.1 < 128).then_some(c2)
-        })
-}
-
-fn region_containing(arr: &AHashSet<(i32, i32)>, c: (i32, i32)) -> AHashSet<(i32, i32)> {
-    let mut xs = vec![c];
-    let mut result = AHashSet::new();
-    while let Some(x) = xs.pop() {
-        if !arr.contains(&x) || !result.insert(x) {
-            continue;
-        }
-        xs.extend(adjacents(x));
+fn dfs(grid: &mut [bool], i: usize) -> bool {
+    if !grid[i] {
+        return false;
     }
-    result
+    grid[i] = false;
+    let (y, x) = i.div_rem(&128);
+    if x > 0 && grid[i - 1] {
+        dfs(grid, i - 1);
+    }
+    if x < 127 && grid[i + 1] {
+        dfs(grid, i + 1);
+    }
+    if y > 0 && grid[i - 128] {
+        dfs(grid, i - 128);
+    }
+    if y < 127 && grid[i + 128] {
+        dfs(grid, i + 128);
+    }
+    true
 }
 
 pub fn part2(input: &str) -> usize {
-    let arr = grid(hashes(input));
-    let mut s = AHashSet::new();
-    (0..128)
-        .cartesian_product(0..128)
-        .filter_map(|x| {
-            (arr.contains(&x) && !s.contains(&x)).then(|| {
-                s.extend(region_containing(&arr, x));
-            })
-        })
-        .count()
+    let mut arr = hashes(input)
+        .flat_map_iter(|row| (0..128).rev().map(move |i| row & (1 << i) != 0))
+        .collect::<Vec<_>>();
+    (0..arr.len()).filter(|&i| dfs(&mut arr, i)).count()
 }
