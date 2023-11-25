@@ -1004,3 +1004,8 @@ impl<T> Index<usize> for UnionFind<T> {
         &self.nodes[idx].val
     }
 }
+
+pub fn replace_with<T, F: FnOnce(&T) -> T>(r: &mut T, f: F) -> T {
+    let r2 = f(r);
+    std::mem::replace(r, r2)
+}

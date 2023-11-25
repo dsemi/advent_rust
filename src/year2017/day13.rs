@@ -1,3 +1,6 @@
+use crate::utils::*;
+use num::Integer;
+
 fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + '_ {
     input.lines().map(|line| {
         let (a, b) = line.split_once(": ").unwrap();
@@ -12,6 +15,16 @@ pub fn part1(input: &str) -> i64 {
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let scrs = parse_firewall(input).collect::<Vec<_>>();
-    (0..).find(|i| scrs.iter().all(|(a, b)| (a + i) % b != 0))
+    let mut lcm = 1;
+    parse_firewall(input)
+        .fold(vec![1], |curr, (d, p)| {
+            let old_lcm = replace_with(&mut lcm, |x| p.lcm(x)) as usize;
+            (0..lcm)
+                .step_by(old_lcm)
+                .flat_map(|extra| curr.iter().map(move |delay| delay + extra))
+                .filter(|&de| (de + d) % p != 0)
+                .collect()
+        })
+        .first()
+        .copied()
 }
