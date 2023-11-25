@@ -1,10 +1,10 @@
 use crate::utils::parsers::*;
 use ahash::AHashSet;
-use std::cmp::max;
+use std::cmp::max_by_key;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Pipe {
-    id: usize,
+    id: u64,
     a: u32,
     b: u32,
 }
@@ -13,51 +13,82 @@ fn parse_pipes(input: &str) -> Vec<Pipe> {
     input
         .lines()
         .enumerate()
-        .map(|(id, line)| {
+        .map(|(i, line)| {
             let (a, b) = separated_pair(u32, tag("/"), u32)(line).unwrap().1;
-            Pipe { id, a, b }
+            Pipe { id: 1 << i, a, b }
         })
         .collect()
 }
 
-fn build<T: Copy + Ord>(
-    f: fn(T, Pipe) -> T,
-    neighbs: &[Vec<Pipe>],
-    visited: &mut AHashSet<u64>,
-    used: u64,
+#[derive(Clone, Copy, Default)]
+struct Bridge {
+    len: usize,
+    strength: u32,
     port: u32,
-    curr: T,
-) -> T {
-    if !visited.insert(used) {
-        return curr;
-    }
-    neighbs[port as usize]
-        .iter()
-        .filter(|pipe| used & (1 << pipe.id) == 0)
-        .map(|&p| {
-            let used = used | (1 << p.id);
-            build(f, neighbs, visited, used, p.a + p.b - port, f(curr, p))
-        })
-        .fold(curr, max)
+    used: u64,
 }
 
-fn solve<T: Copy + Ord>(input: &str, start: T, step: fn(T, Pipe) -> T) -> T {
+impl Bridge {
+    fn fuse(mut self, p: Pipe) -> Self {
+        self.len += 1;
+        self.strength += p.a + p.b;
+        self.port = p.a + p.b - self.port;
+        self.used |= p.id;
+        self
+    }
+
+    fn build<T: Ord>(
+        mut self,
+        key: fn(&Bridge) -> T,
+        neighbs: &[Vec<Pipe>],
+        unused_singles: &mut [usize],
+        visited: &mut AHashSet<u64>,
+    ) -> Bridge {
+        if !visited.insert(self.used) {
+            return self;
+        }
+        let port = self.port as usize;
+        let mut single_idx = None;
+        if unused_singles[port] > 0 {
+            single_idx = Some(port);
+            unused_singles[port] -= 1;
+            self.len += 1;
+            self.strength += 2 * self.port;
+        }
+        self = neighbs[port]
+            .iter()
+            .filter(|&p| self.used & p.id == 0)
+            .map(|&p| self.fuse(p).build(key, neighbs, unused_singles, visited))
+            .fold(self, |a, b| max_by_key(a, b, key));
+        if let Some(i) = single_idx {
+            unused_singles[i] += 1;
+        }
+        self
+    }
+}
+
+fn solve<T: Ord>(input: &str, key: fn(&Bridge) -> T) -> u32 {
     let pipes = parse_pipes(input);
     let mx = pipes.iter().flat_map(|p| [p.a, p.b]).max().unwrap() as usize;
     let mut neighbs = vec![vec![]; mx + 1];
-    for pipe in pipes {
-        neighbs[pipe.a as usize].push(pipe);
+    let mut singles = vec![0; mx + 1];
+    for &pipe in &pipes {
         if pipe.a != pipe.b {
+            neighbs[pipe.a as usize].push(pipe);
             neighbs[pipe.b as usize].push(pipe);
+        } else {
+            singles[pipe.a as usize] += 1;
         }
     }
-    build(step, &neighbs, &mut AHashSet::new(), 0, 0, start)
+    Bridge::default()
+        .build(key, &neighbs, &mut singles, &mut AHashSet::new())
+        .strength
 }
 
 pub fn part1(input: &str) -> u32 {
-    solve(input, 0, |s, p| s + p.a + p.b)
+    solve(input, |b| b.strength)
 }
 
 pub fn part2(input: &str) -> u32 {
-    solve(input, (0, 0), |s, p| (s.0 + 1, s.1 + p.a + p.b)).1
+    solve(input, |b| (b.len, b.strength))
 }
