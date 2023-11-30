@@ -1,85 +1,106 @@
+use crate::utils::parsers::*;
 use num::integer::lcm;
+use rayon::prelude::*;
+use Op::*;
 
-struct Op<'a>(&'a dyn Fn(usize, usize) -> usize, usize);
+#[derive(Clone)]
+enum Op {
+    Double,
+    Add(u64),
+    Mul(u64),
+}
 
-impl<'a> Op<'a> {
-    fn apply(&self, b: usize) -> usize {
-        self.0(self.1, b)
+impl Op {
+    fn parse(i: &str) -> IResult<&str, Op> {
+        alt((
+            value(Double, tag("old * old")),
+            map(preceded(tag("old + "), u64), Add),
+            map(preceded(tag("old * "), u64), Mul),
+        ))(i)
+    }
+
+    fn ap(&self, x: u64) -> u64 {
+        match self {
+            Double => x * x,
+            Add(y) => x + y,
+            Mul(y) => x * y,
+        }
     }
 }
 
-struct Monkey<'a> {
-    items: Vec<usize>,
-    op: Op<'a>,
-    divisor: usize,
-    true_idx: usize,
-    false_idx: usize,
+struct Monkey {
+    ns: Vec<u64>,
+    op: Op,
+    test: u64,
+    t: usize,
+    f: usize,
 }
 
-fn parse_monkey(input: &str) -> Monkey<'_> {
-    let lines = input.lines().collect::<Vec<_>>();
-    let items = lines[1]
-        .split_once(": ")
-        .unwrap()
-        .1
-        .split(", ")
-        .map(|x| x.parse().unwrap())
-        .collect();
-    let (oper, arg) = lines[2]
-        .split_once("= old ")
-        .unwrap()
-        .1
-        .split_once(' ')
-        .unwrap();
-    let op = if arg == "old" {
-        Op(&|_, b| b * b, 0)
-    } else if oper == "+" {
-        let n = arg.parse().unwrap();
-        Op(&|a, b| a + b, n)
-    } else if oper == "*" {
-        let n = arg.parse().unwrap();
-        Op(&|a, b| a * b, n)
-    } else {
-        unreachable!();
-    };
-    let divisor = lines[3].rsplit_once(' ').unwrap().1.parse().unwrap();
-    let true_idx = lines[4].rsplit_once(' ').unwrap().1.parse().unwrap();
-    let false_idx = lines[5].rsplit_once(' ').unwrap().1.parse().unwrap();
-    Monkey {
-        items,
-        op,
-        divisor,
-        true_idx,
-        false_idx,
+fn parse(i: &str) -> IResult<&str, Monkey> {
+    let i = delimited(tag("Monkey "), usize, tag(":"))(i)?.0;
+    let (i, ns) = preceded(tag("\n  Starting items: "), list(u64))(i)?;
+    let (i, op) = preceded(tag("\n  Operation: new = "), Op::parse)(i)?;
+    let (i, test) = preceded(tag("\n  Test: divisible by "), u64)(i)?;
+    let (i, t) = preceded(tag("\n    If true: throw to monkey "), usize)(i)?;
+    let (i, f) = preceded(tag("\n    If false: throw to monkey "), usize)(i)?;
+    Ok((i, Monkey { ns, op, test, t, f }))
+}
+
+fn monkeys(input: &str) -> Vec<Monkey> {
+    input
+        .split("\n\n")
+        .map(|line| parse(line).unwrap().1)
+        .collect()
+}
+
+fn play(
+    monkeys: &[Monkey],
+    rounds: usize,
+    item: (usize, u64),
+    adjust: impl Fn(u64) -> u64,
+) -> Vec<usize> {
+    let mut inspections = vec![0; monkeys.len()];
+    let mut round = 0;
+    let (mut i, mut v) = item;
+    while round < rounds {
+        let monkey = &monkeys[i];
+        let worry = monkey.op.ap(v);
+        v = adjust(worry);
+        let i2 = if v % monkey.test == 0 {
+            monkey.t
+        } else {
+            monkey.f
+        };
+        round += (i2 < i) as usize;
+        inspections[i] += 1;
+        i = i2;
     }
+    inspections
 }
 
 fn solve(input: &str, p2: bool) -> usize {
-    let mut mks = input.split("\n\n").map(parse_monkey).collect::<Vec<_>>();
-    let m = mks.iter().map(|x| x.divisor).reduce(lcm).unwrap();
-    let mut inspections = vec![0; mks.len()];
-    let iters = if p2 { 10000 } else { 20 };
-    for _ in 0..iters {
-        for i in 0..mks.len() {
-            inspections[i] += mks[i].items.len();
-            for j in 0..mks[i].items.len() {
-                let arg = mks[i].items[j];
-                let mut worry_level = mks[i].op.apply(arg);
-                if p2 {
-                    worry_level %= m;
-                } else {
-                    worry_level /= 3;
-                }
-                let idx = if worry_level % mks[i].divisor == 0 {
-                    mks[i].true_idx
-                } else {
-                    mks[i].false_idx
-                };
-                mks[idx].items.push(worry_level);
-            }
-            mks[i].items.clear();
-        }
-    }
+    let mks = monkeys(input);
+    let items = mks
+        .iter()
+        .enumerate()
+        .flat_map(|(i, m)| m.ns.iter().map(move |&n| (i, n)))
+        .collect::<Vec<_>>();
+    let mut inspections = if !p2 {
+        items
+            .into_iter()
+            .map(|item| play(&mks, 20, item, |x| x / 3))
+            .reduce(|a, b| a.into_iter().zip(b).map(|(a, b)| a + b).collect())
+            .unwrap()
+    } else {
+        let m = mks.iter().map(|m| m.test).reduce(lcm).unwrap();
+        items
+            .into_par_iter()
+            .map(|item| play(&mks, 10000, item, |x| x % m))
+            .reduce(
+                || vec![0; mks.len()],
+                |a, b| a.into_iter().zip(b).map(|(a, b)| a + b).collect(),
+            )
+    };
     inspections.sort_unstable();
     inspections[inspections.len() - 2] * inspections[inspections.len() - 1]
 }

@@ -1,7 +1,7 @@
+use crate::utils::parsers::*;
 use crate::utils::C3;
 use counter::Counter;
 use itertools::Itertools;
-use regex::Regex;
 
 struct Particle {
     pos: C3<i64>,
@@ -9,19 +9,16 @@ struct Particle {
     acc: C3<i64>,
 }
 
+fn particle(i: &str) -> IResult<&str, C3<i64>> {
+    let (i, x) = preceded(pair(anychar, tag("=<")), i64)(i)?;
+    let (i, y) = preceded(tag(","), i64)(i)?;
+    let (i, z) = delimited(tag(","), i64, tag(">"))(i)?;
+    Ok((i, C3(x, y, z)))
+}
+
 fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
-    let reg = Regex::new(r"-?\d+").unwrap();
     input.lines().map(move |line| {
-        let cs: Vec<C3<i64>> = line
-            .split(", ")
-            .map(|comp| {
-                let ds: Vec<i64> = reg
-                    .find_iter(comp)
-                    .map(|x| x.as_str().parse().unwrap())
-                    .collect();
-                C3(ds[0], ds[1], ds[2])
-            })
-            .collect();
+        let cs = list(particle)(line).unwrap().1;
         Particle {
             pos: cs[0],
             vel: cs[1],
@@ -37,10 +34,10 @@ pub fn part1(input: &str) -> Option<usize> {
 pub fn part2(input: &str) -> usize {
     let mut ps = parse_particles(input).collect::<Vec<_>>();
     for _ in 0..100 {
-        for p in ps.iter_mut() {
+        ps.iter_mut().for_each(|p| {
             p.vel += p.acc;
             p.pos += p.vel;
-        }
+        });
         let tbl = ps.iter().map(|p| p.pos).collect::<Counter<_>>();
         ps.retain(|p| tbl[&p.pos] == 1);
     }
