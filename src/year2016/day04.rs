@@ -1,4 +1,4 @@
-use counter::Counter;
+use crate::utils::*;
 
 struct Room<'a> {
     name: &'a str,
@@ -20,14 +20,16 @@ fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + '_ {
 
 impl Room<'_> {
     fn is_real(&self) -> bool {
-        let tbl = self.name.replace('-', "").chars().collect::<Counter<_>>();
-        self.checksum
-            == tbl
-                .most_common_ordered()
-                .into_iter()
-                .take(5)
-                .map(|x| x.0)
-                .collect::<String>()
+        let checksum: String = self
+            .name
+            .replace('-', "")
+            .chars()
+            .most_common_ordered()
+            .into_iter()
+            .take(5)
+            .map(|x| x.0)
+            .collect();
+        self.checksum == checksum
     }
 }
 

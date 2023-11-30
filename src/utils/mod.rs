@@ -1,8 +1,8 @@
 use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
 use num::{Num, PrimInt, Signed};
-use num_traits::cast::FromPrimitive;
 use num_traits::ops::saturating::SaturatingAdd;
+use num_traits::{One, Zero};
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
@@ -761,15 +761,15 @@ pub struct Bits<T> {
     n: T,
 }
 
-impl<T: PartialEq + PrimInt + BitAndAssign + FromPrimitive> Iterator for Bits<T> {
+impl<T: PartialEq + PrimInt + BitAndAssign + Zero + One> Iterator for Bits<T> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.n == FromPrimitive::from_u8(0).unwrap() {
+        if self.n == T::zero() {
             return None;
         }
         let b = self.n.trailing_zeros();
-        self.n &= self.n - FromPrimitive::from_u8(1).unwrap();
+        self.n &= self.n - T::one();
         Some(b as usize)
     }
 }
@@ -1009,3 +1009,45 @@ pub fn replace_with<T, F: FnOnce(&T) -> T>(r: &mut T, f: F) -> T {
     let r2 = f(r);
     std::mem::replace(r, r2)
 }
+
+pub trait Counter: Iterator {
+    fn counts(self) -> AHashMap<Self::Item, usize>
+    where
+        Self: Sized,
+        Self::Item: Eq + Hash,
+    {
+        let mut m = AHashMap::new();
+        self.for_each(|item| *m.entry(item).or_default() += 1);
+        m
+    }
+
+    fn most_common(self) -> Option<Self::Item>
+    where
+        Self: Sized,
+        Self::Item: Eq + Hash,
+    {
+        let cnts = self.counts();
+        cnts.into_iter().max_by_key(|x| x.1).map(|x| x.0)
+    }
+
+    fn least_common(self) -> Option<Self::Item>
+    where
+        Self: Sized,
+        Self::Item: Eq + Hash,
+    {
+        let cnts = self.counts();
+        cnts.into_iter().min_by_key(|x| x.1).map(|x| x.0)
+    }
+
+    fn most_common_ordered(self) -> Vec<(Self::Item, usize)>
+    where
+        Self: Sized,
+        Self::Item: Eq + Hash + Ord,
+    {
+        let mut cnts: Vec<_> = self.counts().into_iter().collect();
+        cnts.sort_unstable_by(|(k1, v1), (k2, v2)| v2.cmp(v1).then(k1.cmp(k2)));
+        cnts
+    }
+}
+
+impl<T: ?Sized> Counter for T where T: Iterator {}

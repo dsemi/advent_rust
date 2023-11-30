@@ -1,6 +1,5 @@
 use crate::utils::*;
 use ahash::{AHashMap, AHashSet};
-use counter::Counter;
 
 pub fn part1(input: &str) -> String {
     let inp: Vec<Vec<&str>> = transpose(
@@ -42,12 +41,13 @@ fn find_imbalance(m: &AHashMap<String, Node>, curr: &str) -> (i64, bool) {
         }
     }
     let wts = recs.into_iter().map(|x| x.0).collect::<Vec<_>>();
-    let count = wts.iter().collect::<Counter<_>>();
+    let count = wts.iter().counts();
     if count.len() == 1 {
         return (node.weight + wts.iter().sum::<i64>(), false);
     }
 
-    let cts = count.most_common();
+    let mut cts = count.into_iter().collect::<Vec<_>>();
+    cts.sort_unstable_by(|a, b| b.1.cmp(&a.1));
     let anomaly = *cts[cts.len() - 1].0;
     let expected = *cts[0].0;
     for (i, v) in wts.into_iter().enumerate() {

@@ -1,4 +1,4 @@
-use counter::Counter;
+use crate::utils::*;
 
 fn parse_nums(s: &str) -> Vec<i64> {
     let mut ns: Vec<i64> = s.lines().map(|x| x.parse().unwrap()).collect();
@@ -10,11 +10,7 @@ fn parse_nums(s: &str) -> Vec<i64> {
 
 pub fn part1(input: &str) -> usize {
     let ns = parse_nums(input);
-    let cnt = ns
-        .iter()
-        .zip(ns[1..].iter())
-        .map(|(a, b)| b - a)
-        .collect::<Counter<_>>();
+    let cnt = ns.iter().zip(ns[1..].iter()).map(|(a, b)| b - a).counts();
     cnt[&1] * cnt[&3]
 }
 

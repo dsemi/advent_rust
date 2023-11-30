@@ -1,5 +1,4 @@
 use crate::utils::*;
-use counter::Counter;
 
 pub fn part1(input: &str) -> String {
     transpose(
@@ -9,7 +8,7 @@ pub fn part1(input: &str) -> String {
             .collect::<Vec<_>>(),
     )
     .into_iter()
-    .map(|row| row.into_iter().collect::<Counter<_>>().most_common()[0].0)
+    .map(|row| row.into_iter().most_common().unwrap())
     .collect()
 }
 
@@ -21,9 +20,6 @@ pub fn part2(input: &str) -> String {
             .collect::<Vec<_>>(),
     )
     .into_iter()
-    .map(|row| {
-        let c = row.into_iter().collect::<Counter<_>>();
-        c.most_common()[c.len() - 1].0
-    })
+    .map(|row| row.into_iter().least_common().unwrap())
     .collect()
 }

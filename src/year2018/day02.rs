@@ -1,9 +1,9 @@
-use counter::Counter;
+use crate::utils::*;
 
 pub fn part1(input: &str) -> usize {
     let counts = input
         .lines()
-        .map(|line| line.chars().collect::<Counter<_>>())
+        .map(|line| line.chars().counts())
         .collect::<Vec<_>>();
     let (mut twos, mut threes) = (0, 0);
     for tbl in counts {

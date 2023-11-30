@@ -13,7 +13,6 @@ proc-macro = true
 [dependencies]
 ahash = "0.8.6"
 bit-set = "0.5.3"
-counter = "0.5.7"
 derive_more = { version = "1.0.0-beta.6", features = ["add", "add_assign", "constructor"]}
 enum-map = "2.7.2"
 genawaiter = "0.99.1"

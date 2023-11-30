@@ -1,7 +1,5 @@
 use crate::utils::parsers::*;
-use crate::utils::C3;
-use ahash::AHashMap;
-use itertools::Itertools;
+use crate::utils::*;
 
 struct Particle {
     pos: C3<i64>,
@@ -28,7 +26,7 @@ fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    parse_particles(input).position_min_by_key(|p| p.acc.abs().sum())
+    itertools::Itertools::position_min_by_key(parse_particles(input), |p| p.acc.abs().sum())
 }
 
 pub fn part2(input: &str) -> usize {
@@ -38,10 +36,7 @@ pub fn part2(input: &str) -> usize {
             p.vel += p.acc;
             p.pos += p.vel;
         });
-        let mut tbl: AHashMap<C3<i64>, usize> = AHashMap::new();
-        for p in &ps {
-            *tbl.entry(p.pos).or_default() += 1;
-        }
+        let tbl = ps.iter().map(|p| p.pos).counts();
         ps.retain(|p| tbl[&p.pos] == 1);
     }
     ps.len()
