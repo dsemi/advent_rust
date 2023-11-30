@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::C3;
-use counter::Counter;
+use ahash::AHashMap;
 use itertools::Itertools;
 
 struct Particle {
@@ -38,7 +38,10 @@ pub fn part2(input: &str) -> usize {
             p.vel += p.acc;
             p.pos += p.vel;
         });
-        let tbl = ps.iter().map(|p| p.pos).collect::<Counter<_>>();
+        let mut tbl: AHashMap<C3<i64>, usize> = AHashMap::new();
+        for p in &ps {
+            *tbl.entry(p.pos).or_default() += 1;
+        }
         ps.retain(|p| tbl[&p.pos] == 1);
     }
     ps.len()
