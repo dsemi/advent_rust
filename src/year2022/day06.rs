@@ -1,5 +1,5 @@
 fn solve(input: &[u8], nchars: usize) -> Option<usize> {
-    let mut i = nchars as usize;
+    let mut i = nchars;
     while i < input.len() {
         let unique = input[i - nchars..i]
             .iter()
