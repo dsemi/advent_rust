@@ -1051,3 +1051,11 @@ pub trait Counter: Iterator {
 }
 
 impl<T: ?Sized> Counter for T where T: Iterator {}
+
+pub fn tails(s: &str) -> impl Iterator<Item = &'_ str> {
+    std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[1..]))
+}
+
+pub fn inits(s: &str) -> impl Iterator<Item = &'_ str> {
+    std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[..s.len() - 1]))
+}
