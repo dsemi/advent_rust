@@ -1,0 +1,15 @@
+name: Checks
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo clippy --tests -- --deny warnings
+    - run: cargo test --release

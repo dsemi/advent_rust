@@ -210,7 +210,7 @@ mod tests {
 
     use super::{get_file_input, get_prob};
 
-    const EXP: &'static str = include_str!("../test/expectedAnswers.toml");
+    const EXP: &str = include_str!("../test/expectedAnswers.toml");
     static DICT: Lazy<Table> = Lazy::new(|| toml::from_str(EXP).unwrap());
 
     fn get_expected_solutions(year: i64, day: i64) -> Result<(String, String), String> {
