@@ -273,6 +273,12 @@ impl<T: Num + Copy> C<T> {
     }
 }
 
+impl<T: Num + Copy> C<T> {
+    pub fn product(&self) -> T {
+        self.0 * self.1
+    }
+}
+
 impl<T: Num + Signed> C<T> {
     pub fn abs(&self) -> Self {
         Self(self.0.abs(), self.1.abs())
@@ -292,11 +298,11 @@ impl<T: Signed + Copy> C<T> {
 }
 
 impl<T: Ord + Copy> C<T> {
-    pub fn smol(&self, o: &Self) -> Self {
+    pub fn smol(self, o: Self) -> Self {
         Self(min(self.0, o.0), min(self.1, o.1))
     }
 
-    pub fn swol(&self, o: &Self) -> Self {
+    pub fn swol(self, o: Self) -> Self {
         Self(max(self.0, o.0), max(self.1, o.1))
     }
 }
@@ -471,12 +477,18 @@ pub fn adjacents(coord: C<i64>) -> impl Iterator<Item = C<i64>> {
     .map(move |d| coord + d)
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct C3<T>(pub T, pub T, pub T);
 
 impl<T: Num + Copy> C3<T> {
     pub fn sum(&self) -> T {
         self.0 + self.1 + self.2
+    }
+}
+
+impl<T: Num + Copy> C3<T> {
+    pub fn product(&self) -> T {
+        self.0 * self.1 * self.2
     }
 }
 
@@ -499,11 +511,11 @@ impl<T: Signed + Copy> C3<T> {
 }
 
 impl<T: Ord + Copy> C3<T> {
-    pub fn smol(&self, o: &Self) -> Self {
+    pub fn smol(self, o: Self) -> Self {
         Self(min(self.0, o.0), min(self.1, o.1), min(self.2, o.2))
     }
 
-    pub fn swol(&self, o: &Self) -> Self {
+    pub fn swol(self, o: Self) -> Self {
         Self(max(self.0, o.0), max(self.1, o.1), max(self.2, o.2))
     }
 }

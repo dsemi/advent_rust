@@ -35,8 +35,8 @@ pub fn part2(input: &str) -> usize {
     let mut lo = C3(i32::MAX, i32::MAX, i32::MAX);
     let mut hi = C3(i32::MIN, i32::MIN, i32::MIN);
     for c in lava.iter() {
-        lo = lo.smol(&(*c - C3(1, 1, 1)));
-        hi = hi.swol(&(*c + C3(1, 1, 1)));
+        lo = lo.smol(*c - C3(1, 1, 1));
+        hi = hi.swol(*c + C3(1, 1, 1));
     }
     let air = bfs_m([lo, hi], |pos| {
         adj(pos).into_iter().filter(|p| {

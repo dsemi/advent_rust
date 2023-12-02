@@ -6,7 +6,7 @@ pub use nom::character::complete::{
 pub use nom::character::{is_hex_digit, is_space};
 pub use nom::combinator::{all_consuming, map, opt, recognize, rest, value, verify};
 pub use nom::error::{Error, ParseError};
-pub use nom::multi::{separated_list0, separated_list1};
+pub use nom::multi::{fold_many0, fold_many1, separated_list0, separated_list1};
 pub use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 pub use nom::{IResult, Parser};
 
