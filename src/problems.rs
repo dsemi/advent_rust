@@ -1,5 +1,8 @@
 use advent::make_problems;
-use reqwest::blocking::Client;
+use reqwest::blocking::{Client, ClientBuilder};
+use reqwest::header::HeaderMap;
+use select::document::Document;
+use select::predicate::Name;
 use serde::Serialize;
 use std::collections::BTreeSet;
 use std::env;
@@ -11,6 +14,19 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
+
+fn client() -> Client {
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        "Cookie",
+        env::var("AOC_SESSION").unwrap().try_into().unwrap(),
+    );
+    ClientBuilder::new()
+        .user_agent("github.com/dsemi/advent_rust")
+        .default_headers(headers)
+        .build()
+        .expect("Failed to create HTTP client")
+}
 
 const RATE_LIMIT: Duration = Duration::from_secs(5);
 static LAST: Mutex<Option<Instant>> = Mutex::new(None);
@@ -27,9 +43,8 @@ pub fn get_file_input(year: i64, day: i64, download: bool) -> Result<String, imp
         }
         *last = Some(Instant::now());
         let url = format!("https://adventofcode.com/{year}/day/{day}/input");
-        let content = Client::new()
+        let content = client()
             .get(url)
-            .header("Cookie", env::var("AOC_SESSION").unwrap())
             .send()
             .expect("Problem input fetch failed")
             .error_for_status()
@@ -56,9 +71,8 @@ pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
         level: part,
         answer,
     };
-    let response = Client::new()
+    let response = client()
         .post(url)
-        .header("Cookie", env::var("AOC_SESSION").unwrap())
         .form(&data)
         .send()
         .expect("Problem submission failed")
@@ -66,7 +80,13 @@ pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
         .expect("Bad HTTP response")
         .text()
         .unwrap();
-    println!("{}", response);
+    let document = Document::from(response.as_str());
+    let text = document
+        .find(Name("main"))
+        .next()
+        .expect("Could not find submission response text")
+        .text();
+    println!("{}", text);
 }
 
 trait POutput {

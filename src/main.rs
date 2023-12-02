@@ -56,21 +56,8 @@ fn run_problem(year: i64, day: i64) -> Option<(f64, String, String)> {
 }
 
 fn print_output(part: usize, output: &str, t: f64) {
-    print!("Part {}: ", part);
-    let lns = output.lines().collect::<Vec<_>>();
-    let len = lns.len();
-
-    for (i, ln) in lns.into_iter().enumerate() {
-        if i == len - 1 {
-            if i == 0 {
-                println!("{:>54}  Elapsed time {} seconds", ln, colorize_time(t));
-            } else {
-                println!("{:62}  Elapsed time {} seconds", ln, colorize_time(t));
-            }
-        } else {
-            println!("{}", ln);
-        }
-    }
+    let t = colorize_time(t);
+    println!("Part {}: {:>54}  Elapsed time {} seconds", part, output, t);
 }
 
 fn parse_day(daystr: &str) -> Vec<i64> {
