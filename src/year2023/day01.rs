@@ -1,9 +1,24 @@
 use crate::utils::*;
 
-const DIGITS: [&str; 9] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+pub fn part1(input: &str) -> usize {
+    input
+        .lines()
+        .map(|line| {
+            let tens = line.bytes().find(u8::is_ascii_digit).unwrap() - b'0';
+            let ones = line.bytes().rfind(u8::is_ascii_digit).unwrap() - b'0';
+            10 * tens as usize + ones as usize
+        })
+        .sum()
+}
 
-fn solve<'a>(input: &str, repls: impl Iterator<Item = (usize, &'a &'a str)>) -> usize {
-    let repls: Vec<_> = DIGITS.iter().enumerate().chain(repls).collect();
+const DIGITS: [&str; 9] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const WORDS: [&str; 9] = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+];
+
+pub fn part2(input: &str) -> usize {
+    let digs = DIGITS.iter().enumerate();
+    let repls: Vec<_> = WORDS.iter().enumerate().chain(digs).collect();
     input
         .lines()
         .map(|line| {
@@ -16,16 +31,4 @@ fn solve<'a>(input: &str, repls: impl Iterator<Item = (usize, &'a &'a str)>) -> 
             10 * tens + ones
         })
         .sum()
-}
-
-pub fn part1(input: &str) -> usize {
-    solve(input, std::iter::empty())
-}
-
-const WORDS: [&str; 9] = [
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-];
-
-pub fn part2(input: &str) -> usize {
-    solve(input, WORDS.iter().enumerate())
 }
