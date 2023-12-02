@@ -9,29 +9,27 @@ fn color(i: &str) -> IResult<&str, C3<usize>> {
     ))(i)
 }
 
-fn game(i: &str) -> IResult<&str, (usize, Vec<C3<usize>>)> {
-    pair(
-        delimited(tag("Game "), usize, tag(": ")),
+fn game(i: &str) -> IResult<&str, C3<usize>> {
+    map(
         separated_list0(tag("; "), map(list(color), |v| v.into_iter().sum())),
+        |v| v.into_iter().reduce(C3::swol).unwrap(),
     )(i)
 }
 
-fn parse(input: &str) -> impl Iterator<Item = (usize, Vec<C3<usize>>)> + '_ {
-    input.lines().map(|line| game(line).unwrap().1)
+fn parse(input: &str) -> impl Iterator<Item = C3<usize>> + '_ {
+    input
+        .lines()
+        .map(|line| game(line.split_once(": ").unwrap().1).unwrap().1)
 }
 
 pub fn part1(input: &str) -> usize {
     parse(input)
-        .filter(|(_, game)| {
-            game.iter()
-                .all(|&C3(r, g, b)| r <= 12 && g <= 13 && b <= 14)
-        })
-        .map(|(id, _)| id)
+        .enumerate()
+        .filter(|&(_, C3(r, g, b))| r <= 12 && g <= 13 && b <= 14)
+        .map(|(i, _)| i + 1)
         .sum()
 }
 
 pub fn part2(input: &str) -> usize {
-    parse(input)
-        .map(|(_, game)| game.into_iter().reduce(C3::swol).unwrap().product())
-        .sum()
+    parse(input).map(|game| game.product()).sum()
 }
