@@ -16,18 +16,16 @@ fn parse(input: &str) -> Engine {
     for (r, row) in grid.into_iter().enumerate() {
         let mut it = row.into_iter().enumerate().peekable();
         while it.peek().is_some() {
-            let n = it
-                .by_ref()
+            if let Some(n) = it
                 .peeking_take_while(|(_, v)| v.is_ascii_digit())
-                .fold(0, |acc, (c, v)| {
-                    mask[C(r, c)] = nums.len();
-                    10 * acc + (v - b'0') as u32
-                });
-            if n > 0 {
-                nums.push(n);
+                .inspect(|&(c, _)| mask[C(r, c)] = nums.len())
+                .map(|(_, v)| (v - b'0') as u32)
+                .reduce(|a, b| 10 * a + b)
+            {
+                nums.push(n)
             }
-            it.by_ref()
-                .peeking_take_while(|(_, v)| !v.is_ascii_digit())
+
+            it.peeking_take_while(|(_, v)| !v.is_ascii_digit())
                 .filter(|&(_, v)| v != b'.')
                 .for_each(|(c, v)| parts.push((v, C(r, c))));
         }
