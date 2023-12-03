@@ -462,19 +462,21 @@ macro_rules! impl_get {
 
 impl_get!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
 
-pub fn adjacents(coord: C<i64>) -> impl Iterator<Item = C<i64>> {
+pub fn adjacents<T>(C(x, y): C<T>) -> impl Iterator<Item = C<T>>
+where
+    T: Add<Output = T> + Sub<Output = T> + One + Copy,
+{
     [
-        C(-1, -1),
-        C(-1, 0),
-        C(-1, 1),
-        C(0, -1),
-        C(0, 1),
-        C(1, -1),
-        C(1, 0),
-        C(1, 1),
+        C(x - T::one(), y - T::one()),
+        C(x - T::one(), y),
+        C(x - T::one(), y + T::one()),
+        C(x, y - T::one()),
+        C(x, y + T::one()),
+        C(x + T::one(), y - T::one()),
+        C(x + T::one(), y),
+        C(x + T::one(), y + T::one()),
     ]
     .into_iter()
-    .map(move |d| coord + d)
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
