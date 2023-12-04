@@ -45,10 +45,7 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
 }
 
 fn parse(input: &str) -> Vec<Instr> {
-    input
-        .lines()
-        .map(|line| parse_instr(line).unwrap().1)
-        .collect()
+    lines(input, parse_instr)
 }
 
 impl Prog {

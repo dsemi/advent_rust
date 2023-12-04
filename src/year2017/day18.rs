@@ -54,10 +54,7 @@ impl Sim {
         Self {
             line: 0,
             reg: [0; 26],
-            instrs: input
-                .lines()
-                .map(|line| parse_instr(line).unwrap().1)
-                .collect(),
+            instrs: lines(input, parse_instr),
             sends: 0,
         }
     }

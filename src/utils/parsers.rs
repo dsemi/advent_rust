@@ -8,7 +8,7 @@ pub use nom::combinator::{all_consuming, map, opt, recognize, rest, value, verif
 pub use nom::error::{Error, ParseError};
 pub use nom::multi::{fold_many0, fold_many1, separated_list0, separated_list1};
 pub use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
-pub use nom::{IResult, Parser};
+pub use nom::{Finish, IResult, Parser};
 
 use nom::{AsChar, Compare, InputIter, InputLength, InputTake, Slice};
 
@@ -79,6 +79,17 @@ where
     E: ParseError<&'a str>,
 {
     separated_list0(pair(nom::bytes::complete::tag(","), space0), f)
+}
+
+pub fn lines<'a, O, E, F>(i: &'a str, f: F) -> Vec<O>
+where
+    F: Parser<&'a str, O, E>,
+    E: ParseError<&'a str> + std::fmt::Debug,
+{
+    all_consuming(separated_list1(nom::bytes::complete::tag("\n"), f))(i)
+        .finish()
+        .map(|x| x.1)
+        .unwrap()
 }
 
 macro_rules! cons1 {

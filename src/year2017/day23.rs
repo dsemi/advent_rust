@@ -38,10 +38,7 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
 }
 
 fn parse_instrs(input: &str) -> Prog {
-    let instrs = input
-        .lines()
-        .map(|line| parse_instr(line).unwrap().1)
-        .collect();
+    let instrs = lines(input, parse_instr);
     Prog {
         reg: [0; 8],
         line: 0,

@@ -80,10 +80,7 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
 }
 
 pub fn parse_instrs(input: &str) -> Sim {
-    let mut instrs = input
-        .lines()
-        .map(|line| parse_instr(line).unwrap().1)
-        .collect::<Vec<_>>();
+    let mut instrs = lines(input, parse_instr);
     optimize(&mut instrs);
     Sim {
         regs: [0; 4],

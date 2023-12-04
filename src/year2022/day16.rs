@@ -26,7 +26,7 @@ struct Graph {
 
 impl Graph {
     fn new(input: &str) -> Self {
-        let mut valves: Vec<Valve<'_>> = input.lines().map(|line| valve(line).unwrap().1).collect();
+        let mut valves = lines(input, valve);
         valves.sort_unstable_by(|a, b| b.flow.cmp(&a.flow).then(a.name.cmp(b.name)));
         let ui: AHashMap<&str, usize> = valves.iter().map(|v| v.name).zip(0..).collect();
         let mut dist = vec![vec![u8::MAX; valves.len()]; valves.len()];
