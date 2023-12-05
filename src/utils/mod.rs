@@ -819,6 +819,18 @@ impl Interval {
     pub fn contains(&self, v: i64) -> bool {
         self.lo <= v && v < self.hi
     }
+
+    pub fn valid(&self) -> bool {
+        self.lo < self.hi
+    }
+}
+
+impl Add<i64> for Interval {
+    type Output = Interval;
+
+    fn add(self, diff: i64) -> Self::Output {
+        Interval::new(self.lo + diff, self.hi + diff)
+    }
 }
 
 pub struct UniqueIdx<T> {
