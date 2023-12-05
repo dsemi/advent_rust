@@ -20,16 +20,17 @@ fn parse_map(input: &str) -> Vec<(Interval, i64)> {
 pub fn part1(input: &str) -> i64 {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds(parts.next().unwrap()).unwrap().1;
-    let maps: Vec<_> = parts.map(|pt| parse_map(pt)).collect();
+    let maps: Vec<_> = parts.map(parse_map).collect();
     seeds
         .into_iter()
         .map(|seed| {
             maps.iter().fold(seed, |seed, map| {
                 map.binary_search_by(|(filter, _)| {
-                    filter
-                        .contains(seed)
-                        .then_some(Equal)
-                        .unwrap_or(filter.lo.cmp(&seed))
+                    if filter.contains(seed) {
+                        Equal
+                    } else {
+                        filter.lo.cmp(&seed)
+                    }
                 })
                 .map(|idx| seed + map[idx].1)
                 .unwrap_or(seed)
@@ -46,7 +47,7 @@ pub fn part2(input: &str) -> i64 {
         .chunks(2)
         .map(|ns| Interval::new(ns[0], ns[0] + ns[1]))
         .collect();
-    let maps: Vec<_> = parts.map(|pt| parse_map(pt)).collect();
+    let maps: Vec<_> = parts.map(parse_map).collect();
     seed_intervals
         .into_iter()
         .flat_map(|interval| {
