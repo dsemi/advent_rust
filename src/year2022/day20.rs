@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use itertools::Itertools;
 
 const BIN_SIZE: usize = 32;
@@ -20,7 +21,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
         .lines()
         .enumerate()
         .map(|(i, x)| Item {
-            val: x.parse::<i64>().unwrap() * scale,
+            val: x.int::<i64>() * scale,
             g_idx: i,
         })
         .chunks(BIN_SIZE)

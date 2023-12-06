@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use itertools::Itertools;
 use Rule::*;
 
@@ -14,14 +15,14 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
             .map(|line| {
                 let (idx, content) = line.split_once(": ").unwrap();
                 (
-                    idx.parse::<usize>().unwrap(),
+                    idx.int::<usize>(),
                     if content.starts_with('"') {
                         Single(content.chars().nth(1).unwrap() as u8)
                     } else {
                         Multi(
                             content
                                 .split(" | ")
-                                .map(|part| part.split(' ').map(|x| x.parse().unwrap()).collect())
+                                .map(|part| part.split(' ').map(int).collect())
                                 .collect(),
                         )
                     },

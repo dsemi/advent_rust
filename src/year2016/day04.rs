@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 
 struct Room<'a> {
@@ -12,7 +13,7 @@ fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + '_ {
         let (sector, rest2) = rest.split_once('[').unwrap();
         Room {
             name,
-            sector_id: sector.parse().unwrap(),
+            sector_id: sector.int(),
             checksum: &rest2[..rest2.len() - 1],
         }
     })

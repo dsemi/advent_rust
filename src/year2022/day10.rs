@@ -1,4 +1,4 @@
-use crate::ocr::*;
+use crate::utils::ocr::*;
 use itertools::Itertools;
 
 fn run(input: &str) -> impl Iterator<Item = i32> + '_ {

@@ -1,4 +1,4 @@
-use crate::ocr::*;
+use crate::utils::ocr::*;
 use itertools::Itertools;
 
 pub fn part1(input: &str) -> i32 {

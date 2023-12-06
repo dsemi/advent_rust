@@ -1,10 +1,11 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use std::collections::VecDeque;
 
 fn parse_game(s: &str) -> (VecDeque<i64>, VecDeque<i64>) {
     let parts: Vec<VecDeque<i64>> = s
         .split("\n\n")
-        .map(|p| p.lines().skip(1).map(|x| x.parse().unwrap()).collect())
+        .map(|p| p.lines().skip(1).map(int).collect())
         .collect();
     (parts[0].clone(), parts[1].clone())
 }

@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use std::cmp::max;
 use std::iter::Peekable;
 
@@ -38,7 +39,7 @@ fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
         .lines()
         .map(|line| {
             let (a, b) = line.split_once('-').unwrap();
-            (a.parse().unwrap(), b.parse().unwrap())
+            (a.int(), b.int())
         })
         .collect();
     ips.sort_unstable();

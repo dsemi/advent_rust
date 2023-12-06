@@ -1,10 +1,11 @@
+use crate::utils::parsers::*;
 use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 use Instr::*;
 
 fn parse_instrs(input: &str) -> Vec<i64> {
-    input.split(',').map(|x| x.parse().unwrap()).collect()
+    input.split(',').map(int).collect()
 }
 
 #[derive(Clone)]

@@ -1,5 +1,5 @@
 use super::intcode;
-use crate::ocr::*;
+use crate::utils::ocr::*;
 use crate::utils::C;
 use ahash::AHashMap;
 use std::cmp::{max, min};

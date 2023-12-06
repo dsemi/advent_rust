@@ -1,4 +1,5 @@
-use crate::ocr::*;
+use crate::utils::ocr::*;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
@@ -9,7 +10,7 @@ fn parse(input: &str) -> (AHashSet<(usize, usize)>, &str) {
         dots.lines()
             .map(|dot| {
                 let (x, y) = dot.split_once(',').unwrap();
-                (x.parse().unwrap(), y.parse().unwrap())
+                (x.int(), y.int())
             })
             .collect(),
         instrs,

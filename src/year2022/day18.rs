@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashSet;
 
@@ -16,7 +17,7 @@ fn cubes(input: &str) -> AHashSet<C3<i32>> {
     input
         .lines()
         .map(|l| {
-            let pts = l.split(',').map(|x| x.parse().unwrap()).collect::<Vec<_>>();
+            let pts: Vec<_> = l.split(',').map(int).collect();
             C3(pts[0], pts[1], pts[2])
         })
         .collect()

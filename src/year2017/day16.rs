@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
 use std::fmt::{Display, Error, Formatter, Write};
 use Action::*;
@@ -26,10 +27,10 @@ fn parse_actions(input: &str) -> Vec<Action> {
     input
         .split(',')
         .map(|action| match action.chars().next().unwrap() {
-            's' => Spin(action[1..].parse().unwrap()),
+            's' => Spin(action[1..].int()),
             'x' => {
                 let (a, b) = action[1..].split_once('/').unwrap();
-                Exchange(a.parse().unwrap(), b.parse().unwrap())
+                Exchange(a.int(), b.int())
             }
             'p' => {
                 let (a, b) = action[1..].split_once('/').unwrap();

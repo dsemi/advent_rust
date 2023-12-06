@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 
@@ -18,12 +19,12 @@ fn parse_rules(s: &str) -> Input {
         .last()
         .unwrap()
         .split(',')
-        .map(|x| x.parse().unwrap())
+        .map(int)
         .collect();
     let others: Vec<Vec<i64>> = parts[2]
         .lines()
         .skip(1)
-        .map(|line| line.split(',').map(|x| x.parse().unwrap()).collect())
+        .map(|line| line.split(',').map(int).collect())
         .collect();
     Input {
         rules,

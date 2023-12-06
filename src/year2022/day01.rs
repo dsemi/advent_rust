@@ -1,7 +1,9 @@
+use crate::utils::parsers::*;
+
 fn elves(input: &str) -> impl Iterator<Item = i32> + '_ {
     input
         .split("\n\n")
-        .map(|elf| elf.lines().map(|line| line.parse::<i32>().unwrap()).sum())
+        .map(|elf| elf.lines().map(int::<i32>).sum())
 }
 
 pub fn part1(input: &str) -> Option<i32> {

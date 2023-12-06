@@ -1,6 +1,7 @@
+use crate::utils::parsers::*;
 use crate::utils::C;
 use ahash::AHashSet;
-use std::iter;
+use std::iter::{once, repeat};
 
 fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
     input
@@ -11,8 +12,8 @@ fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
                 'L' => C(0, 1),
                 _ => panic!("Invalid dir {}", x),
             };
-            let n: usize = x[1..].parse().unwrap();
-            iter::once(df).chain(iter::repeat(C(1, 0)).take(n - 1))
+            let n: usize = x[1..].int();
+            once(df).chain(repeat(C(1, 0)).take(n - 1))
         })
         .scan((C(0, 0), C(0, 1)), |state, x| {
             state.1 *= x;

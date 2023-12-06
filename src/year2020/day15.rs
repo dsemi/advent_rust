@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use bit_set::BitSet;
 
 fn solve(n: u32, input: &str) -> u32 {
@@ -5,7 +6,7 @@ fn solve(n: u32, input: &str) -> u32 {
     let mut filter = BitSet::new();
     let mut j = 1;
     for v in input.split(',') {
-        let k = v.parse().unwrap();
+        let k = v.int();
         m[k] = j;
         filter.insert(k);
         j += 1;

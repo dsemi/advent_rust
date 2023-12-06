@@ -1,3 +1,5 @@
+use crate::utils::parsers::*;
+
 struct Tree {
     val: Vec<usize>,
     children: Vec<Tree>,
@@ -10,7 +12,7 @@ impl Tree {
 }
 
 fn parse_nodes(input: &str) -> Tree {
-    let mut ns = input.split_whitespace().map(|x| x.parse().unwrap());
+    let mut ns = input.split_whitespace().map(int);
     fn parse_node<I: Iterator<Item = usize>>(ns: &mut I) -> Tree {
         let n = ns.next().unwrap();
         let m = ns.next().unwrap();

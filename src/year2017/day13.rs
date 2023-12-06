@@ -1,10 +1,11 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use num::Integer;
 
 fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + '_ {
     input.lines().map(|line| {
         let (a, b) = line.split_once(": ").unwrap();
-        (a.parse().unwrap(), 2 * b.parse::<i64>().unwrap() - 2)
+        (a.int(), 2 * b.int::<i64>() - 2)
     })
 }
 

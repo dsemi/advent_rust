@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::{AHashMap, AHashSet};
 
@@ -68,7 +69,7 @@ pub fn part2(input: &str) -> i64 {
             (
                 n.to_string(),
                 Node {
-                    weight: w[..w.len() - 1].parse().unwrap(),
+                    weight: w[..w.len() - 1].int(),
                     children: if pts.len() > 1 {
                         pts[1].split(", ").map(|x| x.to_string()).collect()
                     } else {

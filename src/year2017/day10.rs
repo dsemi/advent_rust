@@ -1,3 +1,5 @@
+use crate::utils::parsers::*;
+
 fn reverse<T>(v: &mut [T], mut lo: usize, mut hi: usize) {
     let len = v.len();
     while lo < hi {
@@ -22,7 +24,7 @@ fn hash(n: usize, lens: Vec<usize>) -> Vec<usize> {
 }
 
 pub fn part1(input: &str) -> usize {
-    let res = hash(1, input.split(',').map(|x| x.parse().unwrap()).collect());
+    let res = hash(1, input.split(',').map(int).collect());
     res[0] * res[1]
 }
 

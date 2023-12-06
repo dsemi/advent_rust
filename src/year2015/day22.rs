@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use once_cell::sync::Lazy;
 use std::cmp::max;
@@ -81,7 +82,7 @@ fn apply_effects(state: &mut Game) {
 fn parse_boss(input: &str) -> Game {
     let v: Vec<i32> = input
         .lines()
-        .map(|x| x.split(": ").last().unwrap().parse().unwrap())
+        .map(|x| x.split(": ").last().unwrap().int())
         .collect();
     Game {
         player_health: 50,

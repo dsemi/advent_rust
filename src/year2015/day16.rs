@@ -1,3 +1,5 @@
+use crate::utils::parsers::*;
+
 fn is_sue(k: &str, x: i32) -> bool {
     match k {
         "children" => x == 3,
@@ -20,7 +22,7 @@ fn solve(input: &str, f: fn(&str, i32) -> bool) -> Option<usize> {
         .position(|line| {
             line.split_once(": ").unwrap().1.split(", ").all(|attr| {
                 let (key, val) = attr.split_once(": ").unwrap();
-                f(key, val.parse().unwrap())
+                f(key, val.int())
             })
         })
         .map(|x| x + 1)

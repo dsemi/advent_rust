@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::Partitions;
 use regex::Regex;
 use std::cmp::max;
@@ -6,11 +7,7 @@ use streaming_iterator::StreamingIterator;
 fn parse_ingredients(s: &str) -> Vec<Vec<i32>> {
     let re = Regex::new(r"-?\d+").unwrap();
     s.lines()
-        .map(|line| {
-            re.find_iter(line)
-                .map(|n| n.as_str().parse().unwrap())
-                .collect()
-        })
+        .map(|line| re.find_iter(line).map(|n| n.as_str().int()).collect())
         .collect()
 }
 

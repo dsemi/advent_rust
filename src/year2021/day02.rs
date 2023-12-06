@@ -1,8 +1,10 @@
+use crate::utils::parsers::*;
+
 fn run(input: &str) -> (i32, i32, i32) {
     let (mut horz, mut depth, mut aim) = (0, 0, 0);
     for line in input.lines() {
         let (cmd, ns) = line.split_once(' ').unwrap();
-        let n: i32 = ns.parse().unwrap();
+        let n: i32 = ns.int();
         match cmd {
             "forward" => {
                 horz += n;

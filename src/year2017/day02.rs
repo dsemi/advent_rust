@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use itertools::Itertools;
 
 pub fn part1(input: &str) -> i64 {
@@ -5,7 +6,7 @@ pub fn part1(input: &str) -> i64 {
         .lines()
         .map(|line| {
             line.split_whitespace()
-                .map(|x| x.parse::<i64>().unwrap())
+                .map(int::<i64>)
                 .minmax()
                 .into_option()
                 .map(|(mn, mx)| mx - mn)
@@ -19,7 +20,7 @@ pub fn part2(input: &str) -> i64 {
         .lines()
         .map(|line| {
             line.split_whitespace()
-                .map(|x| x.parse::<i64>().unwrap())
+                .map(int::<i64>)
                 .combinations(2)
                 .find_map(|x| {
                     (x[0] % x[1] == 0)

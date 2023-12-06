@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use Op::*;
@@ -50,18 +51,15 @@ fn eval(v: &mut [usize], op: Op, a: usize, b: usize, c: usize) {
 fn test_sample(sample: &str) -> (usize, u16) {
     let pts = sample.lines().collect::<Vec<_>>();
     let (before, instr, after) = (pts[0], pts[1], pts[2]);
-    let ns = instr
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect::<Vec<_>>();
+    let ns: Vec<_> = instr.split_whitespace().map(int).collect();
     let (op, a, b, c) = (ns[0], ns[1], ns[2], ns[3]);
-    let mem1 = before.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
+    let mem1: Vec<_> = before.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
         .split(", ")
-        .map(|x| x.parse().unwrap())
-        .collect::<Vec<_>>();
+        .map(int)
+        .collect();
     let mem2: Vec<usize> = after.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
         .split(", ")
-        .map(|x| x.parse().unwrap())
+        .map(int)
         .collect();
     let mut result = (op, 0);
     for cmd in OPS {
@@ -117,10 +115,7 @@ pub fn part2(input: &str) -> usize {
     let ops = determine_op_codes(m);
     let mut mem = vec![0; 4];
     for line in prog.lines() {
-        let pts = line
-            .split_whitespace()
-            .map(|x| x.parse().unwrap())
-            .collect::<Vec<_>>();
+        let pts: Vec<_> = line.split_whitespace().map(int).collect();
         eval(&mut mem, ops[pts[0]], pts[1], pts[2], pts[3]);
     }
     mem[0]

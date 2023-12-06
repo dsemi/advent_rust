@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use regex::Regex;
@@ -19,9 +20,9 @@ fn parse_nodes(input: &str) -> Vec<Node> {
         .map(|line| {
             let cap = re.captures(line).unwrap();
             Node {
-                coord: C(cap[1].parse().unwrap(), cap[2].parse().unwrap()),
-                used: cap[4].parse().unwrap(),
-                avail: cap[5].parse().unwrap(),
+                coord: C(cap[1].int(), cap[2].int()),
+                used: cap[4].int(),
+                avail: cap[5].int(),
             }
         })
         .collect()

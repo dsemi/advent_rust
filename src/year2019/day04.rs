@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use std::cmp::Ordering::*;
 
 fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
@@ -22,7 +23,7 @@ fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
 }
 
 fn num_valid(input: &str, f: fn(u8) -> bool) -> usize {
-    let pts: Vec<u32> = input.split('-').map(|x| x.parse().unwrap()).collect();
+    let pts: Vec<u32> = input.split('-').map(int).collect();
     (pts[0]..pts[1] + 1).filter(|&v| solve(v, f)).count()
 }
 

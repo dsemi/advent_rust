@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -27,17 +28,14 @@ fn next(t: &Tool) -> Tool {
 
 fn parse(input: &str) -> (i32, C<i32>) {
     let lns = input.lines().collect::<Vec<_>>();
-    let pts = lns[1]
+    let pts: Vec<_> = lns[1]
         .split_once(' ')
         .unwrap()
         .1
         .split(',')
-        .map(|x| x.parse().unwrap())
-        .collect::<Vec<_>>();
-    (
-        lns[0].split_once(' ').unwrap().1.parse().unwrap(),
-        C(pts[0], pts[1]),
-    )
+        .map(int)
+        .collect();
+    (lns[0].split_once(' ').unwrap().1.int(), C(pts[0], pts[1]))
 }
 
 fn erosion_levels(depth: i32, target: C<i32>) -> Vec<Vec<Tool>> {

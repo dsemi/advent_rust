@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use itertools::iterate;
 
 const FACTOR_A: u64 = 16807;
@@ -6,7 +7,7 @@ const FACTOR_B: u64 = 48271;
 fn parse(input: &str) -> (u64, u64) {
     let pts: Vec<u64> = input
         .lines()
-        .map(|x| x.split_whitespace().last().unwrap().parse().unwrap())
+        .map(|x| x.split_whitespace().last().unwrap().int())
         .collect();
     (pts[0], pts[1])
 }

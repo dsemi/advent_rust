@@ -185,6 +185,15 @@ impl ParseInt for String {
     }
 }
 
+impl ParseInt for str {
+    fn int<T: Num>(&self) -> T
+    where
+        <T as Num>::FromStrRadixErr: std::fmt::Debug,
+    {
+        T::from_str_radix(self, 10).unwrap()
+    }
+}
+
 impl ParseInt for &str {
     fn int<T: Num>(&self) -> T
     where

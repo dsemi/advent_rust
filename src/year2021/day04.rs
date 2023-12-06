@@ -1,3 +1,5 @@
+use crate::utils::parsers::*;
+
 fn is_winner(brd: &[Vec<i32>]) -> bool {
     (0..brd.len())
         .any(|i| (0..brd.len()).all(|j| brd[i][j] == -1) || (0..brd.len()).all(|j| brd[j][i] == -1))
@@ -10,12 +12,12 @@ fn winner_scores(input: &str) -> impl Iterator<Item = i32> + '_ {
         .map(|board| {
             board
                 .lines()
-                .map(|row| row.split_whitespace().map(|n| n.parse().unwrap()).collect())
+                .map(|row| row.split_whitespace().map(int).collect())
                 .collect()
         })
         .collect();
     nums.split(',').flat_map(move |n| {
-        let n = n.parse::<i32>().unwrap();
+        let n = n.int::<i32>();
         // drain_filter.
         let mut winners = vec![];
         boards.retain_mut(|b| {

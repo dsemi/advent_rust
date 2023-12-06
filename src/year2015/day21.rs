@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use std::cmp::max;
@@ -95,7 +96,7 @@ fn person(equip: Equip) -> Person {
 fn parse_boss(input: &str) -> Person {
     let v: Vec<i32> = input
         .lines()
-        .map(|line| line.split(' ').last().unwrap().parse().unwrap())
+        .map(|line| line.split(' ').last().unwrap().int())
         .collect();
     Person {
         hitpoints: v[0],

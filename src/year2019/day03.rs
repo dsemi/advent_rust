@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::C;
 
 #[derive(Eq, PartialEq)]
@@ -35,7 +36,7 @@ fn parse_wires(input: &str) -> Vec<Wire> {
                             b'R' => (Orientation::H, C(1, 0)),
                             _ => panic!("Unknown direction: {}", p),
                         };
-                        let n = p[1..].parse::<i32>().unwrap();
+                        let n = p[1..].int::<i32>();
                         let prev = pos;
                         pos += d * n;
                         let (d, a, b, r) = if prev < pos {

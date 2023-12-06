@@ -1,4 +1,4 @@
-use crate::ocr::*;
+use crate::utils::ocr::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 

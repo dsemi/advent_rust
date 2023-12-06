@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashSet;
 
@@ -6,10 +7,7 @@ type Pt = (i64, i64, i64, i64);
 fn parse_points(input: &str) -> UnionFind<Pt> {
     let mut pts = UnionFind::new();
     input.lines().for_each(|line| {
-        let ns = line
-            .split(',')
-            .map(|x| x.parse().unwrap())
-            .collect::<Vec<_>>();
+        let ns: Vec<_> = line.split(',').map(int).collect();
         pts.push((ns[0], ns[1], ns[2], ns[3]));
     });
     pts

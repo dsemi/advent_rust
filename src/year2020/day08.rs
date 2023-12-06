@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use Instr::*;
 
@@ -13,9 +14,9 @@ fn parse_prog(s: &str) -> Vec<Instr> {
         .map(|line| {
             let w: Vec<&str> = line.split(' ').collect();
             match w[0] {
-                "acc" => Acc(w[1].parse().unwrap()),
-                "jmp" => Jmp(w[1].parse().unwrap()),
-                "nop" => Nop(w[1].parse().unwrap()),
+                "acc" => Acc(w[1].int()),
+                "jmp" => Jmp(w[1].int()),
+                "nop" => Nop(w[1].int()),
                 _ => panic!("Invalid instr: {}", w[0]),
             }
         })

@@ -1,11 +1,9 @@
+use crate::utils::parsers::*;
+
 fn parse(input: &str) -> Vec<Vec<u32>> {
     input
         .lines()
-        .map(|line| {
-            line.split_whitespace()
-                .map(|x| x.parse::<u32>().unwrap())
-                .collect::<Vec<_>>()
-        })
+        .map(|line| line.split_whitespace().map(int).collect())
         .collect()
 }
 

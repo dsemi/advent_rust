@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use itertools::iterate;
@@ -91,7 +92,7 @@ impl Board {
                 .map(|instr| match instr.as_str() {
                     "L" => Instr::Turn(false),
                     "R" => Instr::Turn(true),
-                    n => Instr::Step(n.parse().unwrap()),
+                    n => Instr::Step(n.int()),
                 })
                 .collect(),
         }
