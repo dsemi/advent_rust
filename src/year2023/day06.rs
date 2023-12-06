@@ -1,8 +1,7 @@
-fn nums(i: &str) -> Vec<u64> {
-    i.split_whitespace()
-        .skip(1)
-        .map(|x| x.parse().unwrap())
-        .collect()
+use crate::utils::parsers::*;
+
+fn nums(i: &str) -> impl Iterator<Item = u64> + '_ {
+    i.split_whitespace().skip(1).map(int)
 }
 
 fn race(time: u64, dist: u64) -> u64 {
@@ -22,11 +21,8 @@ fn race(time: u64, dist: u64) -> u64 {
 
 pub fn part1(input: &str) -> u64 {
     let (times, dists) = input.split_once('\n').unwrap();
-    let times = nums(times);
-    let dists = nums(dists);
-    times
-        .into_iter()
-        .zip(dists)
+    nums(times)
+        .zip(nums(dists))
         .map(|(time, win_dist)| race(time, win_dist))
         .product()
 }
@@ -37,7 +33,5 @@ fn squish(i: &str) -> String {
 
 pub fn part2(input: &str) -> u64 {
     let (times, dists) = input.split_once('\n').unwrap();
-    let time = squish(times).parse().unwrap();
-    let win_dist = squish(dists).parse().unwrap();
-    race(time, win_dist)
+    race(squish(times).int(), squish(dists).int())
 }
