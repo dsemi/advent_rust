@@ -21,10 +21,7 @@ fn parse(i: &str) -> IResult<&str, (&str, (i64, Vec<(i64, &str)>))> {
 }
 
 fn parse_reactions(input: &str) -> Reactions {
-    let graph = input
-        .lines()
-        .map(|line| parse(line).unwrap().1)
-        .collect::<AHashMap<_, _>>();
+    let graph = lines_iter(input, parse).collect::<AHashMap<_, _>>();
     let mut incoming = AHashMap::new();
     graph.values().for_each(|(_, srcs)| {
         srcs.iter()

@@ -1,7 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 use std::cmp::Ordering::*;
-use std::cmp::{max, min};
 
 fn parse_seeds(input: &str) -> IResult<&str, Vec<i64>> {
     preceded(tag("seeds: "), separated_list1(space1, i64))(input)
@@ -56,18 +55,11 @@ pub fn part2(input: &str) -> i64 {
                 for &(src, offset) in map.iter() {
                     let mut next_intervals = Vec::new();
                     intervals.into_iter().for_each(|int| {
-                        let before = Interval::new(int.lo, min(int.hi, src.lo));
                         let inter = int.intersect(&src);
-                        let after = Interval::new(max(int.lo, src.hi), int.hi);
-                        if before.valid() {
-                            next_intervals.push(before)
-                        }
                         if inter.valid() {
                             result.push(inter + offset)
                         }
-                        if after.valid() {
-                            next_intervals.push(after)
-                        }
+                        next_intervals.extend(int - inter);
                     });
                     intervals = next_intervals;
                 }

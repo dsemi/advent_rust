@@ -93,6 +93,14 @@ where
     separated_list0(pair(nom::bytes::complete::tag(","), space0), f)
 }
 
+pub fn lines_iter<'a, O, E, F>(i: &'a str, f: F) -> impl Iterator<Item = O> + 'a
+where
+    F: Parser<&'a str, O, E> + 'a + Copy,
+    E: ParseError<&'a str> + std::fmt::Debug,
+{
+    i.lines().map(move |line| all_consuming(f)(line).unwrap().1)
+}
+
 pub fn lines<'a, O, E, F>(i: &'a str, f: F) -> Vec<O>
 where
     F: Parser<&'a str, O, E>,

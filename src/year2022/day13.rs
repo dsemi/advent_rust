@@ -41,7 +41,7 @@ impl Ord for Packet {
 pub fn part1(input: &str) -> usize {
     input
         .split("\n\n")
-        .flat_map(|seg| seg.lines().map(|line| parse(line).unwrap().1))
+        .flat_map(|seg| lines_iter(seg, parse))
         .collect::<Vec<_>>()
         .chunks(2)
         .enumerate()
@@ -52,7 +52,7 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     let packets = input
         .split("\n\n")
-        .flat_map(|seg| seg.lines().map(|line| parse(line).unwrap().1))
+        .flat_map(|seg| lines_iter(seg, parse))
         .sorted_unstable()
         .collect::<Vec<_>>();
     let a = parse("[[2]]").unwrap().1;

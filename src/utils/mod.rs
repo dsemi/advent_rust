@@ -3,6 +3,7 @@ use itertools::Itertools;
 use num::{Num, PrimInt, Signed};
 use num_traits::ops::saturating::SaturatingAdd;
 use num_traits::{One, Zero};
+use smallvec::SmallVec;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
@@ -830,6 +831,29 @@ impl Add<i64> for Interval {
 
     fn add(self, diff: i64) -> Self::Output {
         Interval::new(self.lo + diff, self.hi + diff)
+    }
+}
+
+impl Sub<i64> for Interval {
+    type Output = Interval;
+
+    fn sub(self, diff: i64) -> Self::Output {
+        Interval::new(self.lo - diff, self.hi - diff)
+    }
+}
+
+impl Sub<Interval> for Interval {
+    type Output = SmallVec<[Interval; 2]>;
+
+    fn sub(self, other: Interval) -> Self::Output {
+        let mut result = Self::Output::new();
+        if other.lo > self.lo {
+            result.push(Interval::new(self.lo, min(self.hi, other.lo)));
+        }
+        if other.hi < self.hi {
+            result.push(Interval::new(max(self.lo, other.hi), self.hi));
+        }
+        result
     }
 }
 
