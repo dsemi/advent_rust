@@ -1,13 +1,21 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use ahash::AHashSet;
 use itertools::Itertools;
-use regex::Regex;
+use std::ops::BitOrAssign;
 
-#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pair {
     chip: i32,
     gen: i32,
+}
+
+impl BitOrAssign for Pair {
+    fn bitor_assign(&mut self, rhs: Pair) {
+        self.chip |= rhs.chip;
+        self.gen |= rhs.gen;
+    }
 }
 
 #[derive(Eq, Clone, Hash, PartialEq)]
@@ -28,23 +36,29 @@ impl Floors {
     }
 }
 
+fn parse(flr: i32) -> impl FnMut(&str) -> IResult<&str, (&str, Pair)> {
+    move |i| {
+        let (i, elem) = delimited(
+            pair(opt(tag("and ")), tag("a ")),
+            alpha1,
+            pair(opt(tag("-compatible")), space1),
+        )(i)?;
+        let (i, pair) = alt((
+            value(Pair { chip: flr, gen: 0 }, tag("microchip")),
+            value(Pair { chip: 0, gen: flr }, tag("generator")),
+        ))(i)?;
+        Ok((i, (elem, pair)))
+    }
+}
+
 fn parse_floors(input: &str) -> Floors {
     let mut tbl = AHashMap::new();
-    let re = Regex::new(r"(\w+)(?:-compatible)? (microchip|generator)").unwrap();
     for (i, line) in input.lines().enumerate() {
-        for cap in re.captures_iter(line) {
-            let e = tbl
-                .entry(cap[1].to_owned())
-                .or_insert(Pair { chip: 0, gen: 0 });
-            match &cap[2] {
-                "generator" => {
-                    e.gen = i as i32 + 1;
-                }
-                "microchip" => {
-                    e.chip = i as i32 + 1;
-                }
-                _ => panic!("Invalid input: {}", line),
-            }
+        if let Some(idx) = line.find("a ") {
+            list(parse(i as i32 + 1))
+                .read(&line[idx..])
+                .into_iter()
+                .for_each(|(k, pair)| *tbl.entry(k).or_default() |= pair);
         }
     }
     Floors {

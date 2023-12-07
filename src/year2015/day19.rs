@@ -1,28 +1,24 @@
 use crate::utils::parsers::*;
 use ahash::AHashSet;
-use regex::Regex;
 
 fn parse_mappings(input: &str) -> (&str, Vec<(&str, &str)>) {
     let v: Vec<_> = input.split("\n\n").collect();
     (v[1], lines(sep_tuple2(tag(" => "), alpha1)).read(v[0]))
 }
 
-fn single_replacements(src: &str, k: &str, v: &str) -> Vec<String> {
-    let re = Regex::new(k).unwrap();
-    re.find_iter(src)
-        .map(|m| {
-            let mut s = src.to_string();
-            s.replace_range(m.range(), v);
-            s
-        })
-        .collect()
+fn single_repls<'a>(src: &'a str, k: &'a str, v: &'a str) -> impl Iterator<Item = String> + 'a {
+    src.match_indices(k).map(|(i, _)| {
+        let mut s = src.to_string();
+        s.replace_range(i..i + k.len(), v);
+        s
+    })
 }
 
 pub fn part1(input: &str) -> usize {
     let (s, mappings) = parse_mappings(input);
     mappings
         .into_iter()
-        .flat_map(|(k, v)| single_replacements(s, k, v))
+        .flat_map(|(k, v)| single_repls(s, k, v))
         .collect::<AHashSet<_>>()
         .len()
 }

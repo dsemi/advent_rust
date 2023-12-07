@@ -33,7 +33,6 @@ openssl-sys = "0.9.95"
 proc-macro2 = "1.0.69"
 quote = "1.0.33"
 rayon = "1.8.0"
-regex = "1.10.2"
 reqwest = { version = "0.11.22", features = ["blocking", "json"] }
 scan_fmt = "0.2.6"
 select = "0.6.0"
@@ -43,6 +42,7 @@ smallvec = { version = "1.11.2", features = ["const_generics", "const_new"] }
 streaming-iterator = "0.1.9"
 syn = "2.0.39"
 toml = "0.8.8"
+winnow = "0.5.26"
 
 [lints.clippy]
 filter_map_bool_then = "allow"
