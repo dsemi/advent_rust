@@ -12,7 +12,7 @@ impl Tree {
 }
 
 fn parse_nodes(input: &str) -> Tree {
-    let mut ns = input.split_whitespace().map(int);
+    let mut ns = input.split_whitespace().map(usize::read);
     fn parse_node<I: Iterator<Item = usize>>(ns: &mut I) -> Tree {
         let n = ns.next().unwrap();
         let m = ns.next().unwrap();

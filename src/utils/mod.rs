@@ -1,12 +1,14 @@
 use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
+use mod_exp::mod_exp;
 use num::{Num, PrimInt, Signed};
 use num_traits::ops::saturating::SaturatingAdd;
-use num_traits::{One, Zero};
+use num_traits::{One, Pow, Zero};
 use smallvec::SmallVec;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
+use std::convert::From;
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{
@@ -408,6 +410,18 @@ impl<T: Num + Copy> Sum for C<T> {
     }
 }
 
+impl<T> From<(T, T)> for C<T> {
+    fn from((a, b): (T, T)) -> Self {
+        C(a, b)
+    }
+}
+
+impl<T> From<C<T>> for (T, T) {
+    fn from(C(a, b): C<T>) -> Self {
+        (a, b)
+    }
+}
+
 macro_rules! impl_idx {
     ($($it:ty),*) => ($(
         impl<T> Index<C<$it>> for Vec<Vec<T>> {
@@ -588,6 +602,18 @@ impl<T: Neg<Output = T>> Neg for C3<T> {
 impl<T: Num + Copy> Sum for C3<T> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self(T::zero(), T::zero(), T::zero()), |a, b| a + b)
+    }
+}
+
+impl<T> From<(T, T, T)> for C3<T> {
+    fn from((a, b, c): (T, T, T)) -> Self {
+        C3(a, b, c)
+    }
+}
+
+impl<T> From<C3<T>> for (T, T, T) {
+    fn from(C3(a, b, c): C3<T>) -> Self {
+        (a, b, c)
     }
 }
 
@@ -1056,6 +1082,14 @@ impl<T> Index<usize> for UnionFind<T> {
     }
 }
 
+impl<T> FromIterator<T> for UnionFind<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut uf = Self::new();
+        iter.into_iter().for_each(|elem| uf.push(elem));
+        uf
+    }
+}
+
 pub fn replace_with<T, F: FnOnce(&T) -> T>(r: &mut T, f: F) -> T {
     let r2 = f(r);
     std::mem::replace(r, r2)
@@ -1109,4 +1143,67 @@ pub fn tails(s: &str) -> impl Iterator<Item = &'_ str> {
 
 pub fn inits(s: &str) -> impl Iterator<Item = &'_ str> {
     std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[..s.len() - 1]))
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Mod<const M: i64>(pub i64);
+
+impl<const M: i64> Mod<M> {
+    pub fn mod_inv(self) -> Self {
+        let (mut a, mut b, mut x0) = (self.0, M, 0);
+        let mut result = 1;
+        if b == 1 {
+            return Mod(1);
+        }
+        while a > 1 {
+            result -= a.div_euclid(b) * x0;
+            a = a.rem_euclid(b);
+            std::mem::swap(&mut a, &mut b);
+            std::mem::swap(&mut x0, &mut result);
+        }
+        if result < 0 {
+            result += M;
+        }
+        Mod(result)
+    }
+}
+
+impl<const M: i64> Add for Mod<M> {
+    type Output = Mod<M>;
+
+    fn add(self, other: Mod<M>) -> Self::Output {
+        Mod((self.0 + other.0).rem_euclid(M))
+    }
+}
+
+impl<const M: i64> Mul for Mod<M> {
+    type Output = Mod<M>;
+
+    fn mul(mut self, mut other: Mod<M>) -> Self::Output {
+        let mut result = 0;
+        while other.0 > 0 {
+            if other.0.rem_euclid(2) == 1 {
+                result = (result + self.0).rem_euclid(M);
+            }
+            self.0 = (2 * self.0).rem_euclid(M);
+            other.0 = other.0.div_euclid(2);
+        }
+        Mod(result)
+    }
+}
+
+impl<const M: i64> Pow<i64> for Mod<M> {
+    type Output = Mod<M>;
+
+    fn pow(self, rhs: i64) -> Self::Output {
+        Mod(mod_exp(self.0, rhs, M))
+    }
+}
+
+impl<const M: i64> Neg for Mod<M> {
+    type Output = Mod<M>;
+
+    fn neg(self) -> Self::Output {
+        Mod((-self.0).rem_euclid(M))
+    }
 }

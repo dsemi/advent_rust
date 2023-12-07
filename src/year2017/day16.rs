@@ -27,10 +27,10 @@ fn parse_actions(input: &str) -> Vec<Action> {
     input
         .split(',')
         .map(|action| match action.chars().next().unwrap() {
-            's' => Spin(action[1..].int()),
+            's' => Spin(action[1..].usize()),
             'x' => {
                 let (a, b) = action[1..].split_once('/').unwrap();
-                Exchange(a.int(), b.int())
+                Exchange(a.usize(), b.usize())
             }
             'p' => {
                 let (a, b) = action[1..].split_once('/').unwrap();

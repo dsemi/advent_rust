@@ -14,9 +14,9 @@ fn parse_prog(s: &str) -> Vec<Instr> {
         .map(|line| {
             let w: Vec<&str> = line.split(' ').collect();
             match w[0] {
-                "acc" => Acc(w[1].int()),
-                "jmp" => Jmp(w[1].int()),
-                "nop" => Nop(w[1].int()),
+                "acc" => Acc(w[1].i64()),
+                "jmp" => Jmp(w[1].i64()),
+                "nop" => Nop(w[1].i64()),
                 _ => panic!("Invalid instr: {}", w[0]),
             }
         })

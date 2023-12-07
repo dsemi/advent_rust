@@ -24,7 +24,7 @@ fn hash(n: usize, lens: Vec<usize>) -> Vec<usize> {
 }
 
 pub fn part1(input: &str) -> usize {
-    let res = hash(1, input.split(',').map(int).collect());
+    let res = hash(1, list(usize).read(input));
     res[0] * res[1]
 }
 

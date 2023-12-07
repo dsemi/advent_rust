@@ -1,7 +1,7 @@
 use crate::utils::ocr::*;
+use crate::utils::parsers::*;
 use crate::utils::C;
 use ahash::AHashSet;
-use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 struct Obj {
@@ -9,25 +9,10 @@ struct Obj {
     vel: C<i32>,
 }
 
-fn parse_objects(input: &str) -> Vec<Obj> {
-    input
-        .lines()
-        .map(|line| {
-            let (x0, y0, x1, y1) = scanf!(
-                line,
-                "position=<{},{}> velocity=<{},{}>",
-                i32,
-                i32,
-                i32,
-                i32
-            )
-            .unwrap();
-            Obj {
-                pos: C(x0, y0),
-                vel: C(x1, y1),
-            }
-        })
-        .collect()
+fn object(i: &str) -> IResult<&str, Obj> {
+    let (i, pos) = delimited(tag("position=<"), map(coord(i32), Into::into), tag("> "))(i)?;
+    let (i, vel) = delimited(tag("velocity=<"), map(coord(i32), Into::into), tag(">"))(i)?;
+    Ok((i, Obj { pos, vel }))
 }
 
 fn bounding_box(objs: &[Obj]) -> (i32, i32, i32, i32) {
@@ -68,12 +53,12 @@ fn show_objects(objs: &[Obj]) -> String {
 }
 
 pub fn part1(input: &str) -> String {
-    let mut objs = parse_objects(input);
+    let mut objs = lines(object).read(input);
     find_message(&mut objs);
     show_objects(&objs)
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut objs = parse_objects(input);
+    let mut objs = lines(object).read(input);
     find_message(&mut objs)
 }

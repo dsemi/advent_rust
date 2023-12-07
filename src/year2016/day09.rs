@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 
 fn marker(i: &str) -> IResult<&str, (usize, usize)> {
-    delimited(tag("("), separated_pair(usize, tag("x"), usize), tag(")"))(i)
+    delimited(tag("("), sep_tuple2(tag("x"), usize), tag(")"))(i)
 }
 
 fn decompressed_len(f: fn(&str) -> usize, input: &str) -> usize {

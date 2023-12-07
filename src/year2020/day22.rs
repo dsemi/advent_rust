@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 fn parse_game(s: &str) -> (VecDeque<i64>, VecDeque<i64>) {
     let parts: Vec<VecDeque<i64>> = s
         .split("\n\n")
-        .map(|p| p.lines().skip(1).map(int).collect())
+        .map(|p| p.lines().skip(1).map(i64::read).collect())
         .collect();
     (parts[0].clone(), parts[1].clone())
 }

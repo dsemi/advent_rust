@@ -1,5 +1,4 @@
 use super::intcode;
-use regex::Regex;
 
 const INSTRS: &str = "north\n\
                       east\n\
@@ -24,17 +23,11 @@ pub fn part1(input: &str) -> String {
         prog.input.push_back(c as i64);
     }
     prog.run();
-    let mut s = String::new();
-    for v in prog.output.drain(..) {
-        s.push(v as u8 as char);
-    }
-    Regex::new(r"\d+")
-        .unwrap()
-        .find_iter(&s)
-        .last()
-        .unwrap()
-        .as_str()
-        .to_string()
+    prog.output
+        .into_iter()
+        .map(|x| x as u8 as char)
+        .filter(char::is_ascii_digit)
+        .collect()
 }
 
 pub fn part2(_input: &str) -> String {

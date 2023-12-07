@@ -82,7 +82,7 @@ fn apply_effects(state: &mut Game) {
 fn parse_boss(input: &str) -> Game {
     let v: Vec<i32> = input
         .lines()
-        .map(|x| x.split(": ").last().unwrap().int())
+        .map(|x| x.split(": ").last().unwrap().i32())
         .collect();
     Game {
         player_health: 50,

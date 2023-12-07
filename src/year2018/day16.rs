@@ -51,15 +51,15 @@ fn eval(v: &mut [usize], op: Op, a: usize, b: usize, c: usize) {
 fn test_sample(sample: &str) -> (usize, u16) {
     let pts = sample.lines().collect::<Vec<_>>();
     let (before, instr, after) = (pts[0], pts[1], pts[2]);
-    let ns: Vec<_> = instr.split_whitespace().map(int).collect();
+    let ns: Vec<_> = instr.split_whitespace().map(usize::read).collect();
     let (op, a, b, c) = (ns[0], ns[1], ns[2], ns[3]);
     let mem1: Vec<_> = before.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
         .split(", ")
-        .map(int)
+        .map(usize::read)
         .collect();
     let mem2: Vec<usize> = after.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
         .split(", ")
-        .map(int)
+        .map(usize::read)
         .collect();
     let mut result = (op, 0);
     for cmd in OPS {
@@ -115,7 +115,7 @@ pub fn part2(input: &str) -> usize {
     let ops = determine_op_codes(m);
     let mut mem = vec![0; 4];
     for line in prog.lines() {
-        let pts: Vec<_> = line.split_whitespace().map(int).collect();
+        let pts = sep_list(space1, usize).read(line);
         eval(&mut mem, ops[pts[0]], pts[1], pts[2], pts[3]);
     }
     mem[0]

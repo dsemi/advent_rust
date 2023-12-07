@@ -6,7 +6,7 @@ fn solve(n: u32, input: &str) -> u32 {
     let mut filter = BitSet::new();
     let mut j = 1;
     for v in input.split(',') {
-        let k = v.int();
+        let k = v.usize();
         m[k] = j;
         filter.insert(k);
         j += 1;

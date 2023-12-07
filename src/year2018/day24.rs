@@ -65,12 +65,12 @@ fn units<'a>(idx: &Cell<usize>, name: &'a str, i: &'a str) -> IResult<&'a str, O
 
 fn army<'a>(idx: &Cell<usize>, i: &'a str) -> IResult<&'a str, Vec<Option<Group<'a>>>> {
     let (i, name) = terminated(take_till(|c: char| c == ':'), tag(":\n"))(i)?;
-    separated_list1(tag("\n"), |i| units(idx, name, i))(i)
+    lines(|i| units(idx, name, i))(i)
 }
 
 fn armies(i: &str) -> IResult<&str, Vec<Option<Group>>> {
     let idx = Cell::new(0);
-    let (i, (a, b)) = separated_pair(|i| army(&idx, i), tag("\n\n"), |i| army(&idx, i))(i)?;
+    let (i, (a, b)) = sep_tuple2(tag("\n\n"), |i| army(&idx, i))(i)?;
     Ok((i, [a, b].concat()))
 }
 
@@ -136,7 +136,7 @@ fn battle(groups: &mut [Option<Group>]) -> bool {
 }
 
 pub fn part1(input: &str) -> i32 {
-    let mut groups = armies(input).unwrap().1;
+    let mut groups = armies.read(input);
     battle(&mut groups);
     groups.iter().flatten().map(|g| g.units).sum()
 }
@@ -160,7 +160,7 @@ fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
 }
 
 pub fn part2(input: &str) -> i32 {
-    let gps = armies(input).unwrap().1;
+    let gps = armies.read(input);
     let hi = iterate(1, |x| x * 2)
         .map(|n| immune_left(&gps, n))
         .find(|&left| left > 0)

@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 
 fn parse_pipes(input: &str) -> Vec<Vec<usize>> {
-    lines(input, preceded(pair(digit1, tag(" <-> ")), list(usize)))
+    lines(preceded(pair(digit1, tag(" <-> ")), list(usize))).read(input)
 }
 
 pub fn part1(input: &str) -> usize {

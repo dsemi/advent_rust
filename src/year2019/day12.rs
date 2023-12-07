@@ -1,23 +1,22 @@
+use crate::utils::parsers::*;
 use num::integer::lcm;
-use scan_fmt::scan_fmt as scanf;
+use smallvec::{smallvec as sv, SmallVec};
 
 #[derive(Clone, Eq, PartialEq)]
 struct Moon {
-    pos: Vec<i64>,
-    vel: Vec<i64>,
+    pos: SmallVec<[i64; 3]>,
+    vel: SmallVec<[i64; 3]>,
 }
 
-fn parse_moons(input: &str) -> Vec<Moon> {
-    input
-        .lines()
-        .map(|line| {
-            let (x, y, z) = scanf!(line, "<x={}, y={}, z={}>", i64, i64, i64).unwrap();
-            Moon {
-                pos: vec![x, y, z],
-                vel: vec![0, 0, 0],
-            }
-        })
-        .collect()
+fn moon(i: &str) -> IResult<&str, Moon> {
+    let (i, (x, y, z)) = delimited(
+        tag("<"),
+        coord3(preceded(pair(anychar, tag("=")), i64)),
+        tag(">"),
+    )(i)?;
+    let pos = sv![x, y, z];
+    let vel = sv![0, 0, 0];
+    Ok((i, Moon { pos, vel }))
 }
 
 fn step(moons: &mut [Moon]) {
@@ -36,7 +35,7 @@ fn step(moons: &mut [Moon]) {
 }
 
 pub fn part1(input: &str) -> i64 {
-    let mut m = parse_moons(input);
+    let mut m = lines(moon).read(input);
     for _ in 0..1000 {
         step(&mut m);
     }
@@ -49,16 +48,16 @@ pub fn part1(input: &str) -> i64 {
 }
 
 pub fn part2(input: &str) -> Option<u64> {
-    let moons = parse_moons(input);
+    let moons = lines(moon).read(input);
     (0..=2)
         .map(|n| {
-            let mut degen = moons
+            let mut degen: Vec<_> = moons
                 .iter()
                 .map(|m| Moon {
-                    pos: vec![m.pos[n]],
-                    vel: vec![m.vel[n]],
+                    pos: sv![m.pos[n]],
+                    vel: sv![m.vel[n]],
                 })
-                .collect::<Vec<_>>();
+                .collect();
             let mut counter = 1;
             loop {
                 step(&mut degen);

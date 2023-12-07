@@ -39,7 +39,7 @@ fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
         .lines()
         .map(|line| {
             let (a, b) = line.split_once('-').unwrap();
-            (a.int(), b.int())
+            (a.u64(), b.u64())
         })
         .collect();
     ips.sort_unstable();

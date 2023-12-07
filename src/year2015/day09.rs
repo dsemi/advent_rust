@@ -1,16 +1,13 @@
+use crate::utils::parsers::*;
 use crate::utils::{held_karp, UniqueIdx};
-use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, u64};
-use nom::combinator::map;
-use nom::sequence::tuple;
-use nom::IResult;
 use std::cmp::{max, min};
 
 fn parse(i: &str) -> IResult<&str, (&str, &str, usize)> {
-    map(
-        tuple((alpha1, tag(" to "), alpha1, tag(" = "), u64)),
-        |(k1, _, k2, _, v)| (k1, k2, v as usize),
-    )(i)
+    tuple((
+        alpha1,
+        preceded(tag(" to "), alpha1),
+        preceded(tag(" = "), usize),
+    ))(i)
 }
 
 fn all_path_distances(input: &str, f: fn(usize, usize) -> usize) -> Option<usize> {
@@ -18,7 +15,7 @@ fn all_path_distances(input: &str, f: fn(usize, usize) -> usize) -> Option<usize
     let mut ui = UniqueIdx::new();
     let fake = ui.idx("fake");
     for line in input.lines() {
-        let (k1, k2, v) = parse(line).unwrap().1;
+        let (k1, k2, v) = parse.read(line);
         let n1 = ui.idx(k1);
         let n2 = ui.idx(k2);
         while max(n1, n2) >= adj.len() {

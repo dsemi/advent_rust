@@ -1,22 +1,15 @@
 use crate::utils::parsers::*;
 
 fn nums(i: &str) -> impl Iterator<Item = u64> + '_ {
-    i.split_whitespace().skip(1).map(int)
+    i.split_whitespace().skip(1).map(u64::read)
 }
 
 fn race(time: u64, dist: u64) -> u64 {
     // hold^2 - hold*time + dist = 0
-    // use isqrt when that stabilizes.
-    let root = (((time * time - 4 * dist) as f64).sqrt()) as u64;
-    let mut start = (time - root).div_ceil(2);
-    let mut end = (time + root) / 2;
-    if (time - start) * start > dist {
-        start -= 1;
-    }
-    if (time - end) * end > dist {
-        end += 1;
-    }
-    end - start - 1
+    let root = ((time * time - 4 * dist) as f64).sqrt();
+    let start = (time as f64 - root) / 2.0;
+    let end = (time as f64 + root) / 2.0;
+    end.ceil() as u64 - start.floor() as u64 - 1
 }
 
 pub fn part1(input: &str) -> u64 {
@@ -33,5 +26,5 @@ fn squish(i: &str) -> String {
 
 pub fn part2(input: &str) -> u64 {
     let (times, dists) = input.split_once('\n').unwrap();
-    race(squish(times).int(), squish(dists).int())
+    race(squish(times).u64(), squish(dists).u64())
 }

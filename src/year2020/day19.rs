@@ -15,14 +15,14 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
             .map(|line| {
                 let (idx, content) = line.split_once(": ").unwrap();
                 (
-                    idx.int::<usize>(),
+                    idx.usize(),
                     if content.starts_with('"') {
-                        Single(content.chars().nth(1).unwrap() as u8)
+                        Single(content.bytes().nth(1).unwrap())
                     } else {
                         Multi(
                             content
                                 .split(" | ")
-                                .map(|part| part.split(' ').map(int).collect())
+                                .map(|part| part.split(' ').map(usize::read).collect())
                                 .collect(),
                         )
                     },

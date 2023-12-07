@@ -1,3 +1,4 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
 
 type Row = Vec<bool>;
@@ -13,14 +14,13 @@ fn parse_tiles(s: &str) -> Vec<Tile> {
     s.split("\n\n")
         .map(|x| {
             let mut gen = x.lines();
-            let n: u64 = gen
+            let n = gen
                 .next()
                 .unwrap()
                 .split(&[' ', ':'][..])
                 .nth(1)
                 .unwrap()
-                .parse()
-                .unwrap();
+                .u64();
             let grid = gen.map(|x| x.chars().map(|x| x == '#').collect()).collect();
             Tile { num: n, grid }
         })

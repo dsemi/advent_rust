@@ -4,22 +4,19 @@ use ahash::{AHashMap, AHashSet};
 fn bag(i: &str) -> IResult<&str, &str> {
     terminated(
         recognize(tuple((alpha1, space1, alpha1))),
-        alt((tag(" bags"), tag(" bag"))),
+        pair(alt((tag(" bags"), tag(" bag"))), opt(tag("."))),
     )(i)
 }
 
 fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
-    s.lines()
-        .map(|line| {
-            separated_pair(
-                bag,
-                tag(" contain "),
-                list(separated_pair(u32, space1, bag)),
-            )(line)
-            .unwrap()
-            .1
-        })
-        .collect()
+    lines_iter(s, |i| {
+        separated_pair(
+            bag,
+            tag(" contain "),
+            list(separated_pair(u32, space1, bag)),
+        )(i)
+    })
+    .collect()
 }
 
 pub fn part1(input: &str) -> usize {

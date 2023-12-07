@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 
 fn parse_nums(s: &str) -> Vec<i64> {
-    let mut ns: Vec<i64> = s.lines().map(int).collect();
+    let mut ns = lines(i64).read(s);
     ns.sort_unstable();
     ns.insert(0, 0);
     ns.push(ns.last().unwrap() + 3);

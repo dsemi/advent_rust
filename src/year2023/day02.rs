@@ -9,17 +9,17 @@ fn color(i: &str) -> IResult<&str, C3<usize>> {
     ))(i)
 }
 
-fn game(i: &str) -> IResult<&str, C3<usize>> {
-    map(
-        separated_list0(tag("; "), map(list(color), |v| v.into_iter().sum())),
-        |v| v.into_iter().reduce(C3::swol).unwrap(),
-    )(i)
+fn game(i: &str) -> C3<usize> {
+    i.split("; ")
+        .map(|roll| roll.split(", ").map(|c| color.read(c)).sum())
+        .reduce(C3::swol)
+        .unwrap()
 }
 
 fn parse(input: &str) -> impl Iterator<Item = C3<usize>> + '_ {
     input
         .lines()
-        .map(|line| game(line.split_once(": ").unwrap().1).unwrap().1)
+        .map(|line| game(line.split_once(": ").unwrap().1))
 }
 
 pub fn part1(input: &str) -> usize {

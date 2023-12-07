@@ -14,18 +14,8 @@ fn parse_rules(s: &str) -> Input {
         .lines()
         .map(|line| scanf!(line, "{[^:]}: {}-{} or {}-{}", String, i64, i64, i64, i64).unwrap())
         .collect();
-    let yours: Vec<i64> = parts[1]
-        .lines()
-        .last()
-        .unwrap()
-        .split(',')
-        .map(int)
-        .collect();
-    let others: Vec<Vec<i64>> = parts[2]
-        .lines()
-        .skip(1)
-        .map(|line| line.split(',').map(int).collect())
-        .collect();
+    let yours = preceded(tag("your ticket:\n"), list(i64)).read(parts[1]);
+    let others = preceded(tag("nearby tickets:\n"), lines(list(i64))).read(parts[2]);
     Input {
         rules,
         yours,

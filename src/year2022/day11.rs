@@ -36,7 +36,7 @@ struct Monkey {
     f: usize,
 }
 
-fn parse(i: &str) -> IResult<&str, Monkey> {
+fn monkey(i: &str) -> IResult<&str, Monkey> {
     let i = delimited(tag("Monkey "), usize, tag(":"))(i)?.0;
     let (i, ns) = preceded(tag("\n  Starting items: "), list(u64))(i)?;
     let (i, op) = preceded(tag("\n  Operation: new = "), Op::parse)(i)?;
@@ -44,13 +44,6 @@ fn parse(i: &str) -> IResult<&str, Monkey> {
     let (i, t) = preceded(tag("\n    If true: throw to monkey "), usize)(i)?;
     let (i, f) = preceded(tag("\n    If false: throw to monkey "), usize)(i)?;
     Ok((i, Monkey { ns, op, test, t, f }))
-}
-
-fn monkeys(input: &str) -> Vec<Monkey> {
-    input
-        .split("\n\n")
-        .map(|line| parse(line).unwrap().1)
-        .collect()
 }
 
 fn play(
@@ -79,7 +72,7 @@ fn play(
 }
 
 fn solve(input: &str, p2: bool) -> usize {
-    let mks = monkeys(input);
+    let mks = sep_list(tag("\n\n"), monkey).read(input);
     let items = mks
         .iter()
         .enumerate()

@@ -3,14 +3,14 @@ use crate::utils::parsers::*;
 
 fn parse_buses(s: &str) -> (i64, Vec<(i64, i64)>) {
     let ls: Vec<&str> = s.lines().collect();
-    let t = ls[0].int();
+    let t = ls[0].i64();
     (
         t,
         ls[1]
             .split(',')
             .enumerate()
             .filter(|&(_, x)| x != "x")
-            .map(|(i, x)| (-(i as i64), x.int()))
+            .map(|(i, x)| (-(i as i64), x.i64()))
             .collect(),
     )
 }

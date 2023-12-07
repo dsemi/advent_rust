@@ -1,10 +1,8 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
 
 fn parse_orbits(input: &str) -> impl Iterator<Item = (&str, &str)> {
-    input.lines().map(|line| {
-        let pts: Vec<&str> = line.split(')').collect();
-        (pts[0], pts[1])
-    })
+    lines_iter(input, |i| sep_tuple2(tag(")"), alphanumeric1)(i))
 }
 
 pub fn part1(input: &str) -> usize {

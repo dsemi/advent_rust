@@ -5,12 +5,10 @@ use ahash::AHashSet;
 type Pt = (i64, i64, i64, i64);
 
 fn parse_points(input: &str) -> UnionFind<Pt> {
-    let mut pts = UnionFind::new();
-    input.lines().for_each(|line| {
-        let ns: Vec<_> = line.split(',').map(int).collect();
-        pts.push((ns[0], ns[1], ns[2], ns[3]));
-    });
-    pts
+    input
+        .lines()
+        .map(|line| sep_tuple4(tag(","), i64).read(line))
+        .collect()
 }
 
 fn dist((w0, x0, y0, z0): Pt, (w1, x1, y1, z1): Pt) -> i64 {

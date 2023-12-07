@@ -13,7 +13,7 @@ fn all_sizes(input: &str) -> Vec<i64> {
                 fstree.push(std::mem::take(&mut size));
             }
         } else if line.as_bytes()[0].is_ascii_digit() {
-            size += line.split_whitespace().next().unwrap().int::<i64>();
+            size += line.split_whitespace().next().unwrap().i64();
         }
     }
     result.push(size);

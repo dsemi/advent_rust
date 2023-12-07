@@ -65,8 +65,8 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
 impl Prog {
     pub fn parse_instrs(input: &str) -> Self {
         let mut gen = input.lines();
-        let ip = preceded(tag("#ip "), usize)(gen.next().unwrap()).unwrap().1;
-        let instrs = gen.map(|line| parse_instr(line).unwrap().1).collect();
+        let ip = preceded(tag("#ip "), usize).read(gen.next().unwrap());
+        let instrs = gen.map(|line| parse_instr.read(line)).collect();
         Self {
             ip,
             instrs,

@@ -6,15 +6,7 @@ use std::cmp::{max, min};
 
 fn parse(input: &str) -> (AHashSet<(usize, usize)>, &str) {
     let (dots, instrs) = input.split_once("\n\n").unwrap();
-    (
-        dots.lines()
-            .map(|dot| {
-                let (x, y) = dot.split_once(',').unwrap();
-                (x.int(), y.int())
-            })
-            .collect(),
-        instrs,
-    )
+    (lines_iter(dots, coord(usize)).collect(), instrs)
 }
 
 fn fold(paper: AHashSet<(usize, usize)>, instr: &str) -> AHashSet<(usize, usize)> {

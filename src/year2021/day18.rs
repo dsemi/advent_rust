@@ -11,14 +11,15 @@ struct Snailfish {
     ns: Vec<Num>,
 }
 
-fn parse(i: &str, d: usize) -> IResult<&str, Vec<Num>> {
-    alt((
-        map(u64, |n| vec![Num { depth: d, value: n }]),
-        map(
-            delimited(tag("["), list(|i| parse(i, d + 1)), tag("]")),
-            |ns| ns.concat(),
-        ),
-    ))(i)
+fn parse(d: usize) -> impl FnMut(&str) -> IResult<&str, Vec<Num>> {
+    move |i| {
+        alt((
+            map(u64, |n| vec![Num { depth: d, value: n }]),
+            map(delimited(tag("["), list(parse(d + 1)), tag("]")), |ns| {
+                ns.concat()
+            }),
+        ))(i)
+    }
 }
 
 impl Snailfish {
@@ -89,7 +90,7 @@ pub fn part1(input: &str) -> u64 {
     input
         .lines()
         .map(|line| Snailfish {
-            ns: parse(line, 0).unwrap().1,
+            ns: parse(0).read(line),
         })
         .reduce(|a, b| add(&a, &b))
         .unwrap()
@@ -100,7 +101,7 @@ pub fn part2(input: &str) -> Option<u64> {
     let ns = input
         .lines()
         .map(|line| Snailfish {
-            ns: parse(line, 0).unwrap().1,
+            ns: parse(0).read(line),
         })
         .collect::<Vec<_>>();
     ns.par_iter()

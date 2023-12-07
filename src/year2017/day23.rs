@@ -38,7 +38,7 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
 }
 
 fn parse_instrs(input: &str) -> Prog {
-    let instrs = lines(input, parse_instr);
+    let instrs = lines(parse_instr).read(input);
     Prog {
         reg: [0; 8],
         line: 0,

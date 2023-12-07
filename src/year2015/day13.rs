@@ -1,10 +1,5 @@
+use crate::utils::parsers::*;
 use crate::utils::{held_karp, UniqueIdx};
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, i32};
-use nom::combinator::{map, value};
-use nom::sequence::tuple;
-use nom::IResult;
 use std::cmp::max;
 
 fn parse(i: &str) -> IResult<&str, (&str, i32, &str)> {
@@ -29,7 +24,7 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
         result.push(vec![0; l]);
     }
     for line in input.lines() {
-        let (p1, n, p2) = parse(line).unwrap().1;
+        let (p1, n, p2) = parse.read(line);
         result[ui.idx(p1)][ui.idx(p2)] += n;
         result[ui.idx(p2)][ui.idx(p1)] += n;
     }

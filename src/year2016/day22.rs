@@ -1,7 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashMap;
-use regex::Regex;
 use std::cmp::max;
 
 #[derive(Clone)]
@@ -11,21 +10,17 @@ struct Node {
     avail: i64,
 }
 
+fn node(i: &str) -> IResult<&str, Node> {
+    let (i, _) = tag("/dev/grid/node-x")(i)?;
+    let (i, coord) = map(sep_tuple2(tag("-y"), i32), Into::into)(i)?;
+    let (i, _) = delimited(space1, i64, tag("T"))(i)?;
+    let (i, used) = delimited(space1, i64, tag("T"))(i)?;
+    let (i, avail) = delimited(space1, i64, tag("T"))(i)?;
+    Ok((i, Node { coord, used, avail }))
+}
+
 fn parse_nodes(input: &str) -> Vec<Node> {
-    let re =
-        Regex::new(r"/dev/grid/node-x(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T\s+(\d+)T\s+(\d+)%").unwrap();
-    input
-        .lines()
-        .skip(2)
-        .map(|line| {
-            let cap = re.captures(line).unwrap();
-            Node {
-                coord: C(cap[1].int(), cap[2].int()),
-                used: cap[4].int(),
-                avail: cap[5].int(),
-            }
-        })
-        .collect()
+    input.lines().skip(2).map(|line| node.read(line)).collect()
 }
 
 pub fn part1(input: &str) -> usize {

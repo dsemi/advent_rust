@@ -1,10 +1,5 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, i64, space1, u8};
-use nom::combinator::recognize;
-use nom::sequence::{pair, preceded, separated_pair};
-use nom::IResult;
 use std::cmp::{max, min};
 use Src::*;
 
@@ -50,7 +45,7 @@ fn value(i: &str) -> IResult<&str, Vec<(&str, Src<'_>)>> {
 fn run_factory(input: &str) -> AHashMap<&str, Vec<i64>> {
     let mut tbl: AHashMap<&str, Node> = AHashMap::new();
     for line in input.lines() {
-        for (k, src) in alt((value, bot))(line).unwrap().1 {
+        for (k, src) in alt((value, bot)).read(line) {
             tbl.entry(k).or_default().push(src);
         }
     }

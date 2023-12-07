@@ -96,7 +96,7 @@ fn person(equip: Equip) -> Person {
 fn parse_boss(input: &str) -> Person {
     let v: Vec<i32> = input
         .lines()
-        .map(|line| line.split(' ').last().unwrap().int())
+        .map(|line| line.split(' ').last().unwrap().i32())
         .collect();
     Person {
         hitpoints: v[0],

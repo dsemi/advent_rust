@@ -3,7 +3,6 @@ use crate::utils::*;
 use ahash::AHashMap;
 use itertools::iterate;
 use num::integer::gcd;
-use regex::Regex;
 use Face::*;
 
 const X: C3<i32> = C3(1, 0, 0);
@@ -66,6 +65,7 @@ impl Face {
     }
 }
 
+#[derive(Clone)]
 enum Instr {
     Turn(bool),
     Step(usize),
@@ -79,22 +79,22 @@ struct Board {
     top_left: C<i32>,
 }
 
+fn instr(i: &str) -> IResult<&str, Instr> {
+    alt((
+        value(Instr::Turn(false), tag("L")),
+        value(Instr::Turn(true), tag("R")),
+        map(usize, Instr::Step),
+    ))(i)
+}
+
 impl Board {
     fn new(input: &str) -> Self {
-        let pts = input.split("\n\n").collect::<Vec<_>>();
-        let reg = Regex::new(r"\d+|.").unwrap();
-        let grid: Vec<Vec<char>> = pts[0].lines().map(|line| line.chars().collect()).collect();
+        let (grid, path) =
+            separated_pair(lines(many1(none_of("\n"))), tag("\n\n"), many1(instr)).read(input);
         Self {
             top_left: C(0, grid[0].iter().position(|&c| c != ' ').unwrap() as i32),
             grid,
-            path: reg
-                .find_iter(pts[1])
-                .map(|instr| match instr.as_str() {
-                    "L" => Instr::Turn(false),
-                    "R" => Instr::Turn(true),
-                    n => Instr::Step(n.int()),
-                })
-                .collect(),
+            path,
         }
     }
 

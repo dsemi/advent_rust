@@ -1,4 +1,4 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 use std::cmp::{max, min};
 
 const WIDTH: usize = 1000;
@@ -6,14 +6,11 @@ const WIDTH: usize = 1000;
 fn parse_grid(input: &str) -> Vec<Vec<char>> {
     let mut res = Vec::new();
     for line in input.lines() {
-        let mut pts = Vec::new();
-        for pt in line.split(" -> ") {
-            let (c, r) = scanf!(pt, "{},{}", usize, usize).unwrap();
-            while res.len() < r + 2 {
-                res.push(vec!['-'; WIDTH]);
-            }
-            pts.push((c, r));
-        }
+        let pts = sep_list(tag("->"), coord(usize)).read(line);
+        res.resize(
+            max(res.len(), pts.iter().map(|(_, r)| r).max().unwrap() + 2),
+            vec!['-'; WIDTH],
+        );
         for i in 1..pts.len() {
             let (x0, y0) = min(pts[i - 1], pts[i]);
             let (x1, y1) = max(pts[i - 1], pts[i]);

@@ -26,16 +26,12 @@ fn next(t: &Tool) -> Tool {
     }
 }
 
-fn parse(input: &str) -> (i32, C<i32>) {
-    let lns = input.lines().collect::<Vec<_>>();
-    let pts: Vec<_> = lns[1]
-        .split_once(' ')
-        .unwrap()
-        .1
-        .split(',')
-        .map(int)
-        .collect();
-    (lns[0].split_once(' ').unwrap().1.int(), C(pts[0], pts[1]))
+fn parse(i: &str) -> IResult<&str, (i32, C<i32>)> {
+    separated_pair(
+        preceded(tag("depth: "), i32),
+        tag("\n"),
+        preceded(tag("target: "), map(coord(i32), Into::into)),
+    )(i)
 }
 
 fn erosion_levels(depth: i32, target: C<i32>) -> Vec<Vec<Tool>> {
@@ -65,7 +61,7 @@ fn erosion_levels(depth: i32, target: C<i32>) -> Vec<Vec<Tool>> {
 }
 
 pub fn part1(input: &str) -> u32 {
-    let (depth, target) = parse(input);
+    let (depth, target) = parse.read(input);
     erosion_levels(depth, target)
         .into_iter()
         .enumerate()
@@ -79,7 +75,7 @@ pub fn part1(input: &str) -> u32 {
 }
 
 pub fn part2(input: &str) -> usize {
-    let (depth, target) = parse(input);
+    let (depth, target) = parse.read(input);
     let els = erosion_levels(depth, target);
 
     fn neighbors(els: &[Vec<Tool>], node: &Node) -> Vec<(usize, Node)> {

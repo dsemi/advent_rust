@@ -4,10 +4,6 @@ use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 use Instr::*;
 
-fn parse_instrs(input: &str) -> Vec<i64> {
-    input.split(',').map(int).collect()
-}
-
 #[derive(Clone)]
 pub struct Program {
     idx: i64,
@@ -35,7 +31,7 @@ pub fn new(input: &str) -> Program {
     Program {
         idx: 0,
         rel_base: 0,
-        mem: parse_instrs(input),
+        mem: list(i64).read(input),
         done: false,
         input: VecDeque::new(),
         output: VecDeque::new(),

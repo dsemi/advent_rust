@@ -7,22 +7,22 @@ fn parse(
     off: Switch,
     on: Switch,
     toggle: Switch,
-    i: &str,
-) -> IResult<&str, (Switch, (Coord, Coord))> {
-    let (i, f) = alt((
-        value(off, tag("turn off ")),
-        value(on, tag("turn on ")),
-        value(toggle, tag("toggle ")),
-    ))(i)?;
-    let num = |i| map(u32, |n| n as usize)(i);
-    let (i, pts) = separated_pair(coord(num), tag(" through "), coord(num))(i)?;
-    Ok((i, (f, pts)))
+) -> impl FnMut(&str) -> IResult<&str, (Switch, (Coord, Coord))> {
+    move |i| {
+        let (i, f) = alt((
+            value(off, tag("turn off ")),
+            value(on, tag("turn on ")),
+            value(toggle, tag("toggle ")),
+        ))(i)?;
+        let (i, pts) = sep_tuple2(tag("through"), coord(usize))(i)?;
+        Ok((i, (f, pts)))
+    }
 }
 
 fn run_commands(input: &str, off: Switch, on: Switch, toggle: Switch) -> u32 {
     let mut grid = vec![0; 1000000];
     for line in input.lines() {
-        let (f, ((x0, y0), (x1, y1))) = parse(off, on, toggle, line).unwrap().1;
+        let (f, ((x0, y0), (x1, y1))) = parse(off, on, toggle).read(line);
         for x in x0..=x1 {
             let row = 1000 * x;
             f(&mut grid[row + y0..=row + y1]);

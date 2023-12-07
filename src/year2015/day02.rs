@@ -1,9 +1,9 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 
 fn process(input: &str, f: fn((i32, i32, i32)) -> i32) -> i32 {
     input
         .lines()
-        .map(|line| f(scanf!(line, "{}x{}x{}", i32, i32, i32).unwrap()))
+        .map(|line| f(sep_tuple3(tag("x"), i32).read(line)))
         .sum()
 }
 

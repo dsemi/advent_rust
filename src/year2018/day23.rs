@@ -1,5 +1,5 @@
+use crate::utils::parsers::*;
 use crate::utils::C3;
-use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 struct Nanobot {
@@ -14,21 +14,14 @@ impl Nanobot {
     }
 }
 
-fn parse_nanobots(input: &str) -> Vec<Nanobot> {
-    input
-        .lines()
-        .map(|line| {
-            let (x, y, z, r) = scanf!(line, "pos=<{},{},{}>, r={}", i64, i64, i64, i64).unwrap();
-            Nanobot {
-                pos: C3(x, y, z),
-                radius: r,
-            }
-        })
-        .collect()
+fn nanobot(i: &str) -> IResult<&str, Nanobot> {
+    let (i, pos) = preceded(tag("pos=<"), map(coord3(i64), Into::into))(i)?;
+    let (i, radius) = preceded(tag(">, r="), i64)(i)?;
+    Ok((i, Nanobot { pos, radius }))
 }
 
 pub fn part1(input: &str) -> usize {
-    let ns = parse_nanobots(input);
+    let ns = lines(nanobot).read(input);
     let max_bot = ns.iter().max_by_key(|n| n.radius).unwrap();
     ns.iter().filter(|n| max_bot.in_range(n.pos)).count()
 }
@@ -89,7 +82,7 @@ impl Cube {
 }
 
 pub fn part2(input: &str) -> i64 {
-    let ns = parse_nanobots(input);
+    let ns = lines(nanobot).read(input);
     let mut cube = Cube {
         lo: C3(i64::MAX, i64::MAX, i64::MAX),
         hi: C3(i64::MIN, i64::MIN, i64::MIN),

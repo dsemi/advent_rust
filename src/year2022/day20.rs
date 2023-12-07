@@ -21,7 +21,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
         .lines()
         .enumerate()
         .map(|(i, x)| Item {
-            val: x.int::<i64>() * scale,
+            val: x.i64() * scale,
             g_idx: i,
         })
         .chunks(BIN_SIZE)

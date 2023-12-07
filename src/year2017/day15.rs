@@ -7,7 +7,7 @@ const FACTOR_B: u64 = 48271;
 fn parse(input: &str) -> (u64, u64) {
     let pts: Vec<u64> = input
         .lines()
-        .map(|x| x.split_whitespace().last().unwrap().int())
+        .map(|x| x.split_whitespace().last().unwrap().u64())
         .collect();
     (pts[0], pts[1])
 }

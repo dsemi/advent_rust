@@ -22,7 +22,7 @@ fn solve(input: &str, f: fn(&str, i32) -> bool) -> Option<usize> {
         .position(|line| {
             line.split_once(": ").unwrap().1.split(", ").all(|attr| {
                 let (key, val) = attr.split_once(": ").unwrap();
-                f(key, val.int())
+                f(key, val.i32())
             })
         })
         .map(|x| x + 1)

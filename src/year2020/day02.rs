@@ -1,13 +1,14 @@
 use crate::utils::parsers::*;
 
+fn parse_line(i: &str) -> IResult<&str, (usize, usize, char, &str)> {
+    let (i, (a, b)) = terminated(sep_tuple2(tag("-"), usize), space1)(i)?;
+    let (i, (c, d)) = separated_pair(anychar, tag(": "), alpha1)(i)?;
+    Ok((i, (a, b, c, d)))
+}
+
 fn count_valid(f: fn(usize, usize, char, &str) -> bool, input: &str) -> usize {
-    input
-        .lines()
-        .filter(|line| {
-            let vs: Vec<&str> = line.split(' ').collect();
-            let ns: Vec<usize> = vs[0].split('-').map(int).collect();
-            f(ns[0], ns[1], vs[1].chars().next().unwrap(), vs[2])
-        })
+    lines_iter(input, parse_line)
+        .filter(|&(a, b, c, d)| f(a, b, c, d))
         .count()
 }
 

@@ -54,7 +54,7 @@ impl Sim {
         Self {
             line: 0,
             reg: [0; 26],
-            instrs: lines(input, parse_instr),
+            instrs: lines(parse_instr).read(input),
             sends: 0,
         }
     }

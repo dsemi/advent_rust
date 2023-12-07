@@ -9,7 +9,7 @@ fn parse_seeds(input: &str) -> IResult<&str, Vec<i64>> {
 fn parse_map(input: &str) -> Vec<(Interval, i64)> {
     let mut result = Vec::new();
     for line in input.lines().skip(1) {
-        let (dest, src, len) = separated_triplet(space1, i64)(line).unwrap().1;
+        let (dest, src, len) = sep_tuple3(space1, i64)(line).unwrap().1;
         result.push((Interval::new(src, src + len), dest - src))
     }
     result.sort_unstable_by_key(|(i, _)| i.lo);
@@ -18,7 +18,7 @@ fn parse_map(input: &str) -> Vec<(Interval, i64)> {
 
 pub fn part1(input: &str) -> i64 {
     let mut parts = input.split("\n\n");
-    let seeds = parse_seeds(parts.next().unwrap()).unwrap().1;
+    let seeds = parse_seeds.read(parts.next().unwrap());
     let maps: Vec<_> = parts.map(parse_map).collect();
     seeds
         .into_iter()
@@ -41,7 +41,7 @@ pub fn part1(input: &str) -> i64 {
 
 pub fn part2(input: &str) -> i64 {
     let mut parts = input.split("\n\n");
-    let seeds = parse_seeds(parts.next().unwrap()).unwrap().1;
+    let seeds = parse_seeds.read(parts.next().unwrap());
     let seed_intervals: Vec<_> = seeds
         .chunks(2)
         .map(|ns| Interval::new(ns[0], ns[0] + ns[1]))

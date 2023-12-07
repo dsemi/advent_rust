@@ -11,15 +11,15 @@ fn run(mut r: AHashMap<&str, i64>, input: &str) -> i64 {
             "hlf" => *r.get_mut(instr[1]).unwrap() /= 2,
             "tpl" => *r.get_mut(instr[1]).unwrap() *= 3,
             "inc" => *r.get_mut(instr[1]).unwrap() += 1,
-            "jmp" => i += instr[1].int::<i64>() - 1,
+            "jmp" => i += instr[1].i64() - 1,
             "jie" => {
                 if r[instr[1]] % 2 == 0 {
-                    i += instr[2].int::<i64>() - 1;
+                    i += instr[2].i64() - 1;
                 }
             }
             "jio" => {
                 if r[instr[1]] == 1 {
-                    i += instr[2].int::<i64>() - 1;
+                    i += instr[2].i64() - 1;
                 }
             }
             _ => panic!("Bad instr"),

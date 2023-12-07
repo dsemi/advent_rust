@@ -1,17 +1,10 @@
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use regex::Regex;
 
 fn parse_mappings(input: &str) -> (&str, Vec<(&str, &str)>) {
     let v: Vec<_> = input.split("\n\n").collect();
-    (
-        v[1],
-        v[0].lines()
-            .map(|line| {
-                let v: Vec<_> = line.split(" => ").collect();
-                (v[0], v[1])
-            })
-            .collect(),
-    )
+    (v[1], lines(sep_tuple2(tag(" => "), alpha1)).read(v[0]))
 }
 
 fn single_replacements(src: &str, k: &str, v: &str) -> Vec<String> {

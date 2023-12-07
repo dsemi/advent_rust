@@ -13,7 +13,7 @@ fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + '_ {
         let (sector, rest2) = rest.split_once('[').unwrap();
         Room {
             name,
-            sector_id: sector.int(),
+            sector_id: sector.i64(),
             checksum: &rest2[..rest2.len() - 1],
         }
     })

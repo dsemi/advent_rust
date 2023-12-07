@@ -8,20 +8,17 @@ struct Particle {
 }
 
 fn particle(i: &str) -> IResult<&str, C3<i64>> {
-    let (i, x) = preceded(pair(anychar, tag("=<")), i64)(i)?;
-    let (i, y) = preceded(tag(","), i64)(i)?;
-    let (i, z) = delimited(tag(","), i64, tag(">"))(i)?;
-    Ok((i, C3(x, y, z)))
+    delimited(
+        pair(anychar, tag("=<")),
+        map(coord3(i64), Into::into),
+        tag(">"),
+    )(i)
 }
 
 fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
     input.lines().map(move |line| {
-        let cs = list(particle)(line).unwrap().1;
-        Particle {
-            pos: cs[0],
-            vel: cs[1],
-            acc: cs[2],
-        }
+        let (pos, vel, acc) = coord3(particle).read(line);
+        Particle { pos, vel, acc }
     })
 }
 

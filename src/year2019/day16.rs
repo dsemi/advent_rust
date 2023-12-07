@@ -60,7 +60,7 @@ const fn make_pascal() -> [i32; PASCAL_PERIOD] {
 }
 
 pub fn part2(input: &str) -> String {
-    let offset: usize = input[..7].int();
+    let offset = input[..7].usize();
     let ns: Vec<i32> = input
         .chars()
         .map(|x| x.to_digit(10).unwrap() as i32)

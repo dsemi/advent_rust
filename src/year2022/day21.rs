@@ -1,10 +1,5 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, i64};
-use nom::combinator::{map, value};
-use nom::sequence::separated_pair;
-use nom::IResult;
 use num_complex::Complex;
 use num_rational::Ratio;
 use std::ops::{Add, Div, Mul, Sub};
@@ -44,7 +39,7 @@ fn parse(i: &str) -> IResult<&str, (&str, Monkey)> {
 }
 
 fn monkeys(input: &str) -> AHashMap<&str, Monkey> {
-    input.lines().map(|line| parse(line).unwrap().1).collect()
+    lines_iter(input, parse).collect()
 }
 
 pub fn part1(input: &str) -> i64 {

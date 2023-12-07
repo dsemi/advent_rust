@@ -63,9 +63,9 @@ fn print_output(part: usize, output: &str, t: f64) {
 
 fn parse_day(daystr: &str) -> Vec<i64> {
     if let Some((lo, hi)) = daystr.split_once('-') {
-        (lo.int()..=hi.int()).collect()
+        (lo.i64()..=hi.i64()).collect()
     } else {
-        vec![daystr.int()]
+        vec![daystr.i64()]
     }
 }
 
@@ -73,8 +73,8 @@ fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     if args[0] == "submit" {
         assert_eq!(args.len(), 3);
-        let year = args[1].int();
-        let day = args[2].int();
+        let year = args[1].i64();
+        let day = args[2].i64();
         if let Some((_, a1, a2)) = run_problem(year, day) {
             let (part, ans) = if a2.is_empty() || a2 == "0" {
                 (1, a1)
@@ -85,7 +85,7 @@ fn main() {
         }
         return;
     }
-    let year = args[0].int();
+    let year = args[0].i64();
     let mut days: Vec<i64> = args[1..].iter().flat_map(|x| parse_day(x)).collect();
     if days.is_empty() {
         days = (1..=25).collect();

@@ -6,7 +6,7 @@ pub fn part1(input: &str) -> i64 {
         .lines()
         .map(|line| {
             line.split_whitespace()
-                .map(int::<i64>)
+                .map(i64::read)
                 .minmax()
                 .into_option()
                 .map(|(mn, mx)| mx - mn)
@@ -20,7 +20,7 @@ pub fn part2(input: &str) -> i64 {
         .lines()
         .map(|line| {
             line.split_whitespace()
-                .map(int::<i64>)
+                .map(i64::read)
                 .combinations(2)
                 .find_map(|x| {
                     (x[0] % x[1] == 0)

@@ -1,7 +1,7 @@
+use crate::utils::parsers::*;
 use crate::utils::C;
 use ahash::{AHashMap, AHashSet};
 use once_cell::sync::Lazy;
-use regex::Regex;
 use std::cmp::{max, min};
 
 static DIRS: Lazy<AHashMap<&str, C<i32>>> = Lazy::new(|| {
@@ -16,15 +16,20 @@ static DIRS: Lazy<AHashMap<&str, C<i32>>> = Lazy::new(|| {
 });
 
 fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
-    let re = Regex::new(
-        &itertools::Itertools::intersperse(DIRS.keys().copied(), "|").collect::<String>(),
-    )
-    .unwrap();
+    let m = |i| {
+        alt((
+            tag("e"),
+            tag("w"),
+            tag("se"),
+            tag("sw"),
+            tag("nw"),
+            tag("ne"),
+        ))(i)
+    };
     let mut tiles = AHashMap::new();
     for line in s.lines() {
-        let tile = re.find_iter(line).map(|d| DIRS[d.as_str()]).sum();
-        let e = tiles.entry(tile).or_insert(0);
-        *e += 1;
+        let tile = iterator(line, m).map(|d| DIRS[d]).sum();
+        *tiles.entry(tile).or_insert(0) += 1;
     }
     tiles
         .into_iter()

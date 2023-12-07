@@ -12,7 +12,7 @@ fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
                 'L' => C(0, 1),
                 _ => panic!("Invalid dir {}", x),
             };
-            let n: usize = x[1..].int();
+            let n = x[1..].usize();
             once(df).chain(repeat(C(1, 0)).take(n - 1))
         })
         .scan((C(0, 0), C(0, 1)), |state, x| {

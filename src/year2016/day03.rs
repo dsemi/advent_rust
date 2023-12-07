@@ -1,10 +1,7 @@
 use crate::utils::parsers::*;
 
 fn parse(input: &str) -> Vec<Vec<u32>> {
-    input
-        .lines()
-        .map(|line| line.split_whitespace().map(int).collect())
-        .collect()
+    lines(sep_list(space1, u32)).read(input)
 }
 
 fn valid(sides: &[u32]) -> bool {

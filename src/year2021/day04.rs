@@ -6,19 +6,11 @@ fn is_winner(brd: &[Vec<i32>]) -> bool {
 }
 
 fn winner_scores(input: &str) -> impl Iterator<Item = i32> + '_ {
-    let (nums, board_str) = input.split_once("\n\n").unwrap();
-    let mut boards: Vec<Vec<Vec<i32>>> = board_str
-        .split("\n\n")
-        .map(|board| {
-            board
-                .lines()
-                .map(|row| row.split_whitespace().map(int).collect())
-                .collect()
-        })
-        .collect();
+    let (nums, boards) = input.split_once("\n\n").unwrap();
+    let mut boards = separated_list1(tag("\n\n"), lines(sep_list(space1, i32))).read(boards);
     nums.split(',').flat_map(move |n| {
-        let n = n.int::<i32>();
-        // drain_filter.
+        let n = n.i32();
+        // Use drain_filter when it stabilizes.
         let mut winners = vec![];
         boards.retain_mut(|b| {
             for row in b.iter_mut() {

@@ -14,7 +14,7 @@ fn parse_pipes(input: &str) -> Vec<Pipe> {
         .lines()
         .enumerate()
         .map(|(i, line)| {
-            let (a, b) = separated_pair(u32, tag("/"), u32)(line).unwrap().1;
+            let (a, b) = sep_tuple2(tag("/"), u32).read(line);
             Pipe { id: 1 << i, a, b }
         })
         .collect()

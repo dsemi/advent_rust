@@ -16,10 +16,10 @@ fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
                 rest.chars()
                     .filter(char::is_ascii_digit)
                     .collect::<String>()
-                    .int(),
+                    .usize(),
             )
         } else {
-            SleepToggle(time[time.rfind(':').unwrap() + 1..].int())
+            SleepToggle(time[time.rfind(':').unwrap() + 1..].usize())
         }
     })
 }
