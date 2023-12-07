@@ -1,6 +1,6 @@
 use crate::utils::*;
 use ahash::AHashMap;
-use take_until::TakeUntilExt;
+use itertools::Itertools;
 
 fn mid_pt(x: i64, y: i64) -> i64 {
     (x + y) / 2
@@ -13,7 +13,7 @@ fn corners() -> impl Iterator<Item = i64> {
 }
 
 pub fn part1(n: i64) -> i64 {
-    let ns: Vec<i64> = corners().take_until(|&c| c >= n).collect();
+    let ns: Vec<i64> = corners().take_while_inclusive(|&c| c < n).collect();
     let a = ns[ns.len() - 1];
     let b = ns[ns.len() - 2];
     let c = ns[ns.len() - 3];

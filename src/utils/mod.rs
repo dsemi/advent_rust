@@ -1,9 +1,8 @@
 use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
-use mod_exp::mod_exp;
 use num::{Num, PrimInt, Signed};
 use num_traits::ops::saturating::SaturatingAdd;
-use num_traits::{One, Pow, Zero};
+use num_traits::{Bounded, One, Pow, Zero};
 use smallvec::SmallVec;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
@@ -12,8 +11,8 @@ use std::convert::From;
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr, Sub,
-    SubAssign,
+    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr,
+    ShrAssign, Sub, SubAssign,
 };
 use streaming_iterator::StreamingIterator;
 
@@ -1143,6 +1142,34 @@ pub fn tails(s: &str) -> impl Iterator<Item = &'_ str> {
 
 pub fn inits(s: &str) -> impl Iterator<Item = &'_ str> {
     std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[..s.len() - 1]))
+}
+
+pub fn mod_exp<T>(mut base: T, mut exp: T, modulus: T) -> T
+where
+    T: Num + PartialOrd + ShrAssign<T> + Copy + Bounded,
+{
+    let one: T = One::one();
+    let two: T = one + one;
+    let zero: T = Zero::zero();
+    let max: T = Bounded::max_value();
+
+    assert!((modulus - one) < (max / (modulus - one)));
+
+    let mut result = one;
+    base = base % modulus;
+
+    loop {
+        if exp <= zero {
+            break;
+        }
+        if exp % two == one {
+            result = (result * base) % modulus;
+        }
+        exp >>= one;
+        base = (base * base) % modulus;
+    }
+
+    result
 }
 
 #[derive(Clone, Copy, Debug)]
