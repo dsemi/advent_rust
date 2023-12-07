@@ -17,7 +17,7 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
                 (
                     idx.usize(),
                     if content.starts_with('"') {
-                        Single(content.bytes().nth(1).unwrap())
+                        Single(content.as_bytes()[1])
                     } else {
                         Multi(
                             content
