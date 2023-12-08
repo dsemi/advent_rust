@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 use scan_fmt::scan_fmt as scanf;
 

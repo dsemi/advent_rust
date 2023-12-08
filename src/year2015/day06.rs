@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 type Switch = fn(&mut [u32]);
 type Coord = (usize, usize);

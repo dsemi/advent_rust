@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use itertools::iterate;
 
 const FACTOR_A: u64 = 16807;

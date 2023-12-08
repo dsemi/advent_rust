@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn nums(i: &str) -> impl Iterator<Item = u64> + '_ {
     i.split_whitespace().skip(1).map(u64::read)

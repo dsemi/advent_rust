@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn parse_line<'a>(i: &mut &'a str) -> PResult<(usize, usize, char, &'a str)> {
     let (a, b) = terminated(sep_tuple2(usize, '-'), space1).parse_next(i)?;

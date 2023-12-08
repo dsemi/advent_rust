@@ -18,7 +18,6 @@ use streaming_iterator::StreamingIterator;
 
 pub mod ocr;
 pub mod parsers;
-pub mod parsers2;
 
 pub fn bfs<T, F, I, I2>(start: T, neighbs: F) -> Bfs<T, F, impl Fn(&T) -> T, T>
 where

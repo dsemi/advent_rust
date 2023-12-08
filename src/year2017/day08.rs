@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use ahash::AHashMap;
 
 fn parse<'a>(reg: &AHashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {

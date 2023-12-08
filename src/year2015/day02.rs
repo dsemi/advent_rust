@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn process(input: &str, f: fn((i32, i32, i32)) -> i32) -> i32 {
     input

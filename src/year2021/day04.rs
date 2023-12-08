@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn is_winner(brd: &[Vec<i32>]) -> bool {
     (0..brd.len())

@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use std::cmp::Ordering::*;
 
 fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {

@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn elves(input: &str) -> impl Iterator<Item = i32> + '_ {
     input.split("\n\n").map(|elf| lines_iter(elf, i32).sum())

@@ -1,6 +1,6 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
-fn marker<'a>(i: &'a str) -> IResult<&'a str, (usize, usize), ContextError> {
+fn marker(i: &str) -> IResult<&str, (usize, usize), ContextError> {
     delimited('(', sep_tuple2(usize, 'x'), ')').parse_peek(i)
 }
 

@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 
 fn parse_mappings(input: &str) -> (Vec<(&str, &str)>, &str) {

@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn all_sizes(input: &str) -> Vec<i64> {
     let mut result = Vec::new();

@@ -1,6 +1,6 @@
 use self::Instr::*;
 use self::Value::*;
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
 
 #[derive(Clone, Copy, Debug)]

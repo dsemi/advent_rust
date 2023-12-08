@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use std::cmp::min;
 
 pub fn part1(input: &str) -> i32 {

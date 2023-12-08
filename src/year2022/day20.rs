@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use itertools::Itertools;
 
 const BIN_SIZE: usize = 32;

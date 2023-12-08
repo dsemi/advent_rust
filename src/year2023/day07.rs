@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 use Hand::*;
 
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]

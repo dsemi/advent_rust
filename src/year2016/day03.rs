@@ -1,4 +1,4 @@
-use crate::utils::parsers2::*;
+use crate::utils::parsers::*;
 
 fn parse(input: &str) -> Vec<Vec<u32>> {
     lines(preceded(space0, separated(1.., u32, space1))).read(input)
