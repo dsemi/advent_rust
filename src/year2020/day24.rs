@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::C;
 use ahash::{AHashMap, AHashSet};
 use once_cell::sync::Lazy;
@@ -16,19 +16,15 @@ static DIRS: Lazy<AHashMap<&str, C<i32>>> = Lazy::new(|| {
 });
 
 fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
-    let m = |i| {
-        alt((
-            tag("e"),
-            tag("w"),
-            tag("se"),
-            tag("sw"),
-            tag("nw"),
-            tag("ne"),
-        ))(i)
-    };
     let mut tiles = AHashMap::new();
     for line in s.lines() {
-        let tile = iterator(line, m).map(|d| DIRS[d]).sum();
+        let tile = fold_repeat(
+            0..,
+            alt(("e", "w", "se", "sw", "nw", "ne")),
+            || C(0, 0),
+            |a, b| a + DIRS[b],
+        )
+        .read(line);
         *tiles.entry(tile).or_insert(0) += 1;
     }
     tiles

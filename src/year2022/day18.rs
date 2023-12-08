@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashSet;
 
@@ -14,7 +14,7 @@ fn adj(&C3(x, y, z): &C3<i32>) -> Vec<C3<i32>> {
 }
 
 fn cubes(input: &str) -> AHashSet<C3<i32>> {
-    lines_iter(input, map(coord3(i32), Into::into)).collect()
+    lines_iter(input, coord3(i32).output_into()).collect()
 }
 
 pub fn part1(input: &str) -> usize {

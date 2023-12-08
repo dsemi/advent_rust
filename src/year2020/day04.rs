@@ -1,59 +1,65 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashSet;
 
-fn validate_val(field: &str) -> impl FnMut(&str) -> IResult<&str, ()> + '_ {
-    move |i| {
-        let i = match field {
-            "byr" => verify(i32, |n| (1920..=2002).contains(n))(i)?.0,
-            "iyr" => verify(i32, |n| (2010..=2020).contains(n))(i)?.0,
-            "eyr" => verify(i32, |n| (2020..=2030).contains(n))(i)?.0,
+fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, (), ContextError> {
+    move |i: &mut &'a str| {
+        match field {
+            "byr" => {
+                i32.verify(|n| (1920..=2002).contains(n)).parse_next(i)?;
+            }
+            "iyr" => {
+                i32.verify(|n| (2010..=2020).contains(n)).parse_next(i)?;
+            }
+            "eyr" => {
+                i32.verify(|n| (2020..=2030).contains(n)).parse_next(i)?;
+            }
             "hgt" => {
                 alt((
-                    pair(verify(i32, |h| (150..=193).contains(h)), tag("cm")),
-                    pair(verify(i32, |h| (59..=76).contains(h)), tag("in")),
-                ))(i)?
-                .0
+                    (i32.verify(|h| (150..=193).contains(h)), "cm"),
+                    (i32.verify(|h| (59..=76).contains(h)), "in"),
+                ))
+                .parse_next(i)?;
             }
-            "hcl" => preceded(tag("#"), verify(hex_digit1, |h: &str| h.len() == 6))(i)?.0,
+            "hcl" => {
+                preceded('#', hex_digit1.verify(|h: &str| h.len() == 6)).parse_next(i)?;
+            }
             "ecl" => {
-                alt((
-                    tag("amb"),
-                    tag("blu"),
-                    tag("brn"),
-                    tag("gry"),
-                    tag("grn"),
-                    tag("hzl"),
-                    tag("oth"),
-                ))(i)?
-                .0
+                alt(("amb", "blu", "brn", "gry", "grn", "hzl", "oth")).parse_next(i)?;
             }
-            "pid" => verify(digit1, |h: &str| h.len() == 9)(i)?.0,
-            _ => rest(i)?.0,
+            "pid" => {
+                digit1.verify(|h: &str| h.len() == 9).parse_next(i)?;
+            }
+            _ => {
+                rest.value(()).parse_next(i)?;
+            }
         };
-        Ok((i, ()))
+        Ok(())
     }
 }
 
-fn parse(mut inp: &str, validate: bool) -> IResult<&str, ()> {
-    let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
-        .into_iter()
-        .collect();
-    while !req_fields.is_empty() {
-        let (i, (field, val)) =
-            separated_pair(alpha1, tag(":"), take_till(char::is_whitespace))(inp)?;
-        if validate {
-            all_consuming(validate_val(field))(val)?;
+fn parse<'a>(validate: bool) -> impl Parser<&'a str, (), ContextError> {
+    move |i: &mut &'a str| {
+        let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
+            .into_iter()
+            .collect();
+        while !req_fields.is_empty() {
+            let (field, mut val) =
+                separated_pair(alpha1, ':', take_till(0.., char::is_whitespace)).parse_next(i)?;
+            if validate {
+                validate_val(field).parse_next(&mut val)?;
+            }
+            multispace0.parse_next(i)?;
+            req_fields.remove(&field);
         }
-        inp = multispace0(i)?.0;
-        req_fields.remove(&field);
+        rest.parse_next(i)?;
+        Ok(())
     }
-    Ok((inp, ()))
 }
 
 fn count_matches(input: &str, validate: bool) -> usize {
     input
         .split("\n\n")
-        .filter(|line| parse(line, validate).is_ok())
+        .filter(|line| parse(validate).parse(line).is_ok())
         .count()
 }
 

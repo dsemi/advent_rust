@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
 fn is_winner(brd: &[Vec<i32>]) -> bool {
     (0..brd.len())
@@ -7,7 +7,8 @@ fn is_winner(brd: &[Vec<i32>]) -> bool {
 
 fn winner_scores(input: &str) -> impl Iterator<Item = i32> + '_ {
     let (nums, boards) = input.split_once("\n\n").unwrap();
-    let mut boards = separated_list1(tag("\n\n"), lines(sep_list(space1, i32))).read(boards);
+    let mut boards: Vec<Vec<Vec<_>>> =
+        separated(1.., lines(repeat(1.., strip(i32))), "\n\n").read(boards);
     nums.split(',').flat_map(move |n| {
         let n = n.i32();
         // Use drain_filter when it stabilizes.

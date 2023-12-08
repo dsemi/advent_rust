@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::C;
 
 fn travel(start: C<i64>, move_way: bool, s: &str) -> i64 {

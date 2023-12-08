@@ -8,7 +8,7 @@ struct Particle {
 }
 
 fn particle(i: &mut &str) -> PResult<C3<i64>> {
-    delimited((any, "=<"), coord3(i64).map(Into::into), '>').parse_next(i)
+    delimited((any, "=<"), coord3(i64).output_into(), '>').parse_next(i)
 }
 
 fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {

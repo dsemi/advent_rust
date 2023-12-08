@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use itertools::iterate;
@@ -79,18 +79,23 @@ struct Board {
     top_left: C<i32>,
 }
 
-fn instr(i: &str) -> IResult<&str, Instr> {
+fn instr(i: &mut &str) -> PResult<Instr> {
     alt((
-        value(Instr::Turn(false), tag("L")),
-        value(Instr::Turn(true), tag("R")),
-        map(usize, Instr::Step),
-    ))(i)
+        'L'.value(Instr::Turn(false)),
+        'R'.value(Instr::Turn(true)),
+        usize.map(Instr::Step),
+    ))
+    .parse_next(i)
 }
 
 impl Board {
     fn new(input: &str) -> Self {
-        let (grid, path) =
-            separated_pair(lines(many1(none_of("\n"))), tag("\n\n"), many1(instr)).read(input);
+        let (grid, path): (Vec<Vec<_>>, Vec<_>) = separated_pair(
+            lines(repeat(1.., none_of('\n'))),
+            "\n\n",
+            repeat(1.., instr),
+        )
+        .read(input);
         Self {
             top_left: C(0, grid[0].iter().position(|&c| c != ' ').unwrap() as i32),
             grid,

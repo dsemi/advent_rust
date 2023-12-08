@@ -1,9 +1,9 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
-fn parse_line(i: &str) -> IResult<&str, (usize, usize, char, &str)> {
-    let (i, (a, b)) = terminated(sep_tuple2(tag("-"), usize), space1)(i)?;
-    let (i, (c, d)) = separated_pair(anychar, tag(": "), alpha1)(i)?;
-    Ok((i, (a, b, c, d)))
+fn parse_line<'a>(i: &mut &'a str) -> PResult<(usize, usize, char, &'a str)> {
+    let (a, b) = terminated(sep_tuple2(usize, '-'), space1).parse_next(i)?;
+    let (c, d) = separated_pair(any, ": ", alpha1).parse_next(i)?;
+    Ok((a, b, c, d))
 }
 
 fn count_valid(f: fn(usize, usize, char, &str) -> bool, input: &str) -> usize {

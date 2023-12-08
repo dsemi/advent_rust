@@ -1,7 +1,7 @@
-use crate::utils::parsers::*;
+use self::Instr::*;
+use self::Value::*;
+use crate::utils::parsers2::*;
 use ahash::AHashSet;
-use Instr::*;
-use Value::*;
 
 #[derive(Clone, Copy, Debug)]
 enum Value {
@@ -25,15 +25,17 @@ struct Prog {
     pc: usize,
 }
 
-fn reg(i: &str) -> IResult<&str, usize> {
-    map(one_of("wxyz"), |c| c as usize - 'w' as usize)(i)
+fn reg(i: &mut &str) -> PResult<usize> {
+    one_of(&['w', 'x', 'y', 'z'])
+        .map(|c| c as usize - 'w' as usize)
+        .parse_next(i)
 }
 
-fn val(i: &str) -> IResult<&str, Value> {
-    alt((map(i64, Lit), map(reg, Reg)))(i)
+fn val(i: &mut &str) -> PResult<Value> {
+    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
 }
 
-fn parse_instr(i: &str) -> IResult<&str, Instr> {
+fn parse_instr(i: &mut &str) -> PResult<Instr> {
     alt((
         cons1!(Inp, reg),
         cons2!(Add, reg, val),
@@ -41,7 +43,8 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
         cons2!(Div, reg, val),
         cons2!(Mod, reg, val),
         cons2!(Eql, reg, val),
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 fn parse(input: &str) -> Vec<Instr> {

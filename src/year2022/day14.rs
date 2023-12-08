@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use std::cmp::{max, min};
 
 const WIDTH: usize = 1000;
@@ -6,7 +6,7 @@ const WIDTH: usize = 1000;
 fn parse_grid(input: &str) -> Vec<Vec<char>> {
     let mut res = Vec::new();
     for line in input.lines() {
-        let pts = sep_list(tag("->"), coord(usize)).read(line);
+        let pts: Vec<_> = separated(1.., coord(usize), "->").read(line);
         res.resize(
             max(res.len(), pts.iter().map(|(_, r)| r).max().unwrap() + 2),
             vec!['-'; WIDTH],

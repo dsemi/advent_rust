@@ -29,7 +29,7 @@ fn next(t: &Tool) -> Tool {
 fn parse(i: &mut &str) -> PResult<(i32, C<i32>)> {
     (
         preceded("depth: ", i32),
-        preceded("\ntarget: ", coord(i32).map(Into::into)),
+        preceded("\ntarget: ", coord(i32).output_into()),
     )
         .parse_next(i)
 }

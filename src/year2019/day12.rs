@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use num::integer::lcm;
 use smallvec::{smallvec as sv, SmallVec};
 
@@ -8,15 +8,11 @@ struct Moon {
     vel: SmallVec<[i64; 3]>,
 }
 
-fn moon(i: &str) -> IResult<&str, Moon> {
-    let (i, (x, y, z)) = delimited(
-        tag("<"),
-        coord3(preceded(pair(anychar, tag("=")), i64)),
-        tag(">"),
-    )(i)?;
+fn moon(i: &mut &str) -> PResult<Moon> {
+    let (x, y, z) = delimited('<', coord3(preceded((any, '='), i64)), '>').parse_next(i)?;
     let pos = sv![x, y, z];
     let vel = sv![0, 0, 0];
-    Ok((i, Moon { pos, vel }))
+    Ok(Moon { pos, vel })
 }
 
 fn step(moons: &mut [Moon]) {

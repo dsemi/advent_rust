@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use bit_set::BitSet;
 
 fn solve(n: u32, input: &str) -> u32 {

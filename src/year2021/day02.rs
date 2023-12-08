@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
 fn run(input: &str) -> (i32, i32, i32) {
     let (mut horz, mut depth, mut aim) = (0, 0, 0);

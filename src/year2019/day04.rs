@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use std::cmp::Ordering::*;
 
 fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
@@ -23,7 +23,7 @@ fn solve(mut n: u32, f: fn(u8) -> bool) -> bool {
 }
 
 fn num_valid(input: &str, f: fn(u8) -> bool) -> usize {
-    let (start, end) = sep_tuple2(tag("-"), u32).read(input);
+    let (start, end) = sep_tuple2(u32, '-').read(input);
     (start..=end).filter(|&v| solve(v, f)).count()
 }
 

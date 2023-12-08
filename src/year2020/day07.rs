@@ -1,22 +1,24 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::{AHashMap, AHashSet};
 
-fn bag(i: &str) -> IResult<&str, &str> {
+fn bag<'a>(i: &mut &'a str) -> PResult<&'a str> {
     terminated(
-        recognize(tuple((alpha1, space1, alpha1))),
-        pair(alt((tag(" bags"), tag(" bag"))), opt(tag("."))),
-    )(i)
+        (alpha1, space1, alpha1).recognize(),
+        (alt((" bags", " bag")), opt('.')),
+    )
+    .parse_next(i)
 }
 
-fn parse_bags(s: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
-    lines_iter(s, |i| {
-        separated_pair(
-            bag,
-            tag(" contain "),
-            list(separated_pair(u32, space1, bag)),
-        )(i)
-    })
-    .collect()
+fn bags<'a>(i: &mut &'a str) -> PResult<Vec<(u32, &'a str)>> {
+    let res = list(separated_pair(u32, space1, bag))
+        .parse_next(i)
+        .unwrap_or_default();
+    rest.parse_next(i)?;
+    Ok(res)
+}
+
+fn parse_bags(input: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
+    lines_iter(input, separated_pair(bag, " contain ", bags)).collect()
 }
 
 pub fn part1(input: &str) -> usize {

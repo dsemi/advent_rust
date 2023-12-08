@@ -1,14 +1,14 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use itertools::Itertools;
 use std::cmp::{max, Reverse};
 
-fn valve(i: &str) -> IResult<&str, Valve<'_>> {
-    let (i, name) = preceded(tag("Valve "), alpha1)(i)?;
-    let (i, flow) = delimited(tag(" has flow rate="), u8, tag("; "))(i)?;
-    let (i, tunnel) = list(alpha1)(i.splitn(5, ' ').last().unwrap())?;
-    Ok((i, Valve { name, flow, tunnel }))
+fn valve<'a>(i: &mut &'a str) -> PResult<Valve<'a>> {
+    let (_, name, _, flow, _) = ("Valve ", alpha1, " has flow rate=", u8, "; ").parse_next(i)?;
+    let tunnel =
+        preceded((alpha1, ' ', alpha1, " to ", alpha1, ' '), list(alpha1)).parse_next(i)?;
+    Ok(Valve { name, flow, tunnel })
 }
 
 #[derive(Debug)]

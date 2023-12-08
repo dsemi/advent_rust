@@ -1,5 +1,5 @@
 use crate::utils::chinese_remainder;
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
 fn parse_buses(s: &str) -> (i64, Vec<(i64, i64)>) {
     let ls: Vec<&str> = s.lines().collect();

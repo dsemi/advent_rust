@@ -1,15 +1,15 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use std::cmp::Ordering::*;
 
-fn parse_seeds(input: &str) -> IResult<&str, Vec<i64>> {
-    preceded(tag("seeds: "), separated_list1(space1, i64))(input)
+fn parse_seeds(i: &mut &str) -> PResult<Vec<i64>> {
+    preceded("seeds: ", separated(1.., i64, space1)).parse_next(i)
 }
 
 fn parse_map(input: &str) -> Vec<(Interval, i64)> {
     let mut result = Vec::new();
     for line in input.lines().skip(1) {
-        let (dest, src, len) = sep_tuple3(space1, i64)(line).unwrap().1;
+        let (dest, src, len) = sep_tuple3(i64, space1).read(line);
         result.push((Interval::new(src, src + len), dest - src))
     }
     result.sort_unstable_by_key(|(i, _)| i.lo);

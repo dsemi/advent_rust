@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashMap;
 use num_complex::Complex;
 use num_rational::Ratio;
@@ -18,24 +18,26 @@ fn eval(m: &AHashMap<&str, Monkey>, k: &str) -> N {
     }
 }
 
-fn num(i: &str) -> IResult<&str, Monkey> {
-    map(i64, |n| Monkey::Num(Ratio::from_integer(n).into()))(i)
+fn num<'a>(i: &mut &'a str) -> PResult<Monkey<'a>> {
+    i64.map(|n| Monkey::Num(Ratio::from_integer(n).into()))
+        .parse_next(i)
 }
 
-fn math(i: &str) -> IResult<&str, Monkey> {
-    let (i, a) = alpha1(i)?;
-    let (i, f) = alt((
-        value(Add::add as fn(N, N) -> N, tag(" + ")),
-        value(Sub::sub as fn(N, N) -> N, tag(" - ")),
-        value(Mul::mul as fn(N, N) -> N, tag(" * ")),
-        value(Div::div as fn(N, N) -> N, tag(" / ")),
-    ))(i)?;
-    let (i, b) = alpha1(i)?;
-    Ok((i, Monkey::Math(f, a, b)))
+fn math<'a>(i: &mut &'a str) -> PResult<Monkey<'a>> {
+    let a = alpha1.parse_next(i)?;
+    let f = alt((
+        " + ".value(Add::add as fn(N, N) -> N),
+        " - ".value(Sub::sub as fn(N, N) -> N),
+        " * ".value(Mul::mul as fn(N, N) -> N),
+        " / ".value(Div::div as fn(N, N) -> N),
+    ))
+    .parse_next(i)?;
+    let b = alpha1.parse_next(i)?;
+    Ok(Monkey::Math(f, a, b))
 }
 
-fn parse(i: &str) -> IResult<&str, (&str, Monkey)> {
-    separated_pair(alpha1, tag(": "), alt((num, math)))(i)
+fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, Monkey<'a>)> {
+    separated_pair(alpha1, ": ", alt((num, math))).parse_next(i)
 }
 
 fn monkeys(input: &str) -> AHashMap<&str, Monkey> {

@@ -162,6 +162,16 @@ where
     }
 }
 
+pub fn strip<I, O, E, F>(f: F) -> impl Parser<I, O, E>
+where
+    I: Stream + StreamIsPartial,
+    <I as Stream>::Token: AsChar + Clone,
+    E: ParserError<I>,
+    F: Parser<I, O, E>,
+{
+    delimited(space0, f, space0)
+}
+
 pub fn coord<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O), E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
@@ -170,7 +180,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    delimited(space0, sep_tuple2(f, (",", space0)), space0)
+    strip(sep_tuple2(f, (",", space0)))
 }
 
 pub fn coord3<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O, O), E> + 'a
@@ -181,7 +191,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    delimited(space0, sep_tuple3(f, (",", space0)), space0)
+    strip(sep_tuple3(f, (",", space0)))
 }
 
 pub fn list<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
@@ -203,6 +213,13 @@ where
     F: Parser<I, O, E> + 'a,
 {
     separated(0.., f, "\n")
+}
+
+pub fn lines_iter<'a, O, F>(i: &'a str, mut f: F) -> impl Iterator<Item = O> + 'a
+where
+    F: Parser<&'a str, O, ContextError> + 'a,
+{
+    i.lines().map(move |line| f.read(line))
 }
 
 macro_rules! cons1 {

@@ -1,9 +1,10 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
-fn wins(i: &str) -> IResult<&str, usize> {
-    let i = tuple((tag("Card"), space1, u32, tag(":"), space1))(i)?.0;
-    let (i, (win, own)) = sep_tuple2(pair(tag(" |"), space1), separated_list1(space1, u32))(i)?;
-    Ok((i, own.into_iter().filter(|o| win.contains(o)).count()))
+fn wins(i: &mut &str) -> PResult<usize> {
+    ("Card", space1, u32, ':', space1).parse_next(i)?;
+    let (win, own): (Vec<_>, Vec<_>) =
+        sep_tuple2(separated(1.., u32, space1), (" |", space1)).parse_next(i)?;
+    Ok(own.into_iter().filter(|o| win.contains(o)).count())
 }
 
 pub fn part1(input: &str) -> u32 {

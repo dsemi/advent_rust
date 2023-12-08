@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use num::integer::lcm;
 use rayon::prelude::*;
 use Op::*;
@@ -11,12 +11,13 @@ enum Op {
 }
 
 impl Op {
-    fn parse(i: &str) -> IResult<&str, Op> {
+    fn parse(i: &mut &str) -> PResult<Op> {
         alt((
-            value(Double, tag("old * old")),
-            map(preceded(tag("old + "), u64), Add),
-            map(preceded(tag("old * "), u64), Mul),
-        ))(i)
+            "old * old".value(Double),
+            preceded("old + ", u64).map(Add),
+            preceded("old * ", u64).map(Mul),
+        ))
+        .parse_next(i)
     }
 
     fn ap(&self, x: u64) -> u64 {
@@ -36,14 +37,14 @@ struct Monkey {
     f: usize,
 }
 
-fn monkey(i: &str) -> IResult<&str, Monkey> {
-    let i = delimited(tag("Monkey "), usize, tag(":"))(i)?.0;
-    let (i, ns) = preceded(tag("\n  Starting items: "), list(u64))(i)?;
-    let (i, op) = preceded(tag("\n  Operation: new = "), Op::parse)(i)?;
-    let (i, test) = preceded(tag("\n  Test: divisible by "), u64)(i)?;
-    let (i, t) = preceded(tag("\n    If true: throw to monkey "), usize)(i)?;
-    let (i, f) = preceded(tag("\n    If false: throw to monkey "), usize)(i)?;
-    Ok((i, Monkey { ns, op, test, t, f }))
+fn monkey(i: &mut &str) -> PResult<Monkey> {
+    delimited("Monkey ", usize, ':').parse_next(i)?;
+    let ns = preceded("\n  Starting items: ", list(u64)).parse_next(i)?;
+    let op = preceded("\n  Operation: new = ", Op::parse).parse_next(i)?;
+    let test = preceded("\n  Test: divisible by ", u64).parse_next(i)?;
+    let t = preceded("\n    If true: throw to monkey ", usize).parse_next(i)?;
+    let f = preceded("\n    If false: throw to monkey ", usize).parse_next(i)?;
+    Ok(Monkey { ns, op, test, t, f })
 }
 
 fn play(
@@ -72,7 +73,7 @@ fn play(
 }
 
 fn solve(input: &str, p2: bool) -> usize {
-    let mks = sep_list(tag("\n\n"), monkey).read(input);
+    let mks: Vec<_> = separated(1.., monkey, "\n\n").read(input);
     let items = mks
         .iter()
         .enumerate()

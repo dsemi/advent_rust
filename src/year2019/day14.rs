@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::partition_point;
 use ahash::AHashMap;
 
@@ -8,16 +8,15 @@ struct Reactions<'a> {
     topo: Vec<&'a str>,
 }
 
-fn chemical(i: &str) -> IResult<&str, (i64, &str)> {
-    separated_pair(i64, space1, alpha1)(i)
+fn chemical<'a>(i: &mut &'a str) -> PResult<(i64, &'a str)> {
+    separated_pair(i64, space1, alpha1).parse_next(i)
 }
 
 #[allow(clippy::type_complexity)]
-fn parse(i: &str) -> IResult<&str, (&str, (i64, Vec<(i64, &str)>))> {
-    map(
-        separated_pair(list(chemical), tag(" => "), chemical),
-        |(srcs, (n, out))| (out, (n, srcs)),
-    )(i)
+fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, (i64, Vec<(i64, &'a str)>))> {
+    separated_pair(list(chemical), " => ", chemical)
+        .map(|(srcs, (n, out))| (out, (n, srcs)))
+        .parse_next(i)
 }
 
 fn parse_reactions(input: &str) -> Reactions {

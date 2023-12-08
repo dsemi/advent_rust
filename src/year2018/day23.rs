@@ -15,7 +15,7 @@ impl Nanobot {
 }
 
 fn nanobot(i: &mut &str) -> PResult<Nanobot> {
-    let pos = preceded("pos=<", coord3(i64).map(Into::into)).parse_next(i)?;
+    let pos = preceded("pos=<", coord3(i64).output_into()).parse_next(i)?;
     let radius = preceded(">, r=", i64).parse_next(i)?;
     Ok(Nanobot { pos, radius })
 }

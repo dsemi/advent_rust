@@ -10,8 +10,8 @@ struct Obj {
 }
 
 fn object(i: &mut &str) -> PResult<Obj> {
-    let pos = delimited("position=<", coord(i32).map(Into::into), "> ").parse_next(i)?;
-    let vel = delimited("velocity=<", coord(i32).map(Into::into), '>').parse_next(i)?;
+    let pos = delimited("position=<", coord(i32).output_into(), "> ").parse_next(i)?;
+    let vel = delimited("velocity=<", coord(i32).output_into(), '>').parse_next(i)?;
     Ok(Obj { pos, vel })
 }
 

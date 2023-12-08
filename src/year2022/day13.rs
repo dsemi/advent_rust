@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use Packet::*;
@@ -9,11 +9,8 @@ enum Packet {
     List(Vec<Packet>),
 }
 
-fn parse(i: &str) -> IResult<&str, Packet> {
-    alt((
-        map(i32, Lit),
-        map(delimited(tag("["), list(parse), tag("]")), List),
-    ))(i)
+fn parse(i: &mut &str) -> PResult<Packet> {
+    alt((i32.map(Lit), delimited('[', list(parse), ']').map(List))).parse_next(i)
 }
 
 impl PartialOrd for Packet {
@@ -55,7 +52,7 @@ pub fn part2(input: &str) -> usize {
         .flat_map(|seg| lines_iter(seg, parse))
         .sorted_unstable()
         .collect::<Vec<_>>();
-    let a = parse("[[2]]").unwrap().1;
-    let b = parse("[[6]]").unwrap().1;
+    let a = parse.read("[[2]]");
+    let b = parse.read("[[6]]");
     (packets.binary_search(&a).unwrap_err() + 1) * (packets.binary_search(&b).unwrap_err() + 2)
 }

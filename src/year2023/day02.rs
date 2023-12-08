@@ -1,12 +1,13 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 
-fn color(i: &str) -> IResult<&str, C3<usize>> {
+fn color(i: &mut &str) -> PResult<C3<usize>> {
     alt((
-        map(terminated(usize, tag(" red")), |r| C3(r, 0, 0)),
-        map(terminated(usize, tag(" green")), |g| C3(0, g, 0)),
-        map(terminated(usize, tag(" blue")), |b| C3(0, 0, b)),
-    ))(i)
+        terminated(usize, " red").map(|r| C3(r, 0, 0)),
+        terminated(usize, " green").map(|g| C3(0, g, 0)),
+        terminated(usize, " blue").map(|b| C3(0, 0, b)),
+    ))
+    .parse_next(i)
 }
 
 fn game(i: &str) -> C3<usize> {

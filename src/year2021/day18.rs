@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use rayon::prelude::*;
 
 #[derive(Clone)]
@@ -11,14 +11,13 @@ struct Snailfish {
     ns: Vec<Num>,
 }
 
-fn parse(d: usize) -> impl FnMut(&str) -> IResult<&str, Vec<Num>> {
-    move |i| {
+fn parse<'a>(d: usize) -> impl Parser<&'a str, Vec<Num>, ContextError> {
+    move |i: &mut &'a str| {
         alt((
-            map(u64, |n| vec![Num { depth: d, value: n }]),
-            map(delimited(tag("["), list(parse(d + 1)), tag("]")), |ns| {
-                ns.concat()
-            }),
-        ))(i)
+            u64.map(|n| vec![Num { depth: d, value: n }]),
+            delimited('[', list(parse(d + 1)), ']').map(|ns| ns.concat()),
+        ))
+        .parse_next(i)
     }
 }
 

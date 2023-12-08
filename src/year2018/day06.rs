@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 use Tile::*;
 
 fn parse_coords(input: &str) -> Vec<C<i32>> {
-    lines(coord(i32).map(Into::into)).read(input)
+    lines(coord(i32).output_into()).read(input)
 }
 
 struct Pos {
