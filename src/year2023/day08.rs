@@ -63,5 +63,5 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    solve(input, |s| s.ends_with("A"), |e| e.ends_with("Z"))
+    solve(input, |s| s.ends_with('A'), |e| e.ends_with('Z'))
 }
