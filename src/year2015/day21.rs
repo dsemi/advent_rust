@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use std::cmp::max;
@@ -93,23 +93,22 @@ fn person(equip: Equip) -> Person {
     }
 }
 
-fn parse_boss(input: &str) -> Person {
-    let v: Vec<i32> = input
-        .lines()
-        .map(|line| line.split(' ').last().unwrap().i32())
-        .collect();
-    Person {
-        hitpoints: v[0],
+fn parse_boss(i: &mut &str) -> PResult<Person> {
+    let hitpoints = preceded("Hit Points: ", i32).parse_next(i)?;
+    let damage = preceded("\nDamage: ", i32).parse_next(i)?;
+    let armor = preceded("\nArmor: ", i32).parse_next(i)?;
+    Ok(Person {
+        hitpoints,
         equip: Equip {
             cost: 0,
-            damage: v[1],
-            armor: v[2],
+            damage,
+            armor,
         },
-    }
+    })
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    let boss = parse_boss(input);
+    let boss = parse_boss.read(input);
     ALL_EQUIP_COMBOS
         .iter()
         .filter(|&&p| is_winning(boss, p))
@@ -118,7 +117,7 @@ pub fn part1(input: &str) -> Option<i32> {
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    let boss = parse_boss(input);
+    let boss = parse_boss.read(input);
     ALL_EQUIP_COMBOS
         .iter()
         .filter(|&&p| !is_winning(boss, p))

@@ -1,26 +1,27 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashMap;
 
 fn parse<'a>(reg: &AHashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {
-    let mut p = |i| {
-        let (i, mut_r) = terminated(alpha1, space1)(i)?;
-        let (i, sgn) = alt((value(1, tag("inc")), value(-1, tag("dec"))))(i)?;
-        let (i, mut_n) = delimited(space1, i64, tag(" if "))(i)?;
-        let (i, cmp_r) = terminated(alpha1, space1)(i)?;
+    let mut p = |i: &mut &'a str| {
+        let (mut_r, sgn, mut_n, _, cmp_r) = (
+            alpha1,
+            alt((" inc ".value(1), " dec ".value(-1))),
+            i64,
+            " if ",
+            alpha1,
+        )
+            .parse_next(i)?;
         let rv = *reg.get(cmp_r).unwrap_or(&0);
-        let (i, cond) = map_res(
-            separated_pair(take_while1(|c| c != ' '), space1, i64),
-            |(cmp, cmp_n)| match cmp {
-                "==" => Ok(rv == cmp_n),
-                "!=" => Ok(rv != cmp_n),
-                ">" => Ok(rv > cmp_n),
-                ">=" => Ok(rv >= cmp_n),
-                "<" => Ok(rv < cmp_n),
-                "<=" => Ok(rv <= cmp_n),
-                _ => Err("Parse error"),
-            },
-        )(i)?;
-        Ok((i, (cond, mut_r, sgn * mut_n)))
+        let cond = alt((
+            preceded(" == ", i64).map(|cmp_n| rv == cmp_n),
+            preceded(" != ", i64).map(|cmp_n| rv != cmp_n),
+            preceded(" > ", i64).map(|cmp_n| rv > cmp_n),
+            preceded(" >= ", i64).map(|cmp_n| rv >= cmp_n),
+            preceded(" < ", i64).map(|cmp_n| rv < cmp_n),
+            preceded(" <= ", i64).map(|cmp_n| rv <= cmp_n),
+        ))
+        .parse_next(i)?;
+        Ok((cond, mut_r, sgn * mut_n))
     };
     p.read(i)
 }

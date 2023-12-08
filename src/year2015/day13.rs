@@ -1,19 +1,19 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::{held_karp, UniqueIdx};
 use std::cmp::max;
 
-fn parse(i: &str) -> IResult<&str, (&str, i32, &str)> {
-    map(
-        tuple((
-            alpha1,
-            tag(" would "),
-            alt((value(1, tag("gain ")), value(-1, tag("lose ")))),
-            i32,
-            tag(" happiness units by sitting next to "),
-            alpha1,
-        )),
-        |(p1, _, sgn, n, _, p2)| (p1, sgn * n, p2),
-    )(i)
+fn parser<'a>(i: &mut &'a str) -> PResult<(&'a str, i32, &'a str)> {
+    (
+        alpha1,
+        " would ",
+        alt(("gain ".value(1), "lose ".value(-1))),
+        i32,
+        " happiness units by sitting next to ",
+        alpha1,
+        '.',
+    )
+        .map(|(p1, _, sgn, n, _, p2, _)| (p1, sgn * n, p2))
+        .parse_next(i)
 }
 
 fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
@@ -24,7 +24,7 @@ fn parse_happiness(input: &str) -> Vec<Vec<i32>> {
         result.push(vec![0; l]);
     }
     for line in input.lines() {
-        let (p1, n, p2) = parse.read(line);
+        let (p1, n, p2) = parser.read(line);
         result[ui.idx(p1)][ui.idx(p2)] += n;
         result[ui.idx(p2)][ui.idx(p1)] += n;
     }

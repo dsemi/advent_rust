@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashMap;
 use std::cmp::{max, min};
 use Src::*;
@@ -28,18 +28,18 @@ fn populate_ins<'a>(m: &mut AHashMap<&'a str, Vec<i64>>, t: &AHashMap<&str, Node
     m.insert(k, inps);
 }
 
-fn bot(i: &str) -> IResult<&str, Vec<(&str, Src<'_>)>> {
-    let loc = |i| recognize(separated_pair(alpha1, space1, u8))(i);
-    let (i, name) = loc(i)?;
-    let (i, lo) = preceded(tag(" gives low to "), loc)(i)?;
-    let (i, hi) = preceded(tag(" and high to "), loc)(i)?;
-    Ok((i, vec![(lo, Bot(name, min)), (hi, Bot(name, max))]))
+fn bot<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
+    let mut loc = |i: &mut &'a str| separated_pair(alpha1, space1, u8).recognize().parse_next(i);
+    let name = loc.parse_next(i)?;
+    let lo = preceded(" gives low to ", loc).parse_next(i)?;
+    let hi = preceded(" and high to ", loc).parse_next(i)?;
+    Ok(vec![(lo, Bot(name, min)), (hi, Bot(name, max))])
 }
 
-fn value(i: &str) -> IResult<&str, Vec<(&str, Src<'_>)>> {
-    let (i, val) = preceded(tag("value "), i64)(i)?;
-    let (i, b) = preceded(tag(" goes to "), recognize(pair(tag("bot "), u8)))(i)?;
-    Ok((i, vec![(b, Value(val))]))
+fn value<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
+    let val = preceded("value ", i64).parse_next(i)?;
+    let b = preceded(" goes to ", ("bot ", u8).recognize()).parse_next(i)?;
+    Ok(vec![(b, Value(val))])
 }
 
 fn run_factory(input: &str) -> AHashMap<&str, Vec<i64>> {

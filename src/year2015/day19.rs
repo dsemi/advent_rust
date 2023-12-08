@@ -1,9 +1,8 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashSet;
 
-fn parse_mappings(input: &str) -> (&str, Vec<(&str, &str)>) {
-    let v: Vec<_> = input.split("\n\n").collect();
-    (v[1], lines(sep_tuple2(tag(" => "), alpha1)).read(v[0]))
+fn parse_mappings(input: &str) -> (Vec<(&str, &str)>, &str) {
+    separated_pair(lines(sep_tuple2(alpha1, " => ")), "\n\n", alpha1).read(input)
 }
 
 fn single_repls<'a>(src: &'a str, k: &'a str, v: &'a str) -> impl Iterator<Item = String> + 'a {
@@ -15,7 +14,7 @@ fn single_repls<'a>(src: &'a str, k: &'a str, v: &'a str) -> impl Iterator<Item 
 }
 
 pub fn part1(input: &str) -> usize {
-    let (s, mappings) = parse_mappings(input);
+    let (mappings, s) = parse_mappings(input);
     mappings
         .into_iter()
         .flat_map(|(k, v)| single_repls(s, k, v))
@@ -24,7 +23,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let mol = parse_mappings(input).0;
+    let mol = parse_mappings(input).1;
     mol.matches(|c: char| c.is_ascii_uppercase()).count()
         - (mol.matches("Rn").count() + mol.matches("Ar").count())
         - 2 * mol.matches('Y').count()

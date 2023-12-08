@@ -1,6 +1,6 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
-fn is_sue(k: &str, x: i32) -> bool {
+fn is_sue((k, x): (&str, i32)) -> bool {
     match k {
         "children" => x == 3,
         "cats" => x == 7,
@@ -16,14 +16,15 @@ fn is_sue(k: &str, x: i32) -> bool {
     }
 }
 
-fn solve(input: &str, f: fn(&str, i32) -> bool) -> Option<usize> {
+fn solve(input: &str, f: fn((&str, i32)) -> bool) -> Option<usize> {
     input
         .lines()
         .position(|line| {
-            line.split_once(": ").unwrap().1.split(", ").all(|attr| {
-                let (key, val) = attr.split_once(": ").unwrap();
-                f(key, val.i32())
-            })
+            line.split_once(": ")
+                .unwrap()
+                .1
+                .split(", ")
+                .all(|attr| f(separated_pair(alpha1, ": ", i32).read(attr)))
         })
         .map(|x| x + 1)
 }
@@ -33,11 +34,11 @@ pub fn part1(input: &str) -> Option<usize> {
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    solve(input, |k, x| match k {
+    solve(input, |(k, x)| match k {
         "cats" => x > 7,
         "pomeranians" => x < 3,
         "goldfish" => x < 5,
         "trees" => x > 3,
-        _ => is_sue(k, x),
+        _ => is_sue((k, x)),
     })
 }

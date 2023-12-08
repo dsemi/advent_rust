@@ -1,6 +1,5 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use itertools::iterate;
-use std::cell::Cell;
 
 #[derive(Clone)]
 struct Group<'a> {
@@ -31,47 +30,74 @@ impl Group<'_> {
     }
 }
 
-fn units<'a>(idx: &Cell<usize>, name: &'a str, i: &'a str) -> IResult<&'a str, Option<Group<'a>>> {
-    let (i, units) = i32(i)?;
-    let (i, hit_pts) = delimited(tag(" units each with "), i32, tag(" hit points "))(i)?;
-    let (i, attributes) = opt(delimited(
-        tag("("),
-        separated_list0(
-            tag("; "),
-            separated_pair(alt((tag("weak"), tag("immune"))), tag(" to "), list(alpha1)),
+fn attributes<'a>(i: &mut &'a str) -> PResult<(Vec<&'a str>, Vec<&'a str>)> {
+    '('.parse_next(i)?;
+    let [weak, immune] = fold_repeat(
+        0..=2,
+        terminated(
+            alt((
+                preceded("weak to ", list(alpha1)).map(|w| (0, w)),
+                preceded("immune to ", list(alpha1)).map(|i| (1, i)),
+            )),
+            opt("; "),
         ),
-        tag(") "),
-    ))(i)?;
-    let (weaknesses, immunities) = attributes
-        .unwrap_or_default()
-        .into_iter()
-        .partition::<Vec<(&str, Vec<&str>)>, _>(|x| x.0 == "weak");
-    let (i, dmg) = delimited(tag("with an attack that does "), i32, tag(" "))(i)?;
-    let (i, element) = alpha1(i)?;
-    let (i, initiative) = preceded(tag(" damage at initiative "), i32)(i)?;
-    let group = Group {
-        num: idx.replace(idx.get() + 1),
-        name,
-        units,
-        hit_pts,
-        dmg,
-        element,
-        initiative,
-        weaknesses: weaknesses.into_iter().flat_map(|x| x.1).collect(),
-        immunities: immunities.into_iter().flat_map(|x| x.1).collect(),
-    };
-    Ok((i, Some(group)))
+        Default::default,
+        |mut acc: [Vec<&str>; 2], (i, xs)| {
+            acc[i].extend(xs);
+            acc
+        },
+    )
+    .parse_next(i)?;
+    ") ".parse_next(i)?;
+    Ok((weak, immune))
 }
 
-fn army<'a>(idx: &Cell<usize>, i: &'a str) -> IResult<&'a str, Vec<Option<Group<'a>>>> {
-    let (i, name) = terminated(take_till(|c: char| c == ':'), tag(":\n"))(i)?;
-    lines(|i| units(idx, name, i))(i)
+fn units<'a>(name: &'a str) -> impl Parser<&'a str, Option<Group<'a>>, ContextError> {
+    move |i: &mut &'a str| {
+        let (units, _, hp, _, attr, _, dmg, _, elem, _, init) = (
+            i32,
+            " units each with ",
+            i32,
+            " hit points ",
+            opt(attributes),
+            "with an attack that does ",
+            i32,
+            ' ',
+            alpha1,
+            " damage at initiative ",
+            i32,
+        )
+            .parse_next(i)?;
+        let (weaknesses, immunities) = attr.unwrap_or_default();
+        let group = Group {
+            num: 0,
+            name,
+            units,
+            hit_pts: hp,
+            dmg,
+            element: elem,
+            initiative: init,
+            weaknesses,
+            immunities,
+        };
+        Ok(Some(group))
+    }
 }
 
-fn armies(i: &str) -> IResult<&str, Vec<Option<Group>>> {
-    let idx = Cell::new(0);
-    let (i, (a, b)) = sep_tuple2(tag("\n\n"), |i| army(&idx, i))(i)?;
-    Ok((i, [a, b].concat()))
+fn army<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
+    let name = terminated(take_till(1.., |c| c == ':'), ":\n").parse_next(i)?;
+    lines(units(name)).parse_next(i)
+}
+
+fn armies<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
+    let (a, b) = sep_tuple2(army, "\n\n").parse_next(i)?;
+    let mut result = [a, b].concat();
+    result
+        .iter_mut()
+        .filter_map(|g| g.as_mut())
+        .enumerate()
+        .for_each(|(i, g)| g.num = i);
+    Ok(result)
 }
 
 fn select_target(groups: &[Option<Group>], attacked: &mut u32, grp: &Group) -> Option<usize> {

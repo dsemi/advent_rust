@@ -1,8 +1,8 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 
 fn parse_pipes(input: &str) -> Vec<Vec<usize>> {
-    lines(preceded(pair(digit1, tag(" <-> ")), list(usize))).read(input)
+    lines(preceded((digit1, " <-> "), list(usize))).read(input)
 }
 
 pub fn part1(input: &str) -> usize {

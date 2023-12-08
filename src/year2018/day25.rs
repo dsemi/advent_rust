@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashSet;
 
@@ -7,7 +7,7 @@ type Pt = (i64, i64, i64, i64);
 fn parse_points(input: &str) -> UnionFind<Pt> {
     input
         .lines()
-        .map(|line| sep_tuple4(tag(","), i64).read(line))
+        .map(|line| sep_tuple4(i64, ',').read(line))
         .collect()
 }
 

@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashSet;
 use std::cmp::{max, min};
@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 use Tile::*;
 
 fn parse_coords(input: &str) -> Vec<C<i32>> {
-    lines(map(coord(i32), Into::into)).read(input)
+    lines(coord(i32).map(Into::into)).read(input)
 }
 
 struct Pos {

@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use std::cmp::max;
@@ -10,13 +10,14 @@ struct Node {
     avail: i64,
 }
 
-fn node(i: &str) -> IResult<&str, Node> {
-    let (i, _) = tag("/dev/grid/node-x")(i)?;
-    let (i, coord) = map(sep_tuple2(tag("-y"), i32), Into::into)(i)?;
-    let (i, _) = delimited(space1, i64, tag("T"))(i)?;
-    let (i, used) = delimited(space1, i64, tag("T"))(i)?;
-    let (i, avail) = delimited(space1, i64, tag("T"))(i)?;
-    Ok((i, Node { coord, used, avail }))
+fn node(i: &mut &str) -> PResult<Node> {
+    "/dev/grid/node-x".parse_next(i)?;
+    let coord = sep_tuple2(i32, "-y").map(Into::into).parse_next(i)?;
+    delimited(space1, i64, 'T').parse_next(i)?;
+    let used = delimited(space1, i64, 'T').parse_next(i)?;
+    let avail = delimited(space1, i64, 'T').parse_next(i)?;
+    delimited(space1, i64, '%').parse_next(i)?;
+    Ok(Node { coord, used, avail })
 }
 
 fn parse_nodes(input: &str) -> Vec<Node> {

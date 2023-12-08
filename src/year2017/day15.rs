@@ -1,15 +1,16 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use itertools::iterate;
 
 const FACTOR_A: u64 = 16807;
 const FACTOR_B: u64 = 48271;
 
-fn parse(input: &str) -> (u64, u64) {
-    let pts: Vec<u64> = input
-        .lines()
-        .map(|x| x.split_whitespace().last().unwrap().u64())
-        .collect();
-    (pts[0], pts[1])
+fn parse(i: &mut &str) -> PResult<(u64, u64)> {
+    separated_pair(
+        preceded("Generator A starts with ", u64),
+        '\n',
+        preceded("Generator B starts with ", u64),
+    )
+    .parse_next(i)
 }
 
 fn generate(x: u64, factor: u64) -> [u64; 4] {
@@ -150,7 +151,7 @@ mod simd {
 }
 
 pub fn part1(input: &str) -> u64 {
-    let (a0, b0) = parse(input);
+    let (a0, b0) = parse.read(input);
     let mut a = simd::T {
         ns: generate(a0, FACTOR_A),
     };
@@ -167,7 +168,7 @@ pub fn part1(input: &str) -> u64 {
 }
 
 pub fn part2(input: &str) -> u64 {
-    let (a0, b0) = parse(input);
+    let (a0, b0) = parse.read(input);
     let mut a = simd::T {
         ns: generate(a0, FACTOR_A),
     };

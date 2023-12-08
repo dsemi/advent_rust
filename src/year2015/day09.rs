@@ -1,21 +1,13 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::{held_karp, UniqueIdx};
 use std::cmp::{max, min};
-
-fn parse(i: &str) -> IResult<&str, (&str, &str, usize)> {
-    tuple((
-        alpha1,
-        preceded(tag(" to "), alpha1),
-        preceded(tag(" = "), usize),
-    ))(i)
-}
 
 fn all_path_distances(input: &str, f: fn(usize, usize) -> usize) -> Option<usize> {
     let mut adj = Vec::new();
     let mut ui = UniqueIdx::new();
     let fake = ui.idx("fake");
     for line in input.lines() {
-        let (k1, k2, v) = parse.read(line);
+        let (k1, k2, v) = separated_triplet(alpha1, " to ", alpha1, " = ", usize).read(line);
         let n1 = ui.idx(k1);
         let n2 = ui.idx(k2);
         while max(n1, n2) >= adj.len() {

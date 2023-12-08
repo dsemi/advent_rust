@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use itertools::Itertools;
 
 pub fn part1(input: &str) -> i64 {

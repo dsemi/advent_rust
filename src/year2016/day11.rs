@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use ahash::AHashSet;
@@ -36,18 +36,16 @@ impl Floors {
     }
 }
 
-fn parse(flr: i32) -> impl FnMut(&str) -> IResult<&str, (&str, Pair)> {
-    move |i| {
-        let (i, elem) = delimited(
-            pair(opt(tag("and ")), tag("a ")),
-            alpha1,
-            pair(opt(tag("-compatible")), space1),
-        )(i)?;
-        let (i, pair) = alt((
-            value(Pair { chip: flr, gen: 0 }, tag("microchip")),
-            value(Pair { chip: 0, gen: flr }, tag("generator")),
-        ))(i)?;
-        Ok((i, (elem, pair)))
+fn parse<'a>(flr: i32) -> impl Parser<&'a str, (&'a str, Pair), ContextError> {
+    move |i: &mut &'a str| {
+        let elem =
+            delimited((opt("and "), "a "), alpha1, (opt("-compatible"), space1)).parse_next(i)?;
+        let pair = alt((
+            "microchip".value(Pair { chip: flr, gen: 0 }),
+            "generator".value(Pair { chip: 0, gen: flr }),
+        ))
+        .parse_next(i)?;
+        Ok((elem, pair))
     }
 }
 
@@ -55,7 +53,7 @@ fn parse_floors(input: &str) -> Floors {
     let mut tbl = AHashMap::new();
     for (i, line) in input.lines().enumerate() {
         if let Some(idx) = line.find("a ") {
-            list(parse(i as i32 + 1))
+            terminated(list(parse(i as i32 + 1)), '.')
                 .read(&line[idx..])
                 .into_iter()
                 .for_each(|(k, pair)| *tbl.entry(k).or_default() |= pair);

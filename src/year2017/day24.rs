@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashSet;
 use std::cmp::max_by_key;
 
@@ -14,7 +14,7 @@ fn parse_pipes(input: &str) -> Vec<Pipe> {
         .lines()
         .enumerate()
         .map(|(i, line)| {
-            let (a, b) = sep_tuple2(tag("/"), u32).read(line);
+            let (a, b) = sep_tuple2(u32, '/').read(line);
             Pipe { id: 1 << i, a, b }
         })
         .collect()

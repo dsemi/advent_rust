@@ -1,5 +1,5 @@
 use crate::utils::ocr::*;
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::C;
 use ahash::AHashSet;
 use std::cmp::{max, min};
@@ -9,10 +9,10 @@ struct Obj {
     vel: C<i32>,
 }
 
-fn object(i: &str) -> IResult<&str, Obj> {
-    let (i, pos) = delimited(tag("position=<"), map(coord(i32), Into::into), tag("> "))(i)?;
-    let (i, vel) = delimited(tag("velocity=<"), map(coord(i32), Into::into), tag(">"))(i)?;
-    Ok((i, Obj { pos, vel }))
+fn object(i: &mut &str) -> PResult<Obj> {
+    let pos = delimited("position=<", coord(i32).map(Into::into), "> ").parse_next(i)?;
+    let vel = delimited("velocity=<", coord(i32).map(Into::into), '>').parse_next(i)?;
+    Ok(Obj { pos, vel })
 }
 
 fn bounding_box(objs: &[Obj]) -> (i32, i32, i32, i32) {

@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 
 struct Particle {
@@ -7,12 +7,8 @@ struct Particle {
     acc: C3<i64>,
 }
 
-fn particle(i: &str) -> IResult<&str, C3<i64>> {
-    delimited(
-        pair(anychar, tag("=<")),
-        map(coord3(i64), Into::into),
-        tag(">"),
-    )(i)
+fn particle(i: &mut &str) -> PResult<C3<i64>> {
+    delimited((any, "=<"), coord3(i64).map(Into::into), '>').parse_next(i)
 }
 
 fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {

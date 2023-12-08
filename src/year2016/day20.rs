@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use std::cmp::max;
 use std::iter::Peekable;
 
@@ -35,13 +35,7 @@ where
 }
 
 fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
-    let mut ips: Vec<IpRange> = input
-        .lines()
-        .map(|line| {
-            let (a, b) = line.split_once('-').unwrap();
-            (a.u64(), b.u64())
-        })
-        .collect();
+    let mut ips = lines(sep_tuple2(u64, '-')).read(input);
     ips.sort_unstable();
     IpRanges::new(ips.into_iter())
 }

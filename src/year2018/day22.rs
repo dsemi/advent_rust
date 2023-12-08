@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -26,12 +26,12 @@ fn next(t: &Tool) -> Tool {
     }
 }
 
-fn parse(i: &str) -> IResult<&str, (i32, C<i32>)> {
-    separated_pair(
-        preceded(tag("depth: "), i32),
-        tag("\n"),
-        preceded(tag("target: "), map(coord(i32), Into::into)),
-    )(i)
+fn parse(i: &mut &str) -> PResult<(i32, C<i32>)> {
+    (
+        preceded("depth: ", i32),
+        preceded("\ntarget: ", coord(i32).map(Into::into)),
+    )
+        .parse_next(i)
 }
 
 fn erosion_levels(depth: i32, target: C<i32>) -> Vec<Vec<Tool>> {

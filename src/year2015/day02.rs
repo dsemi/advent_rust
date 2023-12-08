@@ -1,9 +1,9 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
 fn process(input: &str, f: fn((i32, i32, i32)) -> i32) -> i32 {
     input
         .lines()
-        .map(|line| f(sep_tuple3(tag("x"), i32).read(line)))
+        .map(|line| f(sep_tuple3(i32, 'x').read(line)))
         .sum()
 }
 

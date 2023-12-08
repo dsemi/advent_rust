@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::C3;
 use std::cmp::{max, min};
 
@@ -14,10 +14,10 @@ impl Nanobot {
     }
 }
 
-fn nanobot(i: &str) -> IResult<&str, Nanobot> {
-    let (i, pos) = preceded(tag("pos=<"), map(coord3(i64), Into::into))(i)?;
-    let (i, radius) = preceded(tag(">, r="), i64)(i)?;
-    Ok((i, Nanobot { pos, radius }))
+fn nanobot(i: &mut &str) -> PResult<Nanobot> {
+    let pos = preceded("pos=<", coord3(i64).map(Into::into)).parse_next(i)?;
+    let radius = preceded(">, r=", i64).parse_next(i)?;
+    Ok(Nanobot { pos, radius })
 }
 
 pub fn part1(input: &str) -> usize {

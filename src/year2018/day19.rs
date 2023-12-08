@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use Op::*;
 
@@ -33,12 +33,12 @@ pub struct Prog {
 
 macro_rules! match_op {
     ($n:ident) => {
-        value($n, tag(advent::lower!($n)))
+        tag(advent::lower!($n)).value($n)
     };
 }
 
-fn parse_instr(i: &str) -> IResult<&str, Instr> {
-    let (i, op) = alt((
+fn parse_instr(i: &mut &str) -> PResult<Instr> {
+    let op = alt((
         match_op!(Addr),
         match_op!(Addi),
         match_op!(Mulr),
@@ -55,11 +55,12 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
         match_op!(Eqir),
         match_op!(Eqri),
         match_op!(Eqrr),
-    ))(i)?;
-    let (i, a) = preceded(space1, i64)(i)?;
-    let (i, b) = preceded(space1, i64)(i)?;
-    let (i, c) = preceded(space1, i64)(i)?;
-    Ok((i, Instr(op, a, b, c)))
+    ))
+    .parse_next(i)?;
+    let a = preceded(space1, i64).parse_next(i)?;
+    let b = preceded(space1, i64).parse_next(i)?;
+    let c = preceded(space1, i64).parse_next(i)?;
+    Ok(Instr(op, a, b, c))
 }
 
 impl Prog {

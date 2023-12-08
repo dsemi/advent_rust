@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use ahash::AHashMap;
 
 fn run(mut r: AHashMap<&str, i64>, input: &str) -> i64 {

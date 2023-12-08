@@ -1,16 +1,10 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::Partitions;
 use std::cmp::max;
 use streaming_iterator::StreamingIterator;
 
-fn parse_ingredients(s: &str) -> Vec<Vec<i32>> {
-    s.lines()
-        .map(|line| {
-            line.split(',')
-                .map(|pt| pt.rsplit_once(' ').unwrap().1.i32())
-                .collect()
-        })
-        .collect()
+fn ingredients(s: &str) -> Vec<Vec<i32>> {
+    lines(preceded((alpha1, ": "), list(preceded((alpha1, ' '), i32)))).read(s)
 }
 
 fn max_score(total: i32, cal_pred: fn(i32) -> bool, ings: Vec<Vec<i32>>) -> Option<i32> {
@@ -28,9 +22,9 @@ fn max_score(total: i32, cal_pred: fn(i32) -> bool, ings: Vec<Vec<i32>>) -> Opti
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    max_score(100, |_| true, parse_ingredients(input))
+    max_score(100, |_| true, ingredients(input))
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    max_score(100, |x| x == 500, parse_ingredients(input))
+    max_score(100, |x| x == 500, ingredients(input))
 }

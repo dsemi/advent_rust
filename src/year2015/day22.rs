@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use crate::utils::*;
 use once_cell::sync::Lazy;
 use std::cmp::max;
@@ -79,21 +79,19 @@ fn apply_effects(state: &mut Game) {
     }
 }
 
-fn parse_boss(input: &str) -> Game {
-    let v: Vec<i32> = input
-        .lines()
-        .map(|x| x.split(": ").last().unwrap().i32())
-        .collect();
-    Game {
+fn parse_boss(i: &mut &str) -> PResult<Game> {
+    let boss_health = preceded("Hit Points: ", i32).parse_next(i)?;
+    let boss_damage = preceded("\nDamage: ", i32).parse_next(i)?;
+    Ok(Game {
         player_health: 50,
         player_mana: 500,
         player_armor: 0,
-        boss_health: v[0],
-        boss_damage: v[1],
+        boss_health,
+        boss_damage,
         shield_turns: 0,
         poison_turns: 0,
         recharge_turns: 0,
-    }
+    })
 }
 
 fn neighbors(s: &Game, hard: bool) -> Vec<(usize, Game)> {
@@ -126,11 +124,11 @@ fn neighbors(s: &Game, hard: bool) -> Vec<(usize, Game)> {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    dijkstra(parse_boss(input), |s| neighbors(s, false))
+    dijkstra(parse_boss.read(input), |s| neighbors(s, false))
         .find_map(|(d, s)| (s.boss_health <= 0).then_some(d))
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    dijkstra(parse_boss(input), |s| neighbors(s, true))
+    dijkstra(parse_boss.read(input), |s| neighbors(s, true))
         .find_map(|(d, s)| (s.boss_health <= 0).then_some(d))
 }

@@ -1,22 +1,21 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 
 type Switch = fn(&mut [u32]);
 type Coord = (usize, usize);
 
-fn parse(
+fn parse<'a>(
     off: Switch,
     on: Switch,
     toggle: Switch,
-) -> impl FnMut(&str) -> IResult<&str, (Switch, (Coord, Coord))> {
-    move |i| {
-        let (i, f) = alt((
-            value(off, tag("turn off ")),
-            value(on, tag("turn on ")),
-            value(toggle, tag("toggle ")),
-        ))(i)?;
-        let (i, pts) = sep_tuple2(tag("through"), coord(usize))(i)?;
-        Ok((i, (f, pts)))
-    }
+) -> impl Parser<&'a str, (Switch, (Coord, Coord)), ContextError> {
+    (
+        alt((
+            "turn off ".value(off),
+            "turn on ".value(on),
+            "toggle ".value(toggle),
+        )),
+        sep_tuple2(coord(usize), "through"),
+    )
 }
 
 fn run_commands(input: &str, off: Switch, on: Switch, toggle: Switch) -> u32 {

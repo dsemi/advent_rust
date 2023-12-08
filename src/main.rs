@@ -17,7 +17,7 @@ mod year2023;
 // Needs to be after the year modules.
 mod problems;
 
-use utils::parsers::*;
+use utils::parsers2::*;
 
 fn colorize_time(n: f64) -> String {
     let color = if n < 0.5 {

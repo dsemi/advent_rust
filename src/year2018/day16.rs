@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use Op::*;
@@ -115,7 +115,7 @@ pub fn part2(input: &str) -> usize {
     let ops = determine_op_codes(m);
     let mut mem = vec![0; 4];
     for line in prog.lines() {
-        let pts = sep_list(space1, usize).read(line);
+        let pts: Vec<_> = separated(1.., usize, space1).read(line);
         eval(&mut mem, ops[pts[0]], pts[1], pts[2], pts[3]);
     }
     mem[0]

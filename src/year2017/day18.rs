@@ -1,4 +1,4 @@
-use crate::utils::parsers::*;
+use crate::utils::parsers2::*;
 use std::cell::Cell;
 use std::collections::VecDeque;
 use Instr::*;
@@ -29,15 +29,15 @@ struct Sim {
     sends: usize,
 }
 
-fn reg(i: &str) -> IResult<&str, usize> {
-    map(anychar, |c| c as usize - 'a' as usize)(i)
+fn reg(i: &mut &str) -> PResult<usize> {
+    any.map(|c| c as usize - 'a' as usize).parse_next(i)
 }
 
-fn val(i: &str) -> IResult<&str, Val> {
-    alt((map(i64, Lit), map(reg, Reg)))(i)
+fn val(i: &mut &str) -> PResult<Val> {
+    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
 }
 
-fn parse_instr(i: &str) -> IResult<&str, Instr> {
+fn parse_instr(i: &mut &str) -> PResult<Instr> {
     alt((
         cons1!(Snd, val),
         cons2!(Set, reg, val),
@@ -46,7 +46,8 @@ fn parse_instr(i: &str) -> IResult<&str, Instr> {
         cons2!(Mod, reg, val),
         cons1!(Rcv, reg),
         cons2!(Jgz, val, val),
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 impl Sim {
