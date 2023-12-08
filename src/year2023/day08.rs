@@ -10,7 +10,7 @@ fn network(
     is_end: fn(&str) -> bool,
 ) -> (Vec<usize>, AHashSet<usize>, Vec<usize>, Vec<usize>) {
     let mut starts = Vec::new();
-    let mut ends = Vec::new();
+    let mut ends = AHashSet::new();
     let mut lefts = Vec::new();
     let mut rights = Vec::new();
     let mut ui = UniqueIdx::new();
@@ -26,14 +26,14 @@ fn network(
             starts.push(k);
         }
         if is_end(src) {
-            ends.push(k);
+            ends.insert(k);
         }
         lefts.resize(max(lefts.len(), k + 1), 0);
         lefts[k] = ui.idx(left);
         rights.resize(max(lefts.len(), k + 1), 0);
         rights[k] = ui.idx(right);
     }
-    (starts, ends.into_iter().collect(), lefts, rights)
+    (starts, ends, lefts, rights)
 }
 
 pub fn solve(input: &str, is_start: fn(&str) -> bool, is_end: fn(&str) -> bool) -> usize {
