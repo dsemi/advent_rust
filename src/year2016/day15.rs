@@ -1,21 +1,17 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
-use scan_fmt::scan_fmt as scanf;
 
 fn parse_discs(input: &str) -> Vec<(i64, i64)> {
-    input
-        .lines()
-        .map(|line| {
-            let (disc_num, modulo, pos) = scanf!(
-                line,
-                "Disc #{} has {} positions; at time=0, it is at position {}.",
-                i64,
-                i64,
-                i64
-            )
-            .unwrap();
-            (-pos - disc_num, modulo)
-        })
-        .collect()
+    lines_iter(
+        input,
+        (
+            delimited("Disc #", i64, " has "),
+            terminated(i64, " positions; at time=0, it is at position "),
+            terminated(i64, '.'),
+        ),
+    )
+    .map(|(disc_num, modulo, pos)| (-pos - disc_num, modulo))
+    .collect()
 }
 
 pub fn part1(input: &str) -> i64 {

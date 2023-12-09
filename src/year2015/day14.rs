@@ -1,18 +1,16 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
-use scan_fmt::scan_fmt as scanf;
 
 fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
     input
         .lines()
         .map(|line| {
-            let (speed, fly_time, rest_time) = scanf!(
-                line,
-                "{*} can fly {} km/s for {} seconds, but then must rest for {} seconds.",
-                i32,
-                i32,
-                i32
+            let (speed, fly_time, rest_time) = (
+                preceded((alpha1, " can fly "), i32),
+                preceded(" km/s for ", i32),
+                delimited(" seconds, but then must rest for ", i32, " seconds."),
             )
-            .unwrap();
+                .read(line);
             vec![speed; fly_time as usize]
                 .into_iter()
                 .chain(vec![0; rest_time as usize])

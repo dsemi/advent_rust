@@ -1,36 +1,53 @@
 use crate::utils::ocr::*;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
-use scan_fmt::scan_fmt as scanf;
+use Instr::*;
 
 const W: usize = 50;
 const H: usize = 6;
 
-fn process_instr(grid: &mut AHashSet<(usize, usize)>, line: &str) {
-    if let Ok((a, b)) = scanf!(line, "rect {}x{}", usize, usize) {
-        for c in 0..a {
-            for r in 0..b {
-                grid.insert((r, c));
+enum Instr {
+    Rect((usize, usize)),
+    RotateRow((usize, usize)),
+    RotateCol((usize, usize)),
+}
+
+fn parse(i: &mut &str) -> PResult<Instr> {
+    alt((
+        preceded("rect ", sep_tuple2(usize, 'x')).map(Rect),
+        preceded("rotate row y=", sep_tuple2(usize, " by ")).map(RotateRow),
+        preceded("rotate column x=", sep_tuple2(usize, " by ")).map(RotateCol),
+    ))
+    .parse_next(i)
+}
+
+fn process_instr(grid: &mut AHashSet<(usize, usize)>, instr: Instr) {
+    match instr {
+        Rect((a, b)) => {
+            for c in 0..a {
+                for r in 0..b {
+                    grid.insert((r, c));
+                }
             }
         }
-    } else if let Ok((a, b)) = scanf!(line, "rotate row y={} by {}", usize, usize) {
-        *grid = grid
-            .iter()
-            .map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c }))
-            .collect();
-    } else {
-        let (a, b) = scanf!(line, "rotate column x={} by {}", usize, usize).unwrap();
-        *grid = grid
-            .iter()
-            .map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c))
-            .collect();
+        RotateRow((a, b)) => {
+            *grid = grid
+                .iter()
+                .map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c }))
+                .collect();
+        }
+        RotateCol((a, b)) => {
+            *grid = grid
+                .iter()
+                .map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c))
+                .collect();
+        }
     }
 }
 
 fn lit_pixels(input: &str) -> AHashSet<(usize, usize)> {
     let mut result = AHashSet::new();
-    input
-        .lines()
-        .for_each(|line| process_instr(&mut result, line));
+    lines_iter(input, parse).for_each(|instr| process_instr(&mut result, instr));
     result
 }
 
