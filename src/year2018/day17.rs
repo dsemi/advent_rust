@@ -1,5 +1,5 @@
+use crate::utils::parsers::*;
 use itertools::iterate;
-use scan_fmt::scan_fmt as scanf;
 
 struct Ground {
     grid: Vec<Vec<char>>,
@@ -11,8 +11,8 @@ struct Ground {
 fn parse_scans(input: &str) -> Ground {
     let mut clay = Vec::new();
     for line in input.lines() {
-        let (c1, v1, _c2, v2a, v2b) =
-            scanf!(line, "{}={}, {}={}..{}", char, i32, char, i32, i32).unwrap();
+        let (c1, _, v1, _, v2a, _, v2b) =
+            (any, '=', i32, (", ", any, '='), i32, "..", i32).read(line);
         if c1 == 'x' {
             (v2a..=v2b).for_each(|y| clay.push((v1, y)));
         } else {

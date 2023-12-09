@@ -111,7 +111,7 @@ where
     }
 }
 
-pub fn sep_tuple2<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O), E>
+pub fn sep2<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O), E>
 where
     I: Stream,
     E: ParserError<I>,
@@ -126,7 +126,7 @@ where
     }
 }
 
-pub fn sep_tuple3<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O), E>
+pub fn sep3<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O), E>
 where
     I: Stream,
     E: ParserError<I>,
@@ -143,7 +143,7 @@ where
     }
 }
 
-pub fn sep_tuple4<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O, O), E>
+pub fn sep4<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O, O), E>
 where
     I: Stream,
     E: ParserError<I>,

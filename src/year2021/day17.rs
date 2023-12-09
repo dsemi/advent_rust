@@ -1,5 +1,11 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 use std::cmp::max;
+
+fn parse(i: &mut &str) -> PResult<(i64, i64, i64, i64)> {
+    let (_, x0, _, x1, _, y0, _, y1) =
+        ("target area: x=", i64, "..", i64, ", y=", i64, "..", i64).parse_next(i)?;
+    Ok((x0, x1, y0, y1))
+}
 
 fn hits_target(x0: i64, x1: i64, y0: i64, y1: i64, mut vx: i64, mut vy: i64) -> bool {
     itertools::unfold((0, 0), |p| {
@@ -13,13 +19,12 @@ fn hits_target(x0: i64, x1: i64, y0: i64, y1: i64, mut vx: i64, mut vy: i64) -> 
 }
 
 pub fn part1(input: &str) -> i64 {
-    let y0 = scanf!(input, "target area: x={*d}..{*d}, y={}..{*d}", i64).unwrap();
+    let (_, _, y0, _) = parse.read(input);
     y0 * (y0 + 1) / 2
 }
 
 pub fn part2(input: &str) -> usize {
-    let (x0, x1, y0, y1) =
-        scanf!(input, "target area: x={}..{}, y={}..{}", i64, i64, i64, i64).unwrap();
+    let (x0, x1, y0, y1) = parse.read(input);
     assert!(x0 > 0 && x1 > 0);
     assert!(y0 < 0 && y1 < 0);
     // First triangular number > x0 is lower bound.

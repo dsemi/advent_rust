@@ -1,6 +1,6 @@
 use crate::utils::bits;
+use crate::utils::parsers::*;
 use ahash::AHashSet;
-use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
 type Pt = [i32; 3];
@@ -36,7 +36,7 @@ fn parse_scanners(input: &str) -> Vec<Scanner> {
                 min: [0; 3],
             };
             for line in sc.lines().skip(1) {
-                let (x, y, z) = scanf!(line, "{},{},{}", i32, i32, i32).unwrap();
+                let (x, y, z) = coord3(i32).read(line);
                 scanner.add([x, y, z]);
             }
             scanner

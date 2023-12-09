@@ -1,4 +1,4 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 
 struct Claim {
     num: usize,
@@ -8,29 +8,17 @@ struct Claim {
     y1: usize,
 }
 
-fn parse_claims(input: &str) -> Vec<Claim> {
-    input
-        .lines()
-        .map(|line| {
-            let (n, x, y, w, h) = scanf!(
-                line,
-                "#{} @ {},{}: {}x{}",
-                usize,
-                usize,
-                usize,
-                usize,
-                usize
-            )
-            .unwrap();
-            Claim {
-                num: n,
-                x0: x,
-                y0: y,
-                x1: x + w,
-                y1: y + h,
-            }
-        })
-        .collect()
+fn claim(i: &mut &str) -> PResult<Claim> {
+    let num = delimited('#', usize, " @ ").parse_next(i)?;
+    let (x, y) = terminated(coord(usize), ": ").parse_next(i)?;
+    let (w, h) = sep_tuple2(usize, 'x').parse_next(i)?;
+    Ok(Claim {
+        num,
+        x0: x,
+        y0: y,
+        x1: x + w,
+        y1: y + h,
+    })
 }
 
 fn coord_freq(claims: &[Claim]) -> Vec<Vec<usize>> {
@@ -48,14 +36,14 @@ fn coord_freq(claims: &[Claim]) -> Vec<Vec<usize>> {
 }
 
 pub fn part1(input: &str) -> usize {
-    coord_freq(&parse_claims(input))
+    coord_freq(&lines(claim).read(input))
         .into_iter()
         .map(|col| col.into_iter().filter(|&x| x > 1).count())
         .sum()
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    let claims = parse_claims(input);
+    let claims = lines(claim).read(input);
     let grid = coord_freq(&claims);
     claims.into_iter().find_map(|claim| {
         (claim.x0..claim.x1)

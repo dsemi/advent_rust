@@ -1,8 +1,8 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
-use scan_fmt::scan_fmt as scanf;
 
 struct Cmd {
-    mask: Vec<(u64, char)>,
+    mask: Vec<(char, u64)>,
     r: u64,
     v: u64,
 }
@@ -12,16 +12,9 @@ fn parse_cmds(s: &str) -> Vec<Cmd> {
     let mut res = Vec::new();
     for line in s.lines() {
         if line.starts_with("mask") {
-            mask = line
-                .split(' ')
-                .last()
-                .unwrap()
-                .chars()
-                .enumerate()
-                .map(|(i, x)| (35 - i as u64, x))
-                .collect();
+            mask = line[7..].chars().zip((0..36).rev()).collect();
         } else {
-            let (r, v) = scanf!(line, "mem[{}] = {}", u64, u64).unwrap();
+            let (_, r, _, v) = ("mem[", u64, "] = ", u64).read(line);
             res.push(Cmd {
                 mask: mask.clone(),
                 r,
@@ -37,7 +30,7 @@ pub fn part1(input: &str) -> u64 {
     let mut m = AHashMap::new();
     for Cmd { mask, r, v } in cmds {
         let mut v = v;
-        for (i, c) in mask {
+        for (c, i) in mask {
             match c {
                 '1' => v |= 1 << i,
                 '0' => v &= !(1 << i),
@@ -49,12 +42,12 @@ pub fn part1(input: &str) -> u64 {
     m.values().sum()
 }
 
-fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(u64, char)], r: u64, v: u64) {
+fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(char, u64)], r: u64, v: u64) {
     if xs.is_empty() {
         m.insert(r, v);
         return;
     }
-    let (i, c) = xs[0];
+    let (c, i) = xs[0];
     match c {
         '1' => set_vals(m, &xs[1..], r | (1 << i), v),
         '0' => set_vals(m, &xs[1..], r, v),

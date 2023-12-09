@@ -1,6 +1,7 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 use std::collections::VecDeque;
 
+#[derive(Clone)]
 enum Dir {
     L,
     R,
@@ -12,44 +13,41 @@ struct Rule {
     state: usize,
 }
 
-fn parse_branch<'a, I: Iterator<Item = &'a str>>(gen: &mut I, idx: usize) -> Option<Rule> {
-    assert!(gen.next()? == format!("  If the current value is {idx}:"));
-    let write = scanf!(gen.next()?, "    - Write the value {}.", usize).unwrap();
-    let dir = scanf!(gen.next()?, "    - Move one slot to the {}.", String).unwrap();
-    let state = scanf!(gen.next()?, "    - Continue with state {}.", char).unwrap();
-    Some(Rule {
+fn parse_dir(i: &mut &str) -> PResult<Dir> {
+    alt(("left".value(Dir::L), "right".value(Dir::R))).parse_next(i)
+}
+
+fn branch(i: &mut &str) -> PResult<Rule> {
+    ("  If the current value is ", usize, ":\n").parse_next(i)?;
+    let write = delimited("    - Write the value ", usize, ".\n").parse_next(i)?;
+    let dir = delimited("    - Move one slot to the ", parse_dir, ".\n").parse_next(i)?;
+    let state = delimited("    - Continue with state ", any, '.').parse_next(i)?;
+    Ok(Rule {
         write,
-        dir: if dir == "left" { Dir::L } else { Dir::R },
+        dir,
         state: state as usize - 'A' as usize,
     })
 }
 
-fn parse_state(input: &str) -> Option<[Rule; 2]> {
-    let mut gen = input.lines();
-    scanf!(gen.next()?, "In state {}:", char).unwrap();
-    let rule1 = parse_branch(&mut gen, 0)?;
-    let rule2 = parse_branch(&mut gen, 1)?;
-    Some([rule1, rule2])
+fn state(i: &mut &str) -> PResult<[Rule; 2]> {
+    ("In state ", any, ":\n").parse_next(i)?;
+    let (rule1, rule2) = separated_pair(branch, '\n', branch).parse_next(i)?;
+    Ok([rule1, rule2])
 }
 
-fn parse_rules(input: &str) -> (usize, usize, Vec<[Rule; 2]>) {
-    let mut gen = input.split("\n\n");
-    let (start, n) = scanf!(
-        gen.next().unwrap(),
-        "Begin in state {}.\nPerform a diagnostic checksum after {} steps.",
-        char,
-        usize
-    )
-    .unwrap();
-    (
+fn parse_rules(i: &mut &str) -> PResult<(usize, usize, Vec<[Rule; 2]>)> {
+    let start = delimited("Begin in state ", any, ".\n").parse_next(i)?;
+    let n =
+        delimited("Perform a diagnostic checksum after ", usize, " steps.\n\n").parse_next(i)?;
+    Ok((
         start as usize - 'A' as usize,
         n,
-        gen.map(|st| parse_state(st).unwrap()).collect(),
-    )
+        separated(1.., state, "\n\n").parse_next(i)?,
+    ))
 }
 
 pub fn part1(input: &str) -> usize {
-    let (mut state, steps, rules) = parse_rules(input);
+    let (mut state, steps, rules) = parse_rules.read(input);
     let mut tape = VecDeque::new();
     tape.push_back(0);
     let mut i = 0;

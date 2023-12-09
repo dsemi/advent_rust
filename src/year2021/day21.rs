@@ -1,11 +1,15 @@
+use crate::utils::parsers::*;
 use ahash::AHashMap;
-use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, min};
 
+fn parse(i: &mut &str) -> PResult<(u64, u64)> {
+    let (p1, p2) =
+        sep_tuple2(preceded(("Player ", u8, " starting position: "), u64), '\n').parse_next(i)?;
+    Ok((p1 - 1, p2 - 1))
+}
+
 pub fn part1(input: &str) -> u64 {
-    let (a, b) = input.split_once('\n').unwrap();
-    let mut p1 = scanf!(a, "Player {*d} starting position: {}", u64).unwrap() - 1;
-    let mut p2 = scanf!(b, "Player {*d} starting position: {}", u64).unwrap() - 1;
+    let (mut p1, mut p2) = parse.read(input);
     let (mut p1_score, mut p2_score) = (0, 0);
     let gen = &mut (1..=100).cycle();
     let mut n = 0;
@@ -44,9 +48,7 @@ fn solve(cache: &mut Cache, p1: u64, p2: u64, s1: u64, s2: u64) -> (u64, u64) {
 }
 
 pub fn part2(input: &str) -> u64 {
-    let (a, b) = input.split_once('\n').unwrap();
-    let p1 = scanf!(a, "Player {*d} starting position: {}", u64).unwrap() - 1;
-    let p2 = scanf!(b, "Player {*d} starting position: {}", u64).unwrap() - 1;
+    let (p1, p2) = parse.read(input);
     let (x, y) = solve(&mut AHashMap::new(), p1, p2, 0, 0);
     max(x, y)
 }

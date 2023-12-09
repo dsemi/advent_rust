@@ -1,29 +1,31 @@
 use crate::utils::parsers::*;
 use ahash::AHashSet;
-use scan_fmt::scan_fmt as scanf;
 
-struct Input {
-    rules: Vec<(String, i64, i64, i64, i64)>,
+struct Input<'a> {
+    rules: Vec<(&'a str, i64, i64, i64, i64)>,
     yours: Vec<i64>,
     tix: Vec<Vec<i64>>,
 }
 
-fn parse_rules(s: &str) -> Input {
-    let parts: Vec<&str> = s.split("\n\n").collect();
-    let rules: Vec<(String, i64, i64, i64, i64)> = parts[0]
-        .lines()
-        .map(|line| scanf!(line, "{[^:]}: {}-{} or {}-{}", String, i64, i64, i64, i64).unwrap())
-        .collect();
-    let yours = preceded(tag("your ticket:\n"), list(i64)).read(parts[1]);
-    let others = preceded(tag("nearby tickets:\n"), lines(list(i64))).read(parts[2]);
-    Input {
-        rules,
-        yours,
-        tix: others,
-    }
+fn rule<'a>(i: &mut &'a str) -> PResult<(&'a str, i64, i64, i64, i64)> {
+    let loc = terminated(take_till(0.., |c| c == ':'), ": ").parse_next(i)?;
+    let (a1, _, a2, _, b1, _, b2) = (i64, '-', i64, " or ", i64, '-', i64).parse_next(i)?;
+    Ok((loc, a1, a2, b1, b2))
 }
 
-fn invalid_values(rules: &[(String, i64, i64, i64, i64)], ticket: &[i64]) -> Vec<i64> {
+fn parse_rules(s: &str) -> Input {
+    separated_triplet(
+        lines(rule),
+        "\n\n",
+        preceded(tag("your ticket:\n"), list(i64)),
+        "\n\n",
+        preceded(tag("nearby tickets:\n"), lines(list(i64))),
+    )
+    .map(|(rules, yours, tix)| Input { rules, yours, tix })
+    .read(s)
+}
+
+fn invalid_values(rules: &[(&str, i64, i64, i64, i64)], ticket: &[i64]) -> Vec<i64> {
     ticket
         .iter()
         .filter(|&field| {
@@ -65,25 +67,20 @@ pub fn part2(input: &str) -> i64 {
             })
             .collect();
     }
-    let mut poss_set: Vec<AHashSet<String>> = poss
+    let mut poss_set: Vec<AHashSet<&str>> = poss
         .into_iter()
         .map(|p| p.into_iter().map(|x| x.0).collect())
         .collect();
     while !poss_set.iter().all(|p| p.len() == 1) {
-        let ones: AHashSet<String> = poss_set
+        let ones: AHashSet<&str> = poss_set
             .iter()
             .filter(|p| p.len() == 1)
-            .flat_map(|p| p.iter().map(|x| x.to_string()))
+            .flatten()
+            .copied()
             .collect();
         poss_set = poss_set
             .into_iter()
-            .map(|p| {
-                if p.len() == 1 {
-                    p
-                } else {
-                    p.difference(&ones).map(|x| x.to_string()).collect()
-                }
-            })
+            .map(|p| if p.len() == 1 { p } else { &p - &ones })
             .collect();
     }
     poss_set

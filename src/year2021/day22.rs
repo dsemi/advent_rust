@@ -1,6 +1,7 @@
+use crate::utils::parsers::*;
 use crate::utils::Interval;
 use bit_set::BitSet;
-use scan_fmt::scan_fmt as scanf;
+use St::*;
 
 struct Cube {
     axis: [Interval; 3],
@@ -42,6 +43,26 @@ fn intersect_volume(cubes: &[Cube], bs: &[BitSet], cube: &Cube, set: &BitSet) ->
     vol
 }
 
+#[derive(Clone)]
+enum St {
+    Off,
+    On,
+}
+
+fn parse_cube(i: &mut &str) -> PResult<(St, Cube)> {
+    let st = terminated(alt(("off".value(Off), "on".value(On))), ' ').parse_next(i)?;
+    let ((x0, x1), (y0, y1), (z0, z1)) =
+        sep3(preceded((any, '='), sep2(i64, "..")), ',').parse_next(i)?;
+    let cube = Cube {
+        axis: [
+            Interval::new(x0, x1 + 1),
+            Interval::new(y0, y1 + 1),
+            Interval::new(z0, z1 + 1),
+        ],
+    };
+    Ok((st, cube))
+}
+
 fn solve(input: &str, lo: i64, hi: i64) -> i64 {
     let active_cube = Cube {
         axis: [
@@ -53,26 +74,8 @@ fn solve(input: &str, lo: i64, hi: i64) -> i64 {
     let mut cubes = Vec::new();
     let mut on = Vec::new();
     for line in input.lines() {
-        let (w, x0, x1, y0, y1, z0, z1) = scanf!(
-            line,
-            "{} x={}..{},y={}..{},z={}..{}",
-            String,
-            i64,
-            i64,
-            i64,
-            i64,
-            i64,
-            i64
-        )
-        .unwrap();
-        let cube = Cube {
-            axis: [
-                Interval::new(x0, x1 + 1),
-                Interval::new(y0, y1 + 1),
-                Interval::new(z0, z1 + 1),
-            ],
-        };
-        on.push(w == "on" && cube.intersects(&active_cube));
+        let (w, cube) = parse_cube.read(line);
+        on.push(matches!(w, On) && cube.intersects(&active_cube));
         cubes.push(cube);
     }
     let mut bs = vec![BitSet::new(); cubes.len()];

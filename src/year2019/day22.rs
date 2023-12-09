@@ -1,5 +1,6 @@
+use crate::utils::parsers::*;
 use crate::utils::Mod;
-use scan_fmt::scan_fmt as scanf;
+use Tech::*;
 
 #[derive(Clone, Copy)]
 struct LinearTrans<const M: i64> {
@@ -41,27 +42,38 @@ impl<const M: i64> LinearTrans<M> {
     }
 }
 
+#[derive(Clone)]
+enum Tech {
+    New,
+    Cut(i64),
+    Deal(i64),
+}
+
+fn tech(i: &mut &str) -> PResult<Tech> {
+    alt((
+        "deal into new stack".value(New),
+        preceded("cut ", i64).map(Cut),
+        preceded("deal with increment ", i64).map(Deal),
+    ))
+    .parse_next(i)
+}
+
 fn parse_techs<const M: i64>(input: &str) -> LinearTrans<M> {
     input
         .lines()
-        .map(|line| {
-            if line == "deal into new stack" {
-                LinearTrans {
-                    a: Mod(M - 1),
-                    b: Mod(M - 1),
-                }
-            } else if let Ok(n) = scanf!(line, "cut {}", i64) {
-                LinearTrans {
-                    a: Mod(1),
-                    b: Mod((-n).rem_euclid(M)),
-                }
-            } else {
-                let n = scanf!(line, "deal with increment {}", i64).unwrap();
-                LinearTrans {
-                    a: Mod(n.rem_euclid(M)),
-                    b: Mod(0),
-                }
-            }
+        .map(|line| match tech.read(line) {
+            New => LinearTrans {
+                a: Mod(M - 1),
+                b: Mod(M - 1),
+            },
+            Cut(n) => LinearTrans {
+                a: Mod(1),
+                b: Mod((-n).rem_euclid(M)),
+            },
+            Deal(n) => LinearTrans {
+                a: Mod(n.rem_euclid(M)),
+                b: Mod(0),
+            },
         })
         .reduce(|a, b| a.mappend(b))
         .unwrap()

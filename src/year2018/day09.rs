@@ -1,14 +1,12 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 use std::collections::VecDeque;
 
 fn parse(input: &str) -> (usize, usize) {
-    scanf!(
-        input,
-        "{} players; last marble is worth {} points",
-        usize,
-        usize
+    (
+        terminated(usize, " players; last marble is worth "),
+        terminated(usize, " points"),
     )
-    .unwrap()
+        .read(input)
 }
 
 fn play(n: usize, s: usize) -> Option<usize> {
