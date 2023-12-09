@@ -180,7 +180,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    strip(sep_tuple2(f, (",", space0)))
+    sep_tuple2(strip(f), ',')
 }
 
 pub fn coord3<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O, O), E> + 'a
@@ -191,7 +191,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    strip(sep_tuple3(f, (",", space0)))
+    sep_tuple3(strip(f), ',')
 }
 
 pub fn spaced<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
@@ -226,6 +226,17 @@ where
     separated(0.., f, "\n")
 }
 
+// https://github.com/winnow-rs/winnow/issues/349
+// pub fn sep_iter<'a, I, O, O2, E, F, G>(i: I, f: F, sep: G) -> impl Iterator<Item = O>
+// where
+// I: Stream,
+// E: ParserError<I>,
+// F: Parser<I, O, E>,
+// G: Parser<I, O2, E>,
+// {
+// todo!()
+// }
+
 pub fn lines_iter<'a, O, F>(i: &'a str, mut f: F) -> impl Iterator<Item = O> + 'a
 where
     F: Parser<&'a str, O, ContextError> + 'a,
@@ -235,73 +246,31 @@ where
 
 macro_rules! cons1 {
     ($make:ident, $arg1:expr) => {
-        cons1_inner(advent::lower!($make), $make, $arg1)
+        (advent::lower!($make), space1, $arg1).map(move |(_, _, a)| $make(a))
     };
 }
 pub(crate) use cons1;
 
-pub fn cons1_inner<'a, A, Arg1, I, O, E>(
-    str_make: &'a str,
-    make: fn(A) -> O,
-    arg1: Arg1,
-) -> impl Parser<I, O, E> + 'a
-where
-    A: 'a,
-    Arg1: Parser<I, A, E> + 'a,
-    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
-    <I as Stream>::Token: AsChar + Clone,
-    O: 'a,
-    E: ParserError<I> + 'a,
-{
-    (str_make, space1, arg1).map(move |(_, _, a)| make(a))
-}
-
 macro_rules! cons2 {
     ($make:ident, $arg1:expr, $arg2:expr) => {
-        cons2_inner(advent::lower!($make), $make, $arg1, $arg2)
+        (advent::lower!($make), space1, $arg1, space1, $arg2)
+            .map(move |(_, _, a, _, b)| $make(a, b))
     };
 }
 pub(crate) use cons2;
 
-pub fn cons2_inner<'a, A, B, Arg1, Arg2, I, O, E>(
-    str_make: &'a str,
-    make: fn(A, B) -> O,
-    arg1: Arg1,
-    arg2: Arg2,
-) -> impl Parser<I, O, E> + 'a
-where
-    A: 'a,
-    B: 'a,
-    Arg1: Parser<I, A, E> + 'a,
-    Arg2: Parser<I, B, E> + 'a,
-    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
-    <I as Stream>::Token: AsChar + Clone,
-    O: 'a,
-    E: ParserError<I> + 'a,
-{
-    (str_make, space1, arg1, space1, arg2).map(move |(_, _, a, _, b)| make(a, b))
-}
-
-macro_rules! parse_decl {
-    ($($i:ident),*) => ($(
-        fn $i(&self) -> $i;
-    )*)
-}
-
-macro_rules! parse_impl {
-    ($($i:ident),*) => ($(
-        fn $i(&self) -> $i {
-            $i.read(self)
+macro_rules! read_trait {
+    ($($i:ident),*) => (
+        pub trait ReadFromStr {
+            $(fn $i(&self) -> $i;)*
         }
-    )*)
+
+        impl ReadFromStr for str {
+            $(fn $i(&self) -> $i {
+                $i.read(self)
+            })*
+        }
+    )
 }
 
-pub trait ParseInts {
-    parse_decl!(i8, i16, i32, i64, i128, isize);
-    parse_decl!(u8, u16, u32, u64, u128, usize);
-}
-
-impl ParseInts for str {
-    parse_impl!(i8, i16, i32, i64, i128, isize);
-    parse_impl!(u8, u16, u32, u64, u128, usize);
-}
+read_trait!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
