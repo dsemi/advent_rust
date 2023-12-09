@@ -194,6 +194,17 @@ where
     strip(sep_tuple3(f, (",", space0)))
 }
 
+pub fn spaced<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
+where
+    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+    <I as Stream>::Token: AsChar + Clone,
+    O: 'a,
+    E: ParserError<I> + 'a,
+    F: Parser<I, O, E> + 'a,
+{
+    separated(0.., f, space1)
+}
+
 pub fn list<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
