@@ -1,12 +1,8 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 
 fn solve(input: &str, f: fn(i32, i32, i32, i32) -> bool) -> usize {
-    input
-        .lines()
-        .filter(|line| {
-            let (a0, a1, b0, b1) = scanf!(line, "{}-{},{}-{}", i32, i32, i32, i32).unwrap();
-            f(a0, a1, b0, b1)
-        })
+    lines_iter(input, coord(sep2(i32, '-')))
+        .filter(|&((a0, a1), (b0, b1))| f(a0, a1, b0, b1))
         .count()
 }
 

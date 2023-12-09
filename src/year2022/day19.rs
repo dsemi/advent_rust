@@ -1,9 +1,8 @@
+use crate::utils::parsers::*;
 use derive_more::{Add, AddAssign, Constructor, Sub};
-use scan_fmt::scan_fmt as scanf;
 use std::cmp::{max, Ordering, Ordering::*, PartialOrd};
 use std::mem::replace;
 
-const TMPL: &str = "Blueprint {}: Each ore robot costs {} ore. Each clay robot costs {} ore. Each obsidian robot costs {} ore and {} clay. Each geode robot costs {} ore and {} obsidian.";
 const ORE_BOT: Res = Res::new(1, 0, 0, 0);
 const CLAY_BOT: Res = Res::new(0, 1, 0, 0);
 const OBS_BOT: Res = Res::new(0, 0, 1, 0);
@@ -39,7 +38,8 @@ struct Blueprint {
 
 fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
     input.lines().map(|line| {
-        let (
+        let line = line.replace(|c: char| !c.is_ascii_digit(), " ");
+        let [
             num,
             ore_bot_ore,
             clay_bot_ore,
@@ -47,7 +47,7 @@ fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
             obs_bot_clay,
             geode_bot_ore,
             geode_bot_obs,
-        ) = scanf!(line, TMPL, u16, u16, u16, u16, u16, u16, u16).unwrap();
+        ] = spaced(u16).read(line.as_str()).try_into().unwrap();
         Blueprint {
             num,
             ore_cost: Res::new(ore_bot_ore, 0, 0, 0),

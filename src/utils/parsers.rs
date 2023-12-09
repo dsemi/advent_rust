@@ -202,7 +202,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    separated(0.., f, space1)
+    strip(separated(0.., f, space1))
 }
 
 pub fn list<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a

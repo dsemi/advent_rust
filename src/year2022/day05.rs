@@ -1,4 +1,4 @@
-use scan_fmt::scan_fmt as scanf;
+use crate::utils::parsers::*;
 
 fn move_stacks(input: &str, in_order: bool) -> String {
     let (x, y) = input.split_once("\n\n").unwrap();
@@ -13,7 +13,7 @@ fn move_stacks(input: &str, in_order: bool) -> String {
         }
     }
     for line in y.lines() {
-        let (n, a, b) = scanf!(line, "move {} from {} to {}", usize, usize, usize).unwrap();
+        let (_, n, _, a, _, b) = ("move ", usize, " from ", usize, " to ", usize).read(line);
         let idx = stacks[a - 1].len() - n;
         let mut tmp = stacks[a - 1].split_off(idx);
         if !in_order {

@@ -1,25 +1,23 @@
+use crate::utils::parsers::*;
 use crate::utils::*;
 use itertools::Itertools;
-use scan_fmt::scan_fmt as scanf;
 
 struct Scanner {
     pos: C<i64>,
     dist: i64,
 }
 
+fn sensor(i: &mut &str) -> PResult<(i64, i64, i64, i64)> {
+    let (_, sx, _, sy) = ("Sensor at x=", i64, ", y=", i64).parse_next(i)?;
+    let (_, bx, _, by) = (": closest beacon is at x=", i64, ", y=", i64).parse_next(i)?;
+    Ok((sx, sy, bx, by))
+}
+
 fn parse_scanners(input: &str) -> (Vec<Scanner>, Vec<C<i64>>) {
     let mut scanners = Vec::new();
     let mut beacons = Vec::new();
     for line in input.lines() {
-        let (sx, sy, bx, by) = scanf!(
-            line,
-            "Sensor at x={}, y={}: closest beacon is at x={}, y={}",
-            i64,
-            i64,
-            i64,
-            i64
-        )
-        .unwrap();
+        let (sx, sy, bx, by) = sensor.read(line);
         let dist = (sx - bx).abs() + (sy - by).abs();
         scanners.push(Scanner {
             pos: C(sx, sy),
