@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use ahash::AHashMap;
 
 fn parse_orbits(input: &str) -> impl Iterator<Item = (&str, &str)> {
-    lines_iter(input, sep_tuple2(alphanumeric1, ')'))
+    lines_iter(input, sep2(alphanumeric1, ')'))
 }
 
 pub fn part1(input: &str) -> usize {

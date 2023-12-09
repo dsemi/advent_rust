@@ -14,9 +14,9 @@ enum Instr {
 
 fn parse(i: &mut &str) -> PResult<Instr> {
     alt((
-        preceded("rect ", sep_tuple2(usize, 'x')).map(Rect),
-        preceded("rotate row y=", sep_tuple2(usize, " by ")).map(RotateRow),
-        preceded("rotate column x=", sep_tuple2(usize, " by ")).map(RotateCol),
+        preceded("rect ", sep2(usize, 'x')).map(Rect),
+        preceded("rotate row y=", sep2(usize, " by ")).map(RotateRow),
+        preceded("rotate column x=", sep2(usize, " by ")).map(RotateCol),
     ))
     .parse_next(i)
 }

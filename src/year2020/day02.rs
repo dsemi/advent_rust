@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 
 fn parse_line<'a>(i: &mut &'a str) -> PResult<(usize, usize, char, &'a str)> {
-    let (a, b) = terminated(sep_tuple2(usize, '-'), space1).parse_next(i)?;
+    let (a, b) = terminated(sep2(usize, '-'), space1).parse_next(i)?;
     let (c, d) = separated_pair(any, ": ", alpha1).parse_next(i)?;
     Ok((a, b, c, d))
 }

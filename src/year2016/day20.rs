@@ -35,7 +35,7 @@ where
 }
 
 fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
-    let mut ips = lines(sep_tuple2(u64, '-')).read(input);
+    let mut ips = lines(sep2(u64, '-')).read(input);
     ips.sort_unstable();
     IpRanges::new(ips.into_iter())
 }

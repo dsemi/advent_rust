@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use ahash::AHashSet;
 
 fn parse_mappings(input: &str) -> (Vec<(&str, &str)>, &str) {
-    separated_pair(lines(sep_tuple2(alpha1, " => ")), "\n\n", alpha1).read(input)
+    separated_pair(lines(sep2(alpha1, " => ")), "\n\n", alpha1).read(input)
 }
 
 fn single_repls<'a>(src: &'a str, k: &'a str, v: &'a str) -> impl Iterator<Item = String> + 'a {

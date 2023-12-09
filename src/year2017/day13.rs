@@ -4,7 +4,7 @@ use num::Integer;
 
 fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + '_ {
     input.lines().map(|line| {
-        let (a, b) = sep_tuple2(i64, ": ").read(line);
+        let (a, b) = sep2(i64, ": ").read(line);
         (a, 2 * b - 2)
     })
 }

@@ -6,7 +6,7 @@ fn solve(input: &str, p2: bool) -> usize {
     let mut lines = vec![];
     let (mut max_x, mut max_y) = (0, 0);
     for line in input.lines() {
-        let ((x0, y0), (x1, y1)) = sep_tuple2(coord(i32), "->").read(line);
+        let ((x0, y0), (x1, y1)) = sep2(coord(i32), "->").read(line);
         max_x = max(max_x, max(x0, x1));
         max_y = max(max_y, max(y0, y1));
         lines.push((C(x0, y0), C(x1, y1)));

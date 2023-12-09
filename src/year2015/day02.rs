@@ -3,7 +3,7 @@ use crate::utils::parsers::*;
 fn process(input: &str, f: fn((i32, i32, i32)) -> i32) -> i32 {
     input
         .lines()
-        .map(|line| f(sep_tuple3(i32, 'x').read(line)))
+        .map(|line| f(sep3(i32, 'x').read(line)))
         .sum()
 }
 

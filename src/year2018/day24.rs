@@ -90,7 +90,7 @@ fn army<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
 }
 
 fn armies<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
-    let (a, b) = sep_tuple2(army, "\n\n").parse_next(i)?;
+    let (a, b) = sep2(army, "\n\n").parse_next(i)?;
     let mut result = [a, b].concat();
     result
         .iter_mut()

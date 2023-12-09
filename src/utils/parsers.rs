@@ -180,7 +180,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    sep_tuple2(strip(f), ',')
+    sep2(strip(f), ',')
 }
 
 pub fn coord3<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O, O), E> + 'a
@@ -191,7 +191,7 @@ where
     E: ParserError<I> + 'a,
     F: Parser<I, O, E> + 'a,
 {
-    sep_tuple3(strip(f), ',')
+    sep3(strip(f), ',')
 }
 
 pub fn spaced<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a

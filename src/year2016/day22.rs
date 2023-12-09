@@ -12,7 +12,7 @@ struct Node {
 
 fn node(i: &mut &str) -> PResult<Node> {
     "/dev/grid/node-x".parse_next(i)?;
-    let coord = sep_tuple2(i32, "-y").output_into().parse_next(i)?;
+    let coord = sep2(i32, "-y").output_into().parse_next(i)?;
     delimited(space1, i64, 'T').parse_next(i)?;
     let used = delimited(space1, i64, 'T').parse_next(i)?;
     let avail = delimited(space1, i64, 'T').parse_next(i)?;

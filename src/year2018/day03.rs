@@ -11,7 +11,7 @@ struct Claim {
 fn claim(i: &mut &str) -> PResult<Claim> {
     let num = delimited('#', usize, " @ ").parse_next(i)?;
     let (x, y) = terminated(coord(usize), ": ").parse_next(i)?;
-    let (w, h) = sep_tuple2(usize, 'x').parse_next(i)?;
+    let (w, h) = sep2(usize, 'x').parse_next(i)?;
     Ok(Claim {
         num,
         x0: x,

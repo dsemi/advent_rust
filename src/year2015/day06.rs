@@ -14,7 +14,7 @@ fn parse<'a>(
             "turn on ".value(on),
             "toggle ".value(toggle),
         )),
-        sep_tuple2(coord(usize), "through"),
+        sep2(coord(usize), "through"),
     )
 }
 

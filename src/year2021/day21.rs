@@ -4,7 +4,7 @@ use std::cmp::{max, min};
 
 fn parse(i: &mut &str) -> PResult<(u64, u64)> {
     let (p1, p2) =
-        sep_tuple2(preceded(("Player ", u8, " starting position: "), u64), '\n').parse_next(i)?;
+        sep2(preceded(("Player ", u8, " starting position: "), u64), '\n').parse_next(i)?;
     Ok((p1 - 1, p2 - 1))
 }
 
