@@ -87,5 +87,5 @@ pub fn part2(input: &str) -> usize {
         .map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0))
         .sum();
     // Pick's theorem
-    double_area.abs() as usize / 2 + 1 - pts.len() / 2
+    double_area.unsigned_abs() as usize / 2 + 1 - pts.len() / 2
 }
