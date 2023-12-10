@@ -457,6 +457,7 @@ impl_idx!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
 
 pub trait GridIdx<I, T> {
     fn get_cell(&self, idx: C<I>) -> Option<&T>;
+    fn get_cell_mut(&mut self, idx: C<I>) -> Option<&mut T>;
 }
 
 macro_rules! impl_get {
@@ -465,11 +466,19 @@ macro_rules! impl_get {
             fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
                 self.get(r as usize)?.get(c as usize)
             }
+
+            fn get_cell_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
+                self.get_mut(r as usize)?.get_mut(c as usize)
+            }
         }
 
         impl<T> GridIdx<$it, T> for [Vec<T>] {
             fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
                 self.get(r as usize)?.get(c as usize)
+            }
+
+            fn get_cell_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
+                self.get_mut(r as usize)?.get_mut(c as usize)
             }
         }
     )*)
