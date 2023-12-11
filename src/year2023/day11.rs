@@ -16,14 +16,6 @@ fn solve(input: &str, exp: usize) -> usize {
             Some(*acc)
         })
         .collect();
-    let mut galaxies = Vec::new();
-    for (r, row) in grid.iter().enumerate() {
-        for (c, &v) in row.iter().enumerate() {
-            if v == '#' {
-                galaxies.push((r, c));
-            }
-        }
-    }
     let galaxies = positions(&grid, '#');
     let mut dists = 0;
     for (i, &(r0, c0)) in galaxies.iter().enumerate() {
