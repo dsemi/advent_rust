@@ -1243,3 +1243,19 @@ impl<const M: i64> Neg for Mod<M> {
         Mod((-self.0).rem_euclid(M))
     }
 }
+
+pub fn positions<T, U>(grid: &[U], elem: T) -> Vec<(usize, usize)>
+where
+    T: Copy + PartialEq,
+    U: AsRef<[T]>,
+{
+    grid.iter()
+        .enumerate()
+        .flat_map(|(r, row)| {
+            row.as_ref()
+                .iter()
+                .enumerate()
+                .filter_map(move |(c, &v)| (v == elem).then_some((r, c)))
+        })
+        .collect()
+}
