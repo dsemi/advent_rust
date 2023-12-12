@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use rayon::prelude::*;
+use std::cmp::Ordering::*;
 
 struct Record {
     pattern: Vec<u8>,
@@ -53,12 +54,10 @@ impl Record {
     }
 
     fn broken_group_possible(&self, from: usize, to: usize) -> bool {
-        if to > self.pattern.len() {
-            false
-        } else if to == self.pattern.len() {
-            self.pattern[from..to].iter().all(|&b| b != b'.')
-        } else {
-            self.pattern[from..to].iter().all(|&b| b != b'.') && self.pattern[to] != b'#'
+        match to.cmp(&self.pattern.len()) {
+            Greater => false,
+            Equal => self.pattern[from..to].iter().all(|&b| b != b'.'),
+            Less => self.pattern[from..to].iter().all(|&b| b != b'.') && self.pattern[to] != b'#',
         }
     }
 }
