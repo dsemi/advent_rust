@@ -1,4 +1,5 @@
 use crate::utils::parsers::*;
+use rayon::prelude::*;
 
 struct Record {
     pattern: Vec<u8>,
@@ -64,7 +65,7 @@ impl Record {
 
 fn solve(input: &str, reps: usize) -> usize {
     input
-        .lines()
+        .par_lines()
         .map(|line| Record::parse(line, reps).count_arrangements())
         .sum()
 }
