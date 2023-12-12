@@ -1,40 +1,71 @@
 use crate::utils::parsers::*;
 
+struct Record {
+    pattern: Vec<u8>,
+    springs: Vec<usize>,
+}
+
+impl Record {
+    fn parse(line: &str, reps: usize) -> Self {
+        let (pat, ss) = line.split_once(' ').unwrap();
+        let ns = list(usize).read(ss);
+        Record {
+            pattern: vec![pat; reps].join("?").bytes().collect(),
+            springs: vec![ns; reps].into_iter().flatten().collect(),
+        }
+    }
+
+    fn count_arrangements(&self) -> usize {
+        let mut cache = vec![vec![None; self.springs.len() + 1]; self.pattern.len()];
+        self.count(&mut cache, 0, 0)
+    }
+
+    fn count(&self, cache: &mut Vec<Vec<Option<usize>>>, i: usize, j: usize) -> usize {
+        if i == self.pattern.len() {
+            return if j == self.springs.len() { 1 } else { 0 };
+        }
+        if let Some(v) = cache[i][j] {
+            return v;
+        }
+        let res = match self.pattern[i] {
+            b'.' => self.count(cache, i + 1, j),
+            b'#' => self.count_broken(cache, i, j),
+            b'?' => self.count(cache, i + 1, j) + self.count_broken(cache, i, j),
+            _ => unreachable!(),
+        };
+        cache[i][j] = Some(res);
+        res
+    }
+
+    fn count_broken(&self, cache: &mut Vec<Vec<Option<usize>>>, i: usize, j: usize) -> usize {
+        if j == self.springs.len() {
+            return 0;
+        }
+        let end_group_idx = i + self.springs[j];
+        if !self.broken_group_possible(i, end_group_idx) {
+            return 0;
+        }
+        if end_group_idx == self.pattern.len() {
+            return if j == self.springs.len() - 1 { 1 } else { 0 };
+        }
+        self.count(cache, end_group_idx + 1, j + 1)
+    }
+
+    fn broken_group_possible(&self, from: usize, to: usize) -> bool {
+        if to > self.pattern.len() {
+            false
+        } else if to == self.pattern.len() {
+            self.pattern[from..to].iter().all(|&b| b != b'.')
+        } else {
+            self.pattern[from..to].iter().all(|&b| b != b'.') && self.pattern[to] != b'#'
+        }
+    }
+}
+
 fn solve(input: &str, reps: usize) -> usize {
     input
         .lines()
-        .map(|line| {
-            let (pat, splits) = line.split_once(' ').unwrap();
-            let mut pat = vec![pat.to_owned(); reps].join("?");
-            pat.push('.');
-            let pat = pat.as_bytes();
-            let n = pat.len();
-            let splits = list(usize).read(splits);
-            let mut splits: Vec<_> = vec![splits; reps].into_iter().flatten().collect();
-            let k = splits.len();
-            splits.push(n + 1);
-            let mut dp = vec![vec![vec![0; n + 2]; k + 2]; n + 1];
-            dp[0][0][0] = 1;
-            for i in 0..n {
-                for j in 0..k + 1 {
-                    for p in 0..n + 1 {
-                        let cur = dp[i][j][p];
-                        if cur == 0 {
-                            continue;
-                        }
-                        if pat[i] == b'.' || pat[i] == b'?' {
-                            if p == 0 || p == splits[j - 1] {
-                                dp[i + 1][j][0] += cur;
-                            }
-                        }
-                        if pat[i] == b'#' || pat[i] == b'?' {
-                            dp[i + 1][j + (if p == 0 { 1 } else { 0 })][p + 1] += cur;
-                        }
-                    }
-                }
-            }
-            dp[n][k][0]
-        })
+        .map(|line| Record::parse(line, reps).count_arrangements())
         .sum()
 }
 
