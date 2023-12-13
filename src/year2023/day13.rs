@@ -1,13 +1,13 @@
-fn mirrors(ns: &[u32], i: usize, flex: u32) -> bool {
+fn mirrors(ns: &[u32], i: usize, smudges: u32) -> bool {
     (0..i)
         .rev()
         .zip(i..ns.len())
         .map(|(a, b)| (ns[a] ^ ns[b]).count_ones())
         .sum::<u32>()
-        == flex
+        == smudges
 }
 
-fn summarize(grid: &str, flex: u32) -> Option<usize> {
+fn summarize(grid: &str, smudges: u32) -> Option<usize> {
     let mut rows = Vec::new();
     let mut cols = Vec::new();
     for line in grid.lines() {
@@ -20,22 +20,22 @@ fn summarize(grid: &str, flex: u32) -> Option<usize> {
         rows.push(row);
     }
     for c in 1..cols.len() {
-        if mirrors(&cols, c, flex) {
+        if mirrors(&cols, c, smudges) {
             return Some(c);
         }
     }
     for r in 1..rows.len() {
-        if mirrors(&rows, r, flex) {
+        if mirrors(&rows, r, smudges) {
             return Some(100 * r);
         }
     }
     None
 }
 
-fn solve(input: &str, flex: u32) -> usize {
+fn solve(input: &str, smudges: u32) -> usize {
     input
         .split("\n\n")
-        .map(|grid| summarize(grid, flex).unwrap())
+        .map(|grid| summarize(grid, smudges).unwrap())
         .sum()
 }
 
