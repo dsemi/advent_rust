@@ -1,66 +1,71 @@
-use crate::utils::*;
 use ahash::AHashMap;
+use ndarray::{Array, Axis, Dim};
 use std::collections::hash_map::Entry::*;
-use std::ops::{Index, IndexMut};
 
-fn tilt<G>(mut grid: G, outer: usize, inner: usize, d: i32)
-where
-    G: Index<(usize, usize), Output = u8> + IndexMut<(usize, usize)>,
-{
-    for o in 0..outer {
-        let mut gen = (0..inner)
-            .map(|i| if d > 0 { inner - 1 - i } else { i })
-            .peekable();
-        let mut to = *gen.peek().unwrap() as i32;
-        for i in gen {
-            if grid[(o, i)] == b'O' {
-                if i as i32 != to {
-                    grid[(o, i)] = b'.';
-                    grid[(o, to as usize)] = b'O'
-                }
-                to -= d;
-            } else if grid[(o, i)] == b'#' {
-                to = i as i32 - d;
+type Grid = Array<u8, Dim<[usize; 2]>>;
+
+fn tilt(grid: &mut Grid, axis: Axis, d: i32) {
+    grid.axis_iter_mut(axis).for_each(|mut sl| {
+        let len = sl.len();
+        let mut to = if d > 0 { len - 1 } else { 0 };
+        for i in (0..len).map(|i| if d > 0 { len - 1 - i } else { i }) {
+            if sl[i] == b'O' {
+                sl[i] = b'.';
+                sl[to] = b'O';
+                to -= d as usize;
+            } else if sl[i] == b'#' {
+                to = i - d as usize;
             }
         }
-    }
+    });
 }
 
-fn load(grid: &[Vec<u8>]) -> usize {
-    grid.iter()
+fn load(grid: &Grid) -> usize {
+    let rows = grid.len_of(Axis(0));
+    grid.axis_iter(Axis(0))
         .enumerate()
-        .map(|(r, row)| (grid.len() - r) * row.iter().filter(|&v| *v == b'O').count())
+        .map(|(i, row)| (rows - i) * row.iter().filter(|&v| *v == b'O').count())
         .sum()
 }
 
+fn parse(input: &str) -> Grid {
+    let mut res = Vec::new();
+    let mut rows = 0;
+    let mut cols = 0;
+    for line in input.lines() {
+        cols = line.len();
+        rows += 1;
+        res.extend(line.bytes());
+    }
+    Array::from_shape_vec((rows, cols), res).unwrap()
+}
+
 pub fn part1(input: &str) -> usize {
-    let mut grid: Vec<Vec<_>> = input.lines().map(|line| line.bytes().collect()).collect();
-    let (rows, cols) = (grid.len(), grid[0].len());
-    tilt(ColMajor(&mut grid), cols, rows, -1);
+    let mut grid = parse(input);
+    tilt(&mut grid, Axis(1), -1);
     load(&grid)
 }
 
 const CYCLES: usize = 1000000000;
 
-fn cycle(grid: &mut Vec<Vec<u8>>, rows: usize, cols: usize) {
-    tilt(ColMajor(grid), cols, rows, -1);
-    tilt(RowMajor(grid), rows, cols, -1);
-    tilt(ColMajor(grid), cols, rows, 1);
-    tilt(RowMajor(grid), rows, cols, 1);
+fn cycle(grid: &mut Grid) {
+    tilt(grid, Axis(1), -1);
+    tilt(grid, Axis(0), -1);
+    tilt(grid, Axis(1), 1);
+    tilt(grid, Axis(0), 1);
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut grid: Vec<Vec<_>> = input.lines().map(|line| line.bytes().collect()).collect();
-    let (rows, cols) = (grid.len(), grid[0].len());
+    let mut grid = parse(input);
     let mut visited = AHashMap::new();
     for i in 1..=CYCLES {
-        cycle(&mut grid, rows, cols);
+        cycle(&mut grid);
         match visited.entry(grid.clone()) {
             Occupied(e) => {
                 let cycle_len = i - e.get();
                 let remaining = (CYCLES - i) % cycle_len;
                 for _ in 0..remaining {
-                    cycle(&mut grid, rows, cols);
+                    cycle(&mut grid);
                 }
                 break;
             }

@@ -1259,35 +1259,3 @@ where
         })
         .collect()
 }
-
-pub struct RowMajor<'a, T>(pub &'a mut Vec<Vec<T>>);
-
-impl<T> Index<(usize, usize)> for RowMajor<'_, T> {
-    type Output = T;
-
-    fn index(&self, (r, c): (usize, usize)) -> &Self::Output {
-        self.0[r].index(c)
-    }
-}
-
-impl<T> IndexMut<(usize, usize)> for RowMajor<'_, T> {
-    fn index_mut(&mut self, (r, c): (usize, usize)) -> &mut Self::Output {
-        self.0[r].index_mut(c)
-    }
-}
-
-pub struct ColMajor<'a, T>(pub &'a mut Vec<Vec<T>>);
-
-impl<T> Index<(usize, usize)> for ColMajor<'_, T> {
-    type Output = T;
-
-    fn index(&self, (r, c): (usize, usize)) -> &Self::Output {
-        self.0[c].index(r)
-    }
-}
-
-impl<T> IndexMut<(usize, usize)> for ColMajor<'_, T> {
-    fn index_mut(&mut self, (r, c): (usize, usize)) -> &mut Self::Output {
-        self.0[c].index_mut(r)
-    }
-}
