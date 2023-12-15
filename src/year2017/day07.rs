@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::{AHashMap, AHashSet};
 
-pub fn part1(input: &str) -> String {
+pub fn part1(input: &str) -> &str {
     let inp: Vec<Vec<&str>> = transpose(
         &input
             .lines()
@@ -17,15 +17,15 @@ pub fn part1(input: &str) -> String {
         .iter()
         .map(|x| x.split_whitespace().next().unwrap())
         .collect::<AHashSet<_>>();
-    (&s - &c).into_iter().next().map(|x| x.to_string()).unwrap()
+    (&s - &c).into_iter().next().unwrap()
 }
 
-struct Node {
+struct Node<'a> {
     weight: i64,
-    children: Vec<String>,
+    children: Vec<&'a str>,
 }
 
-fn find_imbalance(m: &AHashMap<String, Node>, curr: &str) -> (i64, bool) {
+fn find_imbalance(m: &AHashMap<&str, Node>, curr: &str) -> (i64, bool) {
     let node = &m[curr];
     if node.children.is_empty() {
         return (node.weight, false);
@@ -67,11 +67,11 @@ pub fn part2(input: &str) -> i64 {
             let pts = line.split(" -> ").collect::<Vec<_>>();
             let (n, w) = pts[0].split_once(" (").unwrap();
             (
-                n.to_string(),
+                n,
                 Node {
                     weight: w[..w.len() - 1].i64(),
                     children: if pts.len() > 1 {
-                        pts[1].split(", ").map(|x| x.to_string()).collect()
+                        pts[1].split(", ").collect()
                     } else {
                         vec![]
                     },
@@ -80,5 +80,5 @@ pub fn part2(input: &str) -> i64 {
         })
         .collect();
     let root = part1(input);
-    find_imbalance(&m, &root).0
+    find_imbalance(&m, root).0
 }
