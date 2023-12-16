@@ -1,4 +1,5 @@
 use crate::utils::*;
+use rayon::prelude::*;
 
 fn parse(input: &str) -> Vec<Vec<u8>> {
     input.lines().map(|line| line.bytes().collect()).collect()
@@ -50,11 +51,11 @@ impl Visited {
                 b'.' | b'-' => self.expand_ew(grid, pos + dir, dir),
                 b'/' => {
                     dir *= C(0, 1);
-                    self.expand_ns(&grid, pos + dir, dir);
+                    self.expand_ns(grid, pos + dir, dir);
                 }
                 b'\\' => {
                     dir *= C(0, -1);
-                    self.expand_ns(&grid, pos + dir, dir);
+                    self.expand_ns(grid, pos + dir, dir);
                 }
                 b'|' => {
                     self.expand_ns(grid, pos + C(-1, 0), C(-1, 0));
@@ -85,22 +86,35 @@ pub fn part2(input: &str) -> usize {
     let grid = parse(input);
     let (rows, cols) = (grid.len(), grid[0].len());
     let tiles = Visited::new(rows, cols);
-    let mut max = usize::MIN;
-    for row in 0..rows {
-        let mut tiles2 = tiles.clone();
-        tiles2.expand_ew(&grid, C(row as i32, 0), C(0, 1));
-        max = max.max(tiles2.energized());
-        let mut tiles2 = tiles.clone();
-        tiles2.expand_ew(&grid, C(row as i32, cols as i32 - 1), C(0, -1));
-        max = max.max(tiles2.energized());
-    }
-    for col in 0..cols {
-        let mut tiles2 = tiles.clone();
-        tiles2.expand_ns(&grid, C(0, col as i32), C(1, 0));
-        max = max.max(tiles2.energized());
-        let mut tiles2 = tiles.clone();
-        tiles2.expand_ns(&grid, C(rows as i32 - 1, col as i32), C(-1, 0));
-        max = max.max(tiles2.energized());
-    }
-    max
+    let max_ew = (0..rows)
+        .into_par_iter()
+        .flat_map(|row| {
+            [
+                (C(row as i32, 0), C(0, 1)),
+                (C(row as i32, cols as i32 - 1), C(0, -1)),
+            ]
+        })
+        .map(|(pos, dir)| {
+            let mut tiles = tiles.clone();
+            tiles.expand_ew(&grid, pos, dir);
+            tiles.energized()
+        })
+        .max()
+        .unwrap();
+    let max_ns = (0..cols)
+        .into_par_iter()
+        .flat_map(|col| {
+            [
+                (C(0, col as i32), C(1, 0)),
+                (C(rows as i32 - 1, col as i32), C(-1, 0)),
+            ]
+        })
+        .map(|(pos, dir)| {
+            let mut tiles = tiles.clone();
+            tiles.expand_ns(&grid, pos, dir);
+            tiles.energized()
+        })
+        .max()
+        .unwrap();
+    max_ew.max(max_ns)
 }
