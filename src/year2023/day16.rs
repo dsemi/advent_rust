@@ -12,13 +12,13 @@ struct Visited {
 }
 
 impl Visited {
-    fn new(rows: usize, cols: usize) -> Self {
-        let vis_ns = vec![vec![false; cols]; rows];
-        let vis_ew = vec![vec![false; cols]; rows];
+    fn new(dim: usize) -> Self {
+        let vis_ns = vec![vec![false; dim]; dim];
+        let vis_ew = vec![vec![false; dim]; dim];
         Self { vis_ns, vis_ew }
     }
 
-    fn expand_ns(&mut self, grid: &[Vec<u8>], pos: C<i32>, mut dir: C<i32>) {
+    fn expand_ns(&mut self, grid: &[Vec<u8>], pos: C<i8>, mut dir: C<i8>) {
         if let Some(v) = grid.get_cell(pos) {
             if std::mem::replace(&mut self.vis_ns[pos], true) && *v != b'/' && *v != b'\\' {
                 return;
@@ -34,15 +34,17 @@ impl Visited {
                     self.expand_ew(grid, pos + dir, dir);
                 }
                 b'-' => {
-                    self.expand_ew(grid, pos + C(0, -1), C(0, -1));
-                    self.expand_ew(grid, pos + C(0, 1), C(0, 1));
+                    dir *= C(0, -1);
+                    self.expand_ew(grid, pos + dir, dir);
+                    dir = -dir;
+                    self.expand_ew(grid, pos + dir, dir);
                 }
                 _ => unreachable!(),
             }
         }
     }
 
-    fn expand_ew(&mut self, grid: &[Vec<u8>], pos: C<i32>, mut dir: C<i32>) {
+    fn expand_ew(&mut self, grid: &[Vec<u8>], pos: C<i8>, mut dir: C<i8>) {
         if let Some(v) = grid.get_cell(pos) {
             if std::mem::replace(&mut self.vis_ew[pos], true) && *v != b'/' && *v != b'\\' {
                 return;
@@ -58,8 +60,10 @@ impl Visited {
                     self.expand_ns(grid, pos + dir, dir);
                 }
                 b'|' => {
-                    self.expand_ns(grid, pos + C(-1, 0), C(-1, 0));
-                    self.expand_ns(grid, pos + C(1, 0), C(1, 0));
+                    dir *= C(0, -1);
+                    self.expand_ns(grid, pos + dir, dir);
+                    dir = -dir;
+                    self.expand_ns(grid, pos + dir, dir);
                 }
                 _ => unreachable!(),
             }
@@ -77,44 +81,35 @@ impl Visited {
 
 pub fn part1(input: &str) -> usize {
     let grid = parse(input);
-    let mut tiles = Visited::new(grid.len(), grid[0].len());
+    assert!(grid.len() == grid[0].len());
+    let mut tiles = Visited::new(grid.len());
     tiles.expand_ew(&grid, C(0, 0), C(0, 1));
     tiles.energized()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     let grid = parse(input);
-    let (rows, cols) = (grid.len(), grid[0].len());
-    let tiles = Visited::new(rows, cols);
-    let max_ew = (0..rows)
+    assert!(grid.len() == grid[0].len());
+    let tiles = Visited::new(grid.len());
+    let dim = grid.len() as i8;
+    (0..dim)
         .into_par_iter()
-        .flat_map(|row| {
+        .flat_map(|d| {
             [
-                (C(row as i32, 0), C(0, 1)),
-                (C(row as i32, cols as i32 - 1), C(0, -1)),
+                (C(d, 0), C(0, 1)),
+                (C(d, dim - 1), C(0, -1)),
+                (C(0, d), C(1, 0)),
+                (C(dim - 1, d), C(-1, 0)),
             ]
         })
         .map(|(pos, dir)| {
             let mut tiles = tiles.clone();
-            tiles.expand_ew(&grid, pos, dir);
+            if dir.0 == 0 {
+                tiles.expand_ew(&grid, pos, dir);
+            } else {
+                tiles.expand_ns(&grid, pos, dir);
+            }
             tiles.energized()
         })
         .max()
-        .unwrap();
-    let max_ns = (0..cols)
-        .into_par_iter()
-        .flat_map(|col| {
-            [
-                (C(0, col as i32), C(1, 0)),
-                (C(rows as i32 - 1, col as i32), C(-1, 0)),
-            ]
-        })
-        .map(|(pos, dir)| {
-            let mut tiles = tiles.clone();
-            tiles.expand_ns(&grid, pos, dir);
-            tiles.energized()
-        })
-        .max()
-        .unwrap();
-    max_ew.max(max_ns)
 }
