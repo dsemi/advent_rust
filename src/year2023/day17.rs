@@ -1,39 +1,83 @@
 use crate::utils::*;
+use std::iter::repeat;
+use std::ops::{AddAssign, SubAssign};
 
-fn parse(input: &str) -> Vec<Vec<usize>> {
-    input
-        .lines()
-        .map(|line| line.bytes().map(|x| (x - b'0') as usize).collect())
-        .collect()
+struct AStar {
+    width: usize,
+    height: usize,
+    grid: Vec<Vec<u32>>,
 }
 
-type St = (C<i32>, C<i32>, usize);
-
-fn neighbors<const LO: usize, const HI: usize>(
-    grid: &[Vec<usize>],
-    (pos, dir, consec): St,
-) -> impl Iterator<Item = (usize, St)> + '_ {
-    let mut res = vec![(pos + dir, dir, consec + 1)];
-    // == 0 for starting pos
-    if consec == 0 || consec >= LO {
-        res.push((pos + dir * C(0, 1), dir * C(0, 1), 1));
-        res.push((pos + dir * C(0, -1), dir * C(0, -1), 1));
+impl AStar {
+    fn parse(input: &str) -> Self {
+        let grid: Vec<Vec<_>> = input
+            .lines()
+            .map(|line| line.bytes().map(|x| (x - b'0') as u32).collect())
+            .collect();
+        Self {
+            width: grid[0].len(),
+            height: grid.len(),
+            grid,
+        }
     }
-    res.into_iter()
-        .filter(|(_, _, c)| *c <= HI)
-        .filter_map(|st| grid.get_cell(st.0).map(|d| (*d, st)))
+
+    fn heur(&self, C(r, c): C<usize>, cost: u32) -> usize {
+        (cost as usize + self.height - r + self.width - c) % 128
+    }
+
+    fn add_range<const LO: usize, const HI: usize>(
+        &self,
+        q: &mut [Vec<(C<usize>, bool)>],
+        g_score: &mut [Vec<[u32; 2]>],
+        pos: C<usize>,
+        horz: bool,
+        cost: u32,
+        f: fn(&mut C<usize>, C<usize>),
+    ) {
+        repeat(if horz { C(0, 1) } else { C(1, 0) })
+            .take(HI)
+            .scan((pos, cost), |acc, d| {
+                f(&mut acc.0, d);
+                acc.1 += self.grid.get_cell(acc.0)?;
+                Some(*acc)
+            })
+            .skip(LO - 1)
+            .for_each(|(pos, cost)| {
+                let e = &mut g_score[pos][!horz as usize];
+                if *e == 0 || cost < *e {
+                    q[self.heur(pos, cost)].push((pos, !horz));
+                    *e = cost;
+                }
+            })
+    }
+
+    fn a_star<const LO: usize, const HI: usize>(&self) -> u32 {
+        let w = self.width;
+        let h = self.height;
+        let goal = C(h - 1, w - 1);
+        let mut g_score: Vec<Vec<[u32; 2]>> = vec![vec![[0u32; 2]; w]; h];
+        let mut q = vec![vec![]; 128];
+        q[0].push((C(0, 0), false));
+        q[0].push((C(0, 0), true));
+        for qi in 0.. {
+            while let Some((pos, horz)) = q[qi % 128].pop() {
+                let pos: C<usize> = pos;
+                let cost = g_score[pos][horz as usize];
+                if pos == goal {
+                    return cost;
+                }
+                self.add_range::<LO, HI>(&mut q, &mut g_score, pos, horz, cost, C::sub_assign);
+                self.add_range::<LO, HI>(&mut q, &mut g_score, pos, horz, cost, C::add_assign);
+            }
+        }
+        unreachable!()
+    }
 }
 
-pub fn part1(input: &str) -> Option<usize> {
-    let grid = parse(input);
-    let end = C(grid.len() as i32 - 1, grid[0].len() as i32 - 1);
-    dijkstra((C(0, 0), C(0, 1), 0), |st| neighbors::<1, 3>(&grid, *st))
-        .find_map(|(d, (pos, _, _))| (pos == end).then_some(d))
+pub fn part1(input: &str) -> u32 {
+    AStar::parse(input).a_star::<1, 3>()
 }
 
-pub fn part2(input: &str) -> Option<usize> {
-    let grid = parse(input);
-    let end = C(grid.len() as i32 - 1, grid[0].len() as i32 - 1);
-    dijkstra((C(0, 0), C(0, 1), 0), |st| neighbors::<4, 10>(&grid, *st))
-        .find_map(|(d, (pos, _, c))| (pos == end && c >= 4).then_some(d))
+pub fn part2(input: &str) -> u32 {
+    AStar::parse(input).a_star::<4, 10>()
 }
