@@ -82,10 +82,6 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let pts: Vec<_> = main_pts(input).collect();
-    let double_area: i32 = pts
-        .windows(2)
-        .map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0))
-        .sum();
-    // Pick's theorem
-    double_area.unsigned_abs() as usize / 2 + 1 - pts.len() / 2
+    let area = shoelace(&pts);
+    picks_interior(area as usize, pts.len())
 }

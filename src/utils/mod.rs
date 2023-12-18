@@ -1259,3 +1259,17 @@ where
         })
         .collect()
 }
+
+/// Area of polygon given a list of points.
+pub fn shoelace<T: Copy + Num + Signed + Sum>(pts: &[C<T>]) -> T {
+    pts.windows(2)
+        .map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0))
+        .sum::<T>()
+        .abs()
+        / (T::one() + T::one())
+}
+
+/// Pick's theorem: A = i + b/2 - 1 where A is area of polygon, i is interior points, b is boundary points.
+pub fn picks_interior<T: Num>(area: T, boundary: T) -> T {
+    area + T::one() - boundary / (T::one() + T::one())
+}
