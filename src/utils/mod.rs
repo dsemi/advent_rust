@@ -859,6 +859,14 @@ impl Interval {
     pub fn valid(&self) -> bool {
         self.lo < self.hi
     }
+
+    pub fn clamp_lo(&mut self, lo: i64) {
+        self.lo = self.lo.max(lo);
+    }
+
+    pub fn clamp_hi(&mut self, hi: i64) {
+        self.hi = self.hi.min(hi);
+    }
 }
 
 impl Add<i64> for Interval {
