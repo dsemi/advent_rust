@@ -825,16 +825,18 @@ impl<T: PartialEq + PrimInt + BitAndAssign + Zero + One> Iterator for Bits<T> {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Interval {
-    pub lo: i64,
-    pub hi: i64,
+pub struct Interval<T> {
+    pub lo: T,
+    pub hi: T,
 }
 
-impl Interval {
-    pub fn new(lo: i64, hi: i64) -> Self {
+impl<T> Interval<T> {
+    pub fn new(lo: T, hi: T) -> Self {
         Self { lo, hi }
     }
+}
 
+impl<T: Copy + Ord + Sub<Output = T>> Interval<T> {
     pub fn intersects(&self, o: &Self) -> bool {
         self.lo < o.hi && o.lo < self.hi
     }
@@ -848,11 +850,11 @@ impl Interval {
             .then(|| Self::new(min(self.lo, o.lo), max(self.hi, o.hi)))
     }
 
-    pub fn len(&self) -> i64 {
+    pub fn len(&self) -> T {
         self.hi - self.lo
     }
 
-    pub fn contains(&self, v: i64) -> bool {
+    pub fn contains(&self, v: T) -> bool {
         self.lo <= v && v < self.hi
     }
 
@@ -860,35 +862,37 @@ impl Interval {
         self.lo < self.hi
     }
 
-    pub fn clamp_lo(&mut self, lo: i64) {
-        self.lo = self.lo.max(lo);
+    pub fn clamp_lo(&self, mut lo: T) -> Option<Self> {
+        lo = self.lo.max(lo);
+        (lo < self.hi).then(|| Interval::new(lo, self.hi))
     }
 
-    pub fn clamp_hi(&mut self, hi: i64) {
-        self.hi = self.hi.min(hi);
+    pub fn clamp_hi(&self, mut hi: T) -> Option<Self> {
+        hi = self.hi.min(hi);
+        (hi > self.lo).then(|| Interval::new(self.lo, hi))
     }
 }
 
-impl Add<i64> for Interval {
-    type Output = Interval;
+impl<T: Add<Output = T> + Copy> Add<T> for Interval<T> {
+    type Output = Self;
 
-    fn add(self, diff: i64) -> Self::Output {
+    fn add(self, diff: T) -> Self::Output {
         Interval::new(self.lo + diff, self.hi + diff)
     }
 }
 
-impl Sub<i64> for Interval {
-    type Output = Interval;
+impl<T: Sub<Output = T> + Copy> Sub<T> for Interval<T> {
+    type Output = Self;
 
-    fn sub(self, diff: i64) -> Self::Output {
+    fn sub(self, diff: T) -> Self::Output {
         Interval::new(self.lo - diff, self.hi - diff)
     }
 }
 
-impl Sub<Interval> for Interval {
-    type Output = SmallVec<[Interval; 2]>;
+impl<T: Ord + Copy> Sub<Interval<T>> for Interval<T> {
+    type Output = SmallVec<[Self; 2]>;
 
-    fn sub(self, other: Interval) -> Self::Output {
+    fn sub(self, other: Interval<T>) -> Self::Output {
         let mut result = Self::Output::new();
         if other.lo > self.lo {
             result.push(Interval::new(self.lo, min(self.hi, other.lo)));

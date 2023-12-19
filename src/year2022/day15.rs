@@ -28,7 +28,7 @@ fn parse_scanners(input: &str) -> (Vec<Scanner>, Vec<C<i64>>) {
     (scanners, beacons)
 }
 
-fn compress(ints: Vec<Interval>) -> Vec<Interval> {
+fn compress(ints: Vec<Interval<i64>>) -> Vec<Interval<i64>> {
     let mut gen = ints.into_iter();
     let mut comp = Vec::new();
     let mut cur = gen.next().unwrap();

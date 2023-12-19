@@ -4,7 +4,7 @@ use bit_set::BitSet;
 use St::*;
 
 struct Cube {
-    axis: [Interval; 3],
+    axis: [Interval<i64>; 3],
 }
 
 impl Cube {
