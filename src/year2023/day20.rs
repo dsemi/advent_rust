@@ -1,6 +1,5 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
 use num::integer::lcm;
 use std::collections::VecDeque;
 use ModuleType::*;
@@ -24,7 +23,6 @@ struct Module(ModuleType, Vec<(usize, usize)>);
 fn parse(input: &str) -> (Vec<Module>, usize) {
     let mut modules = Vec::new();
     let mut ui = UniqueIdx::new();
-    let mut input_counts = AHashMap::new();
     let mut m_outs = Vec::new();
     input.lines().for_each(|line| {
         let (t, name, outs) = (
@@ -44,15 +42,13 @@ fn parse(input: &str) -> (Vec<Module>, usize) {
     m_outs.into_iter().enumerate().for_each(|(i, outs)| {
         outs.into_iter().for_each(|out| {
             let k = ui.idx(out);
-            let e = input_counts.entry(k).or_default();
-            modules[i].1.push((*e, k));
-            *e += 1;
+            let c = if let Some(Module(Conjunction(_, cnt), _)) = modules.get_mut(k) {
+                replace_with(cnt, |c| c + 1)
+            } else {
+                0
+            };
+            modules[i].1.push((c as usize, k));
         });
-    });
-    modules.iter_mut().enumerate().for_each(|(i, module)| {
-        if let Module(Conjunction(_, cnt), _) = module {
-            *cnt = input_counts[&i] as u32;
-        }
     });
     (modules, ui.idx("broadcaster"))
 }
@@ -66,13 +62,11 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
             Some(Module(Broadcast, outs)) => outs
                 .iter()
                 .for_each(|&(idx, out)| q.push_back((pulse, idx, out))),
-            Some(Module(FlipFlop(on), outs)) => {
-                if pulse == Low {
-                    *on = !*on;
-                    let pulse = if *on { High } else { Low };
-                    outs.iter()
-                        .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
-                }
+            Some(Module(FlipFlop(on), outs)) if pulse == Low => {
+                *on = !*on;
+                let pulse = if *on { High } else { Low };
+                outs.iter()
+                    .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
             }
             Some(Module(Conjunction(ins, len), outs)) => {
                 if pulse == Low {
@@ -84,7 +78,7 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
                 outs.iter()
                     .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
             }
-            None => (),
+            _ => (),
         }
     }
 }
