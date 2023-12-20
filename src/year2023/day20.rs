@@ -3,6 +3,7 @@ use crate::utils::*;
 use ahash::AHashMap;
 use num::integer::lcm;
 use std::collections::VecDeque;
+use ModuleType::*;
 use Pulse::*;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -11,64 +12,46 @@ enum Pulse {
     High,
 }
 
-#[derive(Debug, Default)]
-struct Broadcast {
-    outs: Vec<(usize, usize)>,
+#[derive(Clone)]
+enum ModuleType {
+    Broadcast,
+    FlipFlop(bool),
+    Conjunction(u64, u32),
 }
 
-#[derive(Debug, Default)]
-struct FlipFlop {
-    on: bool,
-    outs: Vec<(usize, usize)>,
-}
-
-#[derive(Debug, Default)]
-struct Conjunction {
-    ins: u64,
-    all_on: u64,
-    outs: Vec<(usize, usize)>,
-}
-
-#[derive(Debug)]
-enum Module {
-    B(Broadcast),
-    F(FlipFlop),
-    C(Conjunction),
-}
+struct Module(ModuleType, Vec<(usize, usize)>);
 
 fn parse(input: &str) -> (Vec<Module>, usize) {
     let mut modules = Vec::new();
     let mut ui = UniqueIdx::new();
     let mut input_counts = AHashMap::new();
+    let mut m_outs = Vec::new();
     input.lines().for_each(|line| {
-        if line.starts_with("broadcaster") {
-            ui.idx("broadcaster");
-            modules.push(Module::B(Default::default()));
-        } else if line.starts_with('%') {
-            ui.idx(&line[1..3]);
-            modules.push(Module::F(Default::default()));
-        } else {
-            ui.idx(&line[1..3]);
-            modules.push(Module::C(Default::default()));
-        }
+        let (t, name, outs) = (
+            opt(alt((
+                '%'.value(FlipFlop(false)),
+                '&'.value(Conjunction(0, 0)),
+            )))
+            .map(|x| x.unwrap_or(Broadcast)),
+            alpha1,
+            preceded(" -> ", list(alpha1)),
+        )
+            .read(line);
+        modules.push(Module(t, Vec::new()));
+        ui.idx(name);
+        m_outs.push(outs);
     });
-    input.lines().enumerate().for_each(|(i, line)| {
-        let outs = preceded((opt(alt(('%', '&'))), alpha1, " -> "), list(alpha1)).read(line);
-        let outputs = match modules.get_mut(i).unwrap() {
-            Module::B(Broadcast { outs }) => outs,
-            Module::F(FlipFlop { outs, .. }) => outs,
-            Module::C(Conjunction { outs, .. }) => outs,
-        };
-        for out in outs {
+    m_outs.into_iter().enumerate().for_each(|(i, outs)| {
+        outs.into_iter().for_each(|out| {
             let k = ui.idx(out);
             let e = input_counts.entry(k).or_default();
-            outputs.push((*e, k));
+            modules[i].1.push((*e, k));
             *e += 1;
-        }
+        });
     });
     modules.iter_mut().enumerate().for_each(|(i, module)| {
-        if let Module::C(Conjunction { all_on, .. }) = module {
-            *all_on = (1 << input_counts[&i]) - 1;
+        if let Module(Conjunction(_, cnt), _) = module {
+            *cnt = input_counts[&i] as u32;
         }
     });
     (modules, ui.idx("broadcaster"))
@@ -80,10 +63,10 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
     while let Some((pulse, in_idx, idx)) = q.pop_front() {
         f(pulse, in_idx, idx);
         match modules.get_mut(idx) {
-            Some(Module::B(Broadcast { outs })) => outs
+            Some(Module(Broadcast, outs)) => outs
                 .iter()
                 .for_each(|&(idx, out)| q.push_back((pulse, idx, out))),
-            Some(Module::F(FlipFlop { on, outs })) => {
+            Some(Module(FlipFlop(on), outs)) => {
                 if pulse == Low {
                     *on = !*on;
                     let pulse = if *on { High } else { Low };
@@ -91,13 +74,13 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
                         .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
                 }
             }
-            Some(Module::C(Conjunction { ins, all_on, outs })) => {
+            Some(Module(Conjunction(ins, len), outs)) => {
                 if pulse == Low {
                     *ins &= !(1 << in_idx);
                 } else {
                     *ins |= 1 << in_idx;
                 }
-                let pulse = if *ins == *all_on { Low } else { High };
+                let pulse = if ins.count_ones() == *len { Low } else { High };
                 outs.iter()
                     .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
             }
@@ -124,8 +107,8 @@ pub fn part2(input: &str) -> usize {
         .iter()
         .enumerate()
         .find_map(|(i, m)| match m {
-            Module::C(Conjunction { outs, all_on, .. }) if *outs == vec![(0, modules.len())] => {
-                Some((i, all_on.count_ones() as usize))
+            Module(Conjunction(_, len), outs) if *outs == vec![(0, modules.len())] => {
+                Some((i, *len as usize))
             }
             _ => None,
         })
