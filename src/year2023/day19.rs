@@ -18,20 +18,15 @@ enum Rule<'a> {
     Cond(usize, Ordering, u64, Label<'a>),
 }
 
-fn cond<'a>(i: &mut &'a str) -> PResult<Rule<'a>> {
-    let (idx, o, b, label) = (
-        alt(('x'.value(0), 'm'.value(1), 'a'.value(2), 's'.value(3))),
-        alt(('<'.value(Less), '>'.value(Greater))),
-        terminated(u64, ':'),
-        alt(('A'.value(Accept), 'R'.value(Reject), alpha1.map(Named))),
-    )
-        .parse_next(i)?;
-    Ok(Rule::Cond(idx, o, b, label))
-}
-
 fn rule<'a>(i: &mut &'a str) -> PResult<Rule<'a>> {
     alt((
-        cond,
+        (
+            alt(('x'.value(0), 'm'.value(1), 'a'.value(2), 's'.value(3))),
+            alt(('<'.value(Less), '>'.value(Greater))),
+            terminated(u64, ':'),
+            alt(('A'.value(Accept), 'R'.value(Reject), alpha1.map(Named))),
+        )
+            .map(|(idx, o, b, label)| Rule::Cond(idx, o, b, label)),
         'A'.value(Rule::Label(Accept)),
         'R'.value(Rule::Label(Reject)),
         alpha1.map(|n| Rule::Label(Named(n))),
@@ -48,22 +43,19 @@ fn part(i: &mut &str) -> PResult<Vec<u64>> {
 }
 
 fn accepted<'a>(workflows: &AHashMap<&'a str, Vec<Rule<'a>>>, part: &[u64]) -> bool {
-    let mut k = "in";
-    loop {
+    let mut label = Named("in");
+    while let Named(k) = label {
         for rule in workflows[k].iter() {
             match rule {
                 Rule::Cond(i, o, b, _) if part[*i].cmp(b) != *o => (),
-                Rule::Label(lbl) | Rule::Cond(_, _, _, lbl) => match lbl {
-                    Accept => return true,
-                    Reject => return false,
-                    Named(l) => {
-                        k = l;
-                        break;
-                    }
-                },
+                Rule::Label(lbl) | Rule::Cond(_, _, _, lbl) => {
+                    label = *lbl;
+                    break;
+                }
             }
         }
     }
+    matches!(label, Accept)
 }
 
 pub fn part1(input: &str) -> u64 {

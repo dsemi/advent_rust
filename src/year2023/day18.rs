@@ -2,16 +2,16 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 
 fn instr1(i: &mut &str) -> PResult<(C<i64>, i64)> {
-    let dir = alt((
-        'U'.value(C(-1, 0)),
-        'D'.value(C(1, 0)),
-        'L'.value(C(0, -1)),
-        'R'.value(C(0, 1)),
-    ))
-    .parse_next(i)?;
-    let amt = preceded(' ', i64).parse_next(i)?;
-    delimited(" (#", hex_digit1, ')').parse_next(i)?;
-    Ok((dir, amt))
+    (
+        alt((
+            'U'.value(C(-1, 0)),
+            'D'.value(C(1, 0)),
+            'L'.value(C(0, -1)),
+            'R'.value(C(0, 1)),
+        )),
+        delimited(' ', i64, delimited(" (#", hex_digit1, ')')),
+    )
+        .parse_next(i)
 }
 
 fn solve<'a>(input: &'a str, instr: impl Parser<&'a str, (C<i64>, i64), ContextError>) -> i64 {
