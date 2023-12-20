@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use ahash::AHashMap;
 use num::integer::lcm;
 use std::collections::VecDeque;
 use ModuleType::*;
@@ -11,46 +12,70 @@ enum Pulse {
     High,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 enum ModuleType {
     Broadcast,
     FlipFlop(bool),
     Conjunction(u64, u32),
 }
 
-struct Module(ModuleType, Vec<(usize, usize)>);
+impl ModuleType {
+    fn signal(&mut self, pulse: Pulse, src: usize) -> Option<Pulse> {
+        match self {
+            Broadcast => Some(pulse),
+            FlipFlop(on) if pulse == Low => {
+                *on = !*on;
+                Some(if *on { High } else { Low })
+            }
+            Conjunction(ins, len) => {
+                match pulse {
+                    Low => *ins &= !(1 << src),
+                    High => *ins |= 1 << src,
+                }
+                Some(if ins.count_ones() == *len { Low } else { High })
+            }
+            _ => None,
+        }
+    }
+}
 
-fn parse(input: &str) -> (Vec<Module>, usize) {
-    let mut modules = Vec::new();
-    let mut ui = UniqueIdx::new();
-    let mut m_outs = Vec::new();
-    input.lines().for_each(|line| {
-        let (t, name, outs) = (
-            opt(alt((
-                '%'.value(FlipFlop(false)),
-                '&'.value(Conjunction(0, 0)),
-            )))
-            .map(|x| x.unwrap_or(Broadcast)),
-            alpha1,
-            preceded(" -> ", list(alpha1)),
-        )
-            .read(line);
-        modules.push(Module(t, Vec::new()));
-        ui.idx(name);
-        m_outs.push(outs);
-    });
-    m_outs.into_iter().enumerate().for_each(|(i, outs)| {
-        outs.into_iter().for_each(|out| {
-            let k = ui.idx(out);
-            let c = if let Some(Module(Conjunction(_, cnt), _)) = modules.get_mut(k) {
-                replace_with(cnt, |c| c + 1)
-            } else {
-                0
-            };
-            modules[i].1.push((c as usize, k));
-        });
-    });
-    (modules, ui.idx("broadcaster"))
+#[derive(Debug)]
+struct Module {
+    t: ModuleType,
+    outs: Vec<usize>,
+}
+
+fn parse(input: &str) -> (usize, Vec<Module>) {
+    let prefix: &[char] = &['%', '&'];
+    let mut ui: UniqueIdx<_> = input
+        .lines()
+        .map(|line| line.split_once(' ').unwrap().0.trim_start_matches(prefix))
+        .collect();
+    let mut modules: Vec<_> = input
+        .lines()
+        .map(|line| {
+            let (t, outs) = (
+                opt(alt((
+                    '%'.value(FlipFlop(false)),
+                    '&'.value(Conjunction(0, 0)),
+                )))
+                .map(|x| x.unwrap_or(Broadcast)),
+                preceded((alpha1, " -> "), list(alpha1)),
+            )
+                .read(line);
+            let outs = outs.into_iter().map(|o| ui.idx(o)).collect();
+            Module { t, outs }
+        })
+        .collect();
+    for i in 0..modules.len() {
+        let outs = modules[i].outs.clone();
+        for out in outs {
+            if let Some(Conjunction(_, cnt)) = modules.get_mut(out).map(|x| &mut x.t) {
+                *cnt += 1;
+            }
+        }
+    }
+    (ui.idx("broadcaster"), modules)
 }
 
 fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, usize, usize)) {
@@ -58,33 +83,18 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
     q.push_back((Low, 0, start));
     while let Some((pulse, in_idx, idx)) = q.pop_front() {
         f(pulse, in_idx, idx);
-        match modules.get_mut(idx) {
-            Some(Module(Broadcast, outs)) => outs
-                .iter()
-                .for_each(|&(idx, out)| q.push_back((pulse, idx, out))),
-            Some(Module(FlipFlop(on), outs)) if pulse == Low => {
-                *on = !*on;
-                let pulse = if *on { High } else { Low };
-                outs.iter()
-                    .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
+        if let Some(m) = modules.get_mut(idx) {
+            if let Some(pulse) = m.t.signal(pulse, in_idx) {
+                m.outs
+                    .iter()
+                    .for_each(|&out| q.push_back((pulse, idx, out)))
             }
-            Some(Module(Conjunction(ins, len), outs)) => {
-                if pulse == Low {
-                    *ins &= !(1 << in_idx);
-                } else {
-                    *ins |= 1 << in_idx;
-                }
-                let pulse = if ins.count_ones() == *len { Low } else { High };
-                outs.iter()
-                    .for_each(|&(idx, out)| q.push_back((pulse, idx, out)));
-            }
-            _ => (),
         }
     }
 }
 
 pub fn part1(input: &str) -> usize {
-    let (mut modules, start) = parse(input);
+    let (start, mut modules) = parse(input);
     let (mut lows, mut highs) = (0, 0);
     for _ in 0..1000 {
         push_button(&mut modules, start, |pulse, _, _| match pulse {
@@ -96,26 +106,24 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let (mut modules, start) = parse(input);
+    let (start, mut modules) = parse(input);
     let (out, len) = modules
         .iter()
         .enumerate()
-        .find_map(|(i, m)| match m {
-            Module(Conjunction(_, len), outs) if *outs == vec![(0, modules.len())] => {
-                Some((i, *len as usize))
-            }
+        .find_map(|(i, m)| match (&m.t, &m.outs[..]) {
+            (Conjunction(_, len), [m]) if *m == modules.len() => Some((i, *len as usize)),
             _ => None,
         })
         .unwrap();
-    let mut cycles = vec![0; len];
+    let mut cycles = AHashMap::new();
     let mut i: usize = 0;
-    while cycles.iter().any(|&c| c == 0) {
+    while cycles.len() < len {
         i += 1;
         push_button(&mut modules, start, |pulse, in_idx, name| {
-            if pulse == High && name == out && cycles[in_idx] == 0 {
-                cycles[in_idx] = i;
+            if pulse == High && name == out && !cycles.contains_key(&in_idx) {
+                cycles.insert(in_idx, i);
             }
         });
     }
-    cycles.into_iter().reduce(lcm).unwrap()
+    cycles.into_values().reduce(lcm).unwrap()
 }

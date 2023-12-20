@@ -919,6 +919,16 @@ impl<T: Eq + Hash> UniqueIdx<T> {
     }
 }
 
+impl<T: Eq + Hash> FromIterator<T> for UniqueIdx<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut ui = Self::new();
+        iter.into_iter().for_each(|elem| {
+            ui.idx(elem);
+        });
+        ui
+    }
+}
+
 pub struct MapWindows<I: Iterator, F, T, const N: usize>
 where
     F: FnMut([&I::Item; N]) -> T,
