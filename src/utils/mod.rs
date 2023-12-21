@@ -267,6 +267,23 @@ macro_rules! forward_ref_binop {
     };
 }
 
+pub trait AbsDiff<T> {
+    fn abs_diff(self, other: T) -> T;
+}
+
+macro_rules! impl_abs_diff {
+    ($($i:ident),*) => ($(
+        impl AbsDiff<$i> for $i {
+            #[inline]
+            fn abs_diff(self, other: $i) -> $i {
+                self.abs_diff(other) as $i
+            }
+        }
+    )*)
+}
+
+impl_abs_diff!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
+
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct C<T>(pub T, pub T);
 
@@ -288,9 +305,9 @@ impl<T: Num + Signed> C<T> {
     }
 }
 
-impl<T: Num + Signed + Copy> C<T> {
+impl<T: Num + AbsDiff<T> + Copy> C<T> {
     pub fn dist(&self, other: &Self) -> T {
-        (self.0 - other.0).abs() + (self.1 - other.1).abs()
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1)
     }
 }
 
@@ -524,9 +541,9 @@ impl<T: Num + Signed> C3<T> {
     }
 }
 
-impl<T: Num + Signed + Copy> C3<T> {
+impl<T: Num + AbsDiff<T> + Copy> C3<T> {
     pub fn dist(&self, other: &Self) -> T {
-        (self.0 - other.0).abs() + (self.1 - other.1).abs() + (self.2 - other.2).abs()
+        self.0.abs_diff(other.0) + self.1.abs_diff(other.1) + self.2.abs_diff(other.2)
     }
 }
 
