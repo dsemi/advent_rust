@@ -853,6 +853,12 @@ impl<T> Interval<T> {
     }
 }
 
+impl<T: Copy> Interval<T> {
+    pub fn range(&self) -> std::ops::Range<T> {
+        self.lo..self.hi
+    }
+}
+
 impl<T: Copy + Ord + Sub<Output = T>> Interval<T> {
     pub fn intersects(&self, o: &Self) -> bool {
         self.lo < o.hi && o.lo < self.hi
@@ -1327,6 +1333,7 @@ pub fn picks_interior<T: Num>(area: T, boundary: T) -> T {
     area + T::one() - boundary / (T::one() + T::one())
 }
 
+#[derive(Debug)]
 pub struct Grid<T> {
     pub rows: usize,
     pub cols: usize,
@@ -1358,6 +1365,24 @@ impl FromIterator<u8> for Grid<u8> {
             rows: elems.len() / cols,
             cols,
             elems,
+        }
+    }
+}
+
+impl<T: Clone + Default> Grid<T> {
+    #[inline]
+    pub fn new(rows: usize, cols: usize) -> Grid<T> {
+        Grid::new_with(rows, cols, Default::default())
+    }
+}
+
+impl<T: Clone> Grid<T> {
+    #[inline]
+    pub fn new_with(rows: usize, cols: usize, elem: T) -> Grid<T> {
+        Grid {
+            rows,
+            cols,
+            elems: vec![elem; rows * cols],
         }
     }
 }
