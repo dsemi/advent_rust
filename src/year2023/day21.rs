@@ -1,44 +1,53 @@
 use crate::utils::*;
+use std::collections::VecDeque;
 
-fn neighbors(grid: &[Vec<u8>], pos: C<usize>) -> impl Iterator<Item = C<usize>> + '_ {
-    [pos - C(1, 0), pos + C(1, 0), pos - C(0, 1), pos + C(0, 1)]
-        .into_iter()
-        .filter(|&p| matches!(grid.get_cell(p), Some(b'.' | b'S')))
+fn dists(grid: Grid<u8>) -> Grid<Option<usize>> {
+    let start = C(grid.rows / 2, grid.cols / 2);
+    let mut frontier = VecDeque::new();
+    frontier.push_back((start, 0));
+    let mut visited: Grid<Option<usize>> = grid.same_size();
+    visited[start] = Some(0);
+    while let Some((pos, d)) = frontier.pop_front() {
+        for p in [pos - C(1, 0), pos + C(1, 0), pos - C(0, 1), pos + C(0, 1)] {
+            if matches!(grid.get(p), Some(b'.' | b'S')) && visited[p].is_none() {
+                frontier.push_back((p, d + 1));
+                visited[p] = Some(d + 1);
+            }
+        }
+    }
+    visited
 }
 
 pub fn part1(input: &str) -> usize {
-    let grid: Vec<Vec<_>> = input.lines().map(|line| line.bytes().collect()).collect();
-    bfs(C(grid.len() / 2, grid.len() / 2), |n| neighbors(&grid, *n))
-        .take_while(|&(d, _)| d <= 64)
-        .filter(|&(d, _)| d & 1 == 0)
+    let dists = dists(input.bytes().collect());
+    dists
+        .into_iter()
+        .filter(|&d| matches!(d, Some(n) if n <= 64 && n & 1 == 0))
         .count()
 }
 
 const GOAL: usize = 26501365;
 
 pub fn part2(input: &str) -> usize {
-    let grid: Vec<Vec<_>> = input.lines().map(|line| line.bytes().collect()).collect();
-    let len = grid.len();
-    let start = C(len / 2, len / 2);
+    let dists = dists(input.bytes().collect());
+    let start = C(dists.rows / 2, dists.cols / 2);
     let (mut evens, mut odds) = (0, 0);
     let (mut outer_evens, mut outer_odds) = (0, 0);
-    for (d, p) in bfs(start, |n| neighbors(&grid, *n)) {
-        if d & 1 == 0 {
-            evens += 1;
-            outer_evens += (p.dist(&start) > 65) as usize;
-        } else {
-            odds += 1;
-            outer_odds += (p.dist(&start) > 65) as usize;
-        }
-    }
-    let a0 = odds - outer_odds;
-    let a1 = evens + outer_evens + 4 * odds - 2 * outer_odds;
-    let a2 = 9 * odds - 3 * outer_odds + 4 * evens + 2 * outer_evens;
-    let b0 = a0;
-    let b1 = a1 - a0;
-    let b2 = a2 - a1;
-    let n = GOAL / len;
-    b0 + b1 * n + (b2 - b1) * (n * (n - 1) / 2)
+    dists
+        .idx_iter()
+        .filter_map(|(p, d)| d.is_some().then_some(p))
+        .for_each(|p| {
+            let d = p.dist(&start);
+            if d & 1 == 0 {
+                evens += 1;
+                outer_evens += (d > 65) as usize;
+            } else {
+                odds += 1;
+                outer_odds += (d > 65) as usize;
+            }
+        });
+    let n = GOAL / dists.rows;
+    (n + 1) * (n + 1) * odds - (n + 1) * outer_odds + n * n * evens + n * outer_evens
 }
 
 //

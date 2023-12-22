@@ -1312,3 +1312,161 @@ pub fn shoelace<T: Copy + Num + Signed + Sum>(pts: &[C<T>]) -> T {
 pub fn picks_interior<T: Num>(area: T, boundary: T) -> T {
     area + T::one() - boundary / (T::one() + T::one())
 }
+
+pub struct Grid<T> {
+    pub rows: usize,
+    pub cols: usize,
+    elems: Vec<T>,
+}
+
+impl<T> IntoIterator for Grid<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.elems.into_iter()
+    }
+}
+
+impl FromIterator<u8> for Grid<u8> {
+    fn from_iter<I: IntoIterator<Item = u8>>(iter: I) -> Self {
+        let mut elems = Vec::new();
+        let mut cols = 0;
+        for b in iter {
+            if b == b'\n' {
+                cols = 0;
+            } else {
+                elems.push(b);
+                cols += 1;
+            }
+        }
+        Self {
+            rows: elems.len() / cols,
+            cols,
+            elems,
+        }
+    }
+}
+
+impl<T> Grid<T> {
+    pub fn same_size<E: Clone + Default>(&self) -> Grid<E> {
+        Grid {
+            rows: self.rows,
+            cols: self.cols,
+            elems: vec![Default::default(); self.elems.len()],
+        }
+    }
+
+    pub fn idx_iter(&self) -> impl Iterator<Item = (C<usize>, &T)> {
+        (0..self.rows)
+            .flat_map(move |r| (0..self.cols).map(move |c| C(r, c)))
+            .zip(self.elems.iter())
+    }
+
+    #[allow(dead_code)]
+    pub fn into_idx_iter(self) -> impl Iterator<Item = (C<usize>, T)> {
+        (0..self.rows)
+            .flat_map(move |r| (0..self.cols).map(move |c| C(r, c)))
+            .zip(self)
+    }
+}
+
+macro_rules! impl_idx_grid {
+    ($($it:ty),*) => ($(
+        impl<T> Index<C<$it>> for Grid<T> {
+            type Output = T;
+
+            fn index(&self, C(r, c): C<$it>) -> &Self::Output {
+                &self.elems[r as usize * self.cols + c as usize]
+            }
+        }
+
+        impl<T> IndexMut<C<$it>> for Grid<T> {
+            fn index_mut(&mut self, C(r, c): C<$it>) -> &mut T {
+                &mut self.elems[r as usize * self.cols + c as usize]
+            }
+        }
+
+        impl<T> Index<($it, $it)> for Grid<T> {
+            type Output = T;
+
+            fn index(&self, (r, c): ($it, $it)) -> &Self::Output {
+                &self.elems[r as usize * self.cols + c as usize]
+            }
+        }
+
+        impl<T> IndexMut<($it, $it)> for Grid<T> {
+            fn index_mut(&mut self, (r, c): ($it, $it)) -> &mut T {
+                &mut self.elems[r as usize * self.cols + c as usize]
+            }
+        }
+
+
+        impl<T> Index<$it> for Grid<T> {
+            type Output = T;
+
+            fn index(&self, idx: $it) -> &Self::Output {
+                &self.elems[idx as usize]
+            }
+        }
+
+        impl<T> IndexMut<$it> for Grid<T> {
+            fn index_mut(&mut self, idx: $it) -> &mut T {
+                &mut self.elems[idx as usize]
+            }
+        }
+
+    )*)
+}
+
+pub trait GridIdx2<I, T> {
+    fn get(&self, idx: C<I>) -> Option<&T>;
+    fn get_mut(&mut self, idx: C<I>) -> Option<&mut T>;
+}
+impl_idx_grid!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
+
+macro_rules! impl_idx2_grid {
+    ($($it:ty),*) => ($(
+        impl<T> GridIdx2<$it, T> for Grid<T> {
+            fn get(&self, C(r, c): C<$it>) -> Option<&T> {
+                if r >= 0 && r < self.rows as $it && c >= 0 && c < self.cols as $it {
+                    Some(&self[C(r, c)])
+                } else {
+                    None
+                }
+            }
+
+            fn get_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
+                if r >= 0 && r < self.rows as $it && c >= 0 && c < self.cols as $it {
+                    Some(&mut self[C(r, c)])
+                } else {
+                    None
+                }
+            }
+        }
+    )*)
+}
+impl_idx2_grid!(i8, i16, i32, i64, isize);
+
+macro_rules! impl_idx2_grid_unsigned {
+    ($($it:ty),*) => ($(
+        impl<T> GridIdx2<$it, T> for Grid<T> {
+            fn get(&self, C(r, c): C<$it>) -> Option<&T> {
+                if r < self.rows as $it && c < self.cols as $it {
+                    Some(&self[C(r, c)])
+                } else {
+                    None
+                }
+            }
+
+            fn get_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
+                if r < self.rows as $it && c < self.cols as $it {
+                    Some(&mut self[C(r, c)])
+                } else {
+                    None
+                }
+            }
+        }
+    )*)
+}
+impl_idx2_grid_unsigned!(u8, u16, u32, u64, usize);
