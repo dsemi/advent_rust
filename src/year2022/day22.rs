@@ -104,7 +104,11 @@ impl Board {
     }
 
     fn valid(&self, idx: C<i32>) -> bool {
-        self.grid.get_cell(idx).filter(|&v| *v != ' ').is_some()
+        idx.0 >= 0
+            && idx.0 < self.grid.len() as i32
+            && idx.1 >= 0
+            && idx.1 < self.grid[idx.0 as usize].len() as i32
+            && self.grid[idx.0 as usize][idx.1 as usize] != ' '
     }
 
     fn walk<F>(&self, step: F) -> i32
@@ -112,7 +116,7 @@ impl Board {
         F: Fn(&[Vec<char>], C<i32>, C<i32>) -> (C<i32>, C<i32>),
     {
         let mut pos = iterate(self.top_left, |p| p + C(0, 1))
-            .find(|&p| self.grid[p] == '.')
+            .find(|&C(r, c)| self.grid[r as usize][c as usize] == '.')
             .unwrap();
         let mut dir = C(0, 1);
         for instr in self.path.iter() {
@@ -122,7 +126,7 @@ impl Board {
                 Instr::Step(n) => {
                     for _ in 0..*n {
                         let (pos2, dir2) = step(&self.grid, pos, dir);
-                        if self.grid[pos2] == '#' {
+                        if self.grid[pos2.0 as usize][pos2.1 as usize] == '#' {
                             break;
                         }
                         (pos, dir) = (pos2, dir2);

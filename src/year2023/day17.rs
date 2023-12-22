@@ -2,33 +2,21 @@ use crate::utils::*;
 use std::iter::repeat;
 use std::ops::{AddAssign, SubAssign};
 
-struct AStar {
-    width: usize,
-    height: usize,
-    grid: Vec<Vec<u32>>,
-}
+struct AStar(Grid<u32>);
 
 impl AStar {
     fn parse(input: &str) -> Self {
-        let grid: Vec<Vec<_>> = input
-            .lines()
-            .map(|line| line.bytes().map(|x| (x - b'0') as u32).collect())
-            .collect();
-        Self {
-            width: grid[0].len(),
-            height: grid.len(),
-            grid,
-        }
+        Self(Grid::ints(input.bytes()))
     }
 
     fn heur(&self, C(r, c): C<usize>, cost: u32) -> usize {
-        (cost as usize + self.height - r + self.width - c) % 128
+        (cost as usize + self.0.rows - r + self.0.cols - c) % 128
     }
 
     fn add_range<const LO: usize, const HI: usize>(
         &self,
         q: &mut [Vec<(C<usize>, bool)>],
-        g_score: &mut [Vec<[u32; 2]>],
+        g_score: &mut Grid<[u32; 2]>,
         pos: C<usize>,
         horz: bool,
         cost: u32,
@@ -38,7 +26,7 @@ impl AStar {
             .take(HI)
             .scan((pos, cost), |acc, d| {
                 f(&mut acc.0, d);
-                acc.1 += self.grid.get_cell(acc.0)?;
+                acc.1 += self.0.get(acc.0)?;
                 Some(*acc)
             })
             .skip(LO - 1)
@@ -52,10 +40,10 @@ impl AStar {
     }
 
     fn a_star<const LO: usize, const HI: usize>(&self) -> u32 {
-        let w = self.width;
-        let h = self.height;
+        let w = self.0.cols;
+        let h = self.0.rows;
         let goal = C(h - 1, w - 1);
-        let mut g_score: Vec<Vec<[u32; 2]>> = vec![vec![[0u32; 2]; w]; h];
+        let mut g_score: Grid<[u32; 2]> = Grid::new(h, w);
         let mut q = vec![vec![]; 128];
         q[0].push((C(0, 0), false));
         q[0].push((C(0, 0), true));

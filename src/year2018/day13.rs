@@ -27,7 +27,7 @@ fn turn(c: C<i32>, turn: Turn) -> C<i32> {
 
 fn move_cart(cart: &mut Cart, grid: &[Vec<char>]) {
     cart.pos += cart.dir;
-    match grid[cart.pos] {
+    match grid[cart.pos.0 as usize][cart.pos.1 as usize] {
         '\\' => cart.dir = C(cart.dir.1, cart.dir.0),
         '/' => cart.dir = C(-cart.dir.1, -cart.dir.0),
         '+' => {

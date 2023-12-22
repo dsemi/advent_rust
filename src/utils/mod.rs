@@ -2,12 +2,12 @@ use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
 use num::{Num, PrimInt, Signed};
 use num_traits::ops::saturating::SaturatingAdd;
-use num_traits::{Bounded, One, Pow, Zero};
+use num_traits::{Bounded, FromPrimitive, One, Pow, Zero};
 use smallvec::SmallVec;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
 use std::collections::{BinaryHeap, VecDeque};
-use std::convert::From;
+use std::convert::{identity, From};
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{
@@ -437,71 +437,6 @@ impl<T> From<C<T>> for (T, T) {
         (a, b)
     }
 }
-
-macro_rules! impl_idx {
-    ($($it:ty),*) => ($(
-        impl<T> Index<C<$it>> for Vec<Vec<T>> {
-            type Output = T;
-
-            fn index(&self, C(r, c): C<$it>) -> &Self::Output {
-                &self[r as usize][c as usize]
-            }
-        }
-
-        impl<T> Index<C<$it>> for [Vec<T>] {
-            type Output = T;
-
-            fn index(&self, C(r, c): C<$it>) -> &Self::Output {
-                &self[r as usize][c as usize]
-            }
-        }
-
-        impl<T> IndexMut<C<$it>> for Vec<Vec<T>> {
-            fn index_mut(&mut self, C(r, c): C<$it>) -> &mut T {
-                &mut self[r as usize][c as usize]
-            }
-        }
-
-        impl<T> IndexMut<C<$it>> for [Vec<T>] {
-            fn index_mut(&mut self, C(r, c): C<$it>) -> &mut T {
-                &mut self[r as usize][c as usize]
-            }
-        }
-    )*)
-}
-
-impl_idx!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
-
-pub trait GridIdx<I, T> {
-    fn get_cell(&self, idx: C<I>) -> Option<&T>;
-    fn get_cell_mut(&mut self, idx: C<I>) -> Option<&mut T>;
-}
-
-macro_rules! impl_get {
-    ($($it:ty),*) => ($(
-        impl<T> GridIdx<$it, T> for Vec<Vec<T>> {
-            fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
-                self.get(r as usize)?.get(c as usize)
-            }
-
-            fn get_cell_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
-                self.get_mut(r as usize)?.get_mut(c as usize)
-            }
-        }
-
-        impl<T> GridIdx<$it, T> for [Vec<T>] {
-            fn get_cell(&self, C(r, c): C<$it>) -> Option<&T> {
-                self.get(r as usize)?.get(c as usize)
-            }
-
-            fn get_cell_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
-                self.get_mut(r as usize)?.get_mut(c as usize)
-            }
-        }
-    )*)
-}
-
-impl_get!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
 
 pub fn adjacents<T>(C(x, y): C<T>) -> impl Iterator<Item = C<T>>
 where
@@ -1333,11 +1268,11 @@ pub fn picks_interior<T: Num>(area: T, boundary: T) -> T {
     area + T::one() - boundary / (T::one() + T::one())
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Grid<T> {
     pub rows: usize,
     pub cols: usize,
-    elems: Vec<T>,
+    pub elems: Vec<T>,
 }
 
 impl<T> IntoIterator for Grid<T> {
@@ -1349,23 +1284,53 @@ impl<T> IntoIterator for Grid<T> {
     }
 }
 
+impl<'a, T> IntoIterator for &'a Grid<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.elems.iter()
+    }
+}
+
+fn grid_from_iter<T, I, E, F>(iter: I, sep: T, f: F) -> Grid<E>
+where
+    T: Eq,
+    I: IntoIterator<Item = T>,
+    F: Fn(T) -> E,
+{
+    let mut elems = Vec::new();
+    let mut c = 0;
+    let mut cols = 0;
+    for b in iter {
+        if b == sep {
+            if cols == 0 {
+                cols = c;
+            }
+            assert!(c == 0 || c == cols);
+            c = 0
+        } else {
+            elems.push(f(b));
+            c += 1;
+        }
+    }
+    assert!(c == 0 || c == cols);
+    Grid {
+        rows: elems.len() / cols,
+        cols,
+        elems,
+    }
+}
+
 impl FromIterator<u8> for Grid<u8> {
     fn from_iter<I: IntoIterator<Item = u8>>(iter: I) -> Self {
-        let mut elems = Vec::new();
-        let mut cols = 0;
-        for b in iter {
-            if b == b'\n' {
-                cols = 0;
-            } else {
-                elems.push(b);
-                cols += 1;
-            }
-        }
-        Self {
-            rows: elems.len() / cols,
-            cols,
-            elems,
-        }
+        grid_from_iter(iter, b'\n', identity)
+    }
+}
+
+impl FromIterator<char> for Grid<char> {
+    fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> Self {
+        grid_from_iter(iter, '\n', identity)
     }
 }
 
@@ -1387,26 +1352,76 @@ impl<T: Clone> Grid<T> {
     }
 }
 
+impl<T: FromPrimitive> Grid<T> {
+    pub fn ints<I: IntoIterator<Item = u8>>(iter: I) -> Self {
+        grid_from_iter(iter, b'\n', |b| T::from_u8(b - b'0').unwrap())
+    }
+}
+
 impl<T> Grid<T> {
-    pub fn same_size<E: Clone + Default>(&self) -> Grid<E> {
+    pub fn transform<S, F: FnMut(T) -> S>(self, f: F) -> Grid<S> {
         Grid {
             rows: self.rows,
             cols: self.cols,
-            elems: vec![Default::default(); self.elems.len()],
+            elems: self.elems.into_iter().map(f).collect(),
         }
     }
 
-    pub fn idx_iter(&self) -> impl Iterator<Item = (C<usize>, &T)> {
-        (0..self.rows)
-            .flat_map(move |r| (0..self.cols).map(move |c| C(r, c)))
-            .zip(self.elems.iter())
+    pub fn itransform<S, F: FnMut((C<usize>, T)) -> S>(self, f: F) -> Grid<S> {
+        Grid {
+            rows: self.rows,
+            cols: self.cols,
+            elems: self.into_idx_iter().map(f).collect(),
+        }
     }
 
-    #[allow(dead_code)]
+    #[inline]
+    pub fn same_size<E: Clone + Default>(&self) -> Grid<E> {
+        self.same_size_with(Default::default())
+    }
+
+    #[inline]
+    pub fn same_size_with<E: Clone>(&self, elem: E) -> Grid<E> {
+        Grid {
+            rows: self.rows,
+            cols: self.cols,
+            elems: vec![elem; self.elems.len()],
+        }
+    }
+
+    #[inline]
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
+        self.elems.iter()
+    }
+
+    #[inline]
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
+        self.elems.iter_mut()
+    }
+
+    #[inline]
+    pub fn idxs(&self) -> impl Iterator<Item = C<usize>> + '_ {
+        (0..self.rows).flat_map(|r| (0..self.cols).map(move |c| C(r, c)))
+    }
+
+    pub fn idx_iter(&self) -> impl Iterator<Item = (C<usize>, &T)> {
+        self.idxs().zip(self.elems.iter())
+    }
+
+    pub fn idx_iter_mut(&mut self) -> impl Iterator<Item = (C<usize>, &mut T)> {
+        (0..self.rows)
+            .flat_map(|r| (0..self.cols).map(move |c| C(r, c)))
+            .zip(self.elems.iter_mut())
+    }
+
     pub fn into_idx_iter(self) -> impl Iterator<Item = (C<usize>, T)> {
         (0..self.rows)
             .flat_map(move |r| (0..self.cols).map(move |c| C(r, c)))
             .zip(self)
+    }
+
+    pub fn rows(&self) -> impl Iterator<Item = &[T]> {
+        (0..self.rows).map(|r| &self.elems[r * self.cols..(r + 1) * self.cols])
     }
 }
 
@@ -1458,54 +1473,48 @@ macro_rules! impl_idx_grid {
     )*)
 }
 
-pub trait GridIdx2<I, T> {
+pub trait GridIdx<I, T> {
+    fn in_bounds(&self, idx: C<I>) -> bool;
     fn get(&self, idx: C<I>) -> Option<&T>;
     fn get_mut(&mut self, idx: C<I>) -> Option<&mut T>;
 }
 impl_idx_grid!(i8, i16, i32, i64, isize, u8, u16, u32, u64, usize);
 
-macro_rules! impl_idx2_grid {
+macro_rules! impl_grid_idx_trait {
     ($($it:ty),*) => ($(
-        impl<T> GridIdx2<$it, T> for Grid<T> {
-            fn get(&self, C(r, c): C<$it>) -> Option<&T> {
-                if r >= 0 && r < self.rows as $it && c >= 0 && c < self.cols as $it {
-                    Some(&self[C(r, c)])
-                } else {
-                    None
-                }
+        impl<T> GridIdx<$it, T> for Grid<T> {
+            fn in_bounds(&self, C(r, c): C<$it>) -> bool {
+                r >= 0 && r < self.rows as $it && c >= 0 && c < self.cols as $it
             }
 
-            fn get_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
-                if r >= 0 && r < self.rows as $it && c >= 0 && c < self.cols as $it {
-                    Some(&mut self[C(r, c)])
-                } else {
-                    None
-                }
+            fn get(&self, i: C<$it>) -> Option<&T> {
+                self.in_bounds(i).then(|| &self[i])
+            }
+
+            fn get_mut(&mut self, i: C<$it>) -> Option<&mut T> {
+                self.in_bounds(i).then(|| &mut self[i])
             }
         }
     )*)
 }
-impl_idx2_grid!(i8, i16, i32, i64, isize);
+impl_grid_idx_trait!(i8, i16, i32, i64, isize);
 
-macro_rules! impl_idx2_grid_unsigned {
+macro_rules! impl_grid_idx_trait_unsigned {
     ($($it:ty),*) => ($(
-        impl<T> GridIdx2<$it, T> for Grid<T> {
-            fn get(&self, C(r, c): C<$it>) -> Option<&T> {
-                if r < self.rows as $it && c < self.cols as $it {
-                    Some(&self[C(r, c)])
-                } else {
-                    None
-                }
+        impl<T> GridIdx<$it, T> for Grid<T> {
+            fn in_bounds(&self, C(r, c): C<$it>) -> bool {
+                r < self.rows as $it && c < self.cols as $it
             }
 
-            fn get_mut(&mut self, C(r, c): C<$it>) -> Option<&mut T> {
-                if r < self.rows as $it && c < self.cols as $it {
-                    Some(&mut self[C(r, c)])
-                } else {
-                    None
-                }
+
+            fn get(&self, i: C<$it>) -> Option<&T> {
+                self.in_bounds(i).then(|| &self[i])
+            }
+
+            fn get_mut(&mut self, i: C<$it>) -> Option<&mut T> {
+                self.in_bounds(i).then(|| &mut self[i])
             }
         }
     )*)
 }
-impl_idx2_grid_unsigned!(u8, u16, u32, u64, usize);
+impl_grid_idx_trait_unsigned!(u8, u16, u32, u64, usize);

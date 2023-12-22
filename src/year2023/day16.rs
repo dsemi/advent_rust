@@ -1,25 +1,22 @@
 use crate::utils::*;
 use rayon::prelude::*;
 
-fn parse(input: &str) -> Vec<Vec<u8>> {
-    input.lines().map(|line| line.bytes().collect()).collect()
-}
-
 #[derive(Clone)]
 struct Visited {
-    vis_ns: Vec<Vec<bool>>,
-    vis_ew: Vec<Vec<bool>>,
+    vis_ns: Grid<bool>,
+    vis_ew: Grid<bool>,
 }
 
 impl Visited {
     fn new(dim: usize) -> Self {
-        let vis_ns = vec![vec![false; dim]; dim];
-        let vis_ew = vec![vec![false; dim]; dim];
-        Self { vis_ns, vis_ew }
+        Self {
+            vis_ns: Grid::new(dim, dim),
+            vis_ew: Grid::new(dim, dim),
+        }
     }
 
-    fn expand_ns(&mut self, grid: &[Vec<u8>], pos: C<i8>, mut dir: C<i8>) {
-        if let Some(v) = grid.get_cell(pos) {
+    fn expand_ns(&mut self, grid: &Grid<u8>, pos: C<i8>, mut dir: C<i8>) {
+        if let Some(v) = grid.get(pos) {
             if std::mem::replace(&mut self.vis_ns[pos], true) && *v != b'/' && *v != b'\\' {
                 return;
             }
@@ -44,8 +41,8 @@ impl Visited {
         }
     }
 
-    fn expand_ew(&mut self, grid: &[Vec<u8>], pos: C<i8>, mut dir: C<i8>) {
-        if let Some(v) = grid.get_cell(pos) {
+    fn expand_ew(&mut self, grid: &Grid<u8>, pos: C<i8>, mut dir: C<i8>) {
+        if let Some(v) = grid.get(pos) {
             if std::mem::replace(&mut self.vis_ew[pos], true) && *v != b'/' && *v != b'\\' {
                 return;
             }
@@ -74,24 +71,24 @@ impl Visited {
         self.vis_ns
             .iter()
             .zip(self.vis_ew.iter())
-            .flat_map(|(ns, ew)| ns.iter().zip(ew.iter()).filter(|&(a, b)| *a || *b))
+            .filter(|&(a, b)| *a || *b)
             .count()
     }
 }
 
 pub fn part1(input: &str) -> usize {
-    let grid = parse(input);
-    assert!(grid.len() == grid[0].len());
-    let mut tiles = Visited::new(grid.len());
+    let grid: Grid<_> = input.bytes().collect();
+    assert!(grid.rows == grid.cols);
+    let mut tiles = Visited::new(grid.rows);
     tiles.expand_ew(&grid, C(0, 0), C(0, 1));
     tiles.energized()
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    let grid = parse(input);
-    assert!(grid.len() == grid[0].len());
-    let tiles = Visited::new(grid.len());
-    let dim = grid.len() as i8;
+    let grid: Grid<_> = input.bytes().collect();
+    assert!(grid.rows == grid.cols);
+    let tiles = Visited::new(grid.rows);
+    let dim = grid.rows as i8;
     (0..dim)
         .into_par_iter()
         .flat_map(|d| {

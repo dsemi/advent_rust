@@ -11,7 +11,7 @@ fn solve(input: &str, p2: bool) -> usize {
         max_y = max(max_y, max(y0, y1));
         lines.push((C(x0, y0), C(x1, y1)));
     }
-    let mut grid = vec![vec![0; max_y as usize + 1]; max_x as usize + 1];
+    let mut grid: Grid<usize> = Grid::new(max_x as usize + 1, max_y as usize + 1);
     for (mut c, c1) in lines {
         if !p2 && c.0 != c1.0 && c.1 != c1.1 {
             continue;
@@ -22,7 +22,7 @@ fn solve(input: &str, p2: bool) -> usize {
             c += d;
         }
     }
-    grid.into_iter().flatten().filter(|&v| v > 1).count()
+    grid.into_iter().filter(|&v| v > 1).count()
 }
 
 pub fn part1(input: &str) -> usize {

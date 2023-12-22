@@ -1,16 +1,15 @@
 use super::intcode;
 use crate::utils::*;
 
-fn parse_grid(input: Vec<i64>) -> Vec<Vec<char>> {
-    let inp: String = input.into_iter().map(|x| x as u8 as char).collect();
-    inp.lines().map(|line| line.chars().collect()).collect()
+fn parse_grid(input: Vec<i64>) -> Grid<char> {
+    input.into_iter().map(|x| x as u8 as char).collect()
 }
 
 fn is_scaffold<I, T>(grid: &T, pos: C<I>) -> bool
 where
     T: GridIdx<I, char> + ?Sized,
 {
-    grid.get_cell(pos).is_some_and(|&c| "#^<>v".contains(c))
+    grid.get(pos).is_some_and(|&c| "#^<>v".contains(c))
 }
 
 pub fn part1(input: &str) -> usize {
@@ -18,21 +17,17 @@ pub fn part1(input: &str) -> usize {
     prog.run();
     let ins = prog.output.drain(..).collect();
     let grid = parse_grid(ins);
-    (0..grid.len())
-        .map(|y| {
-            (0..grid[y].len())
-                .filter_map(|x| {
-                    [C(y, x), C(y, x + 1), C(y + 1, x), C(y, x - 1), C(y - 1, x)]
-                        .into_iter()
-                        .all(|pos| is_scaffold(&grid, pos))
-                        .then_some(x * y)
-                })
-                .sum::<usize>()
+    grid.idxs()
+        .filter_map(|C(y, x)| {
+            [C(y, x), C(y, x + 1), C(y + 1, x), C(y, x - 1), C(y - 1, x)]
+                .into_iter()
+                .all(|pos| is_scaffold(&grid, pos))
+                .then_some(x * y)
         })
         .sum()
 }
 
-fn keep_moving(grid: &[Vec<char>], pos: C<i64>, c: &str, d: C<i64>) -> Vec<String> {
+fn keep_moving(grid: &Grid<char>, pos: C<i64>, c: &str, d: C<i64>) -> Vec<String> {
     let mut p = pos + d;
     if !is_scaffold(grid, p) {
         return vec![];
@@ -45,22 +40,17 @@ fn keep_moving(grid: &[Vec<char>], pos: C<i64>, c: &str, d: C<i64>) -> Vec<Strin
     result
 }
 
-fn go(grid: &[Vec<char>], pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
+fn go(grid: &Grid<char>, pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
     keep_moving(grid, pos, "L", C(-y, x))
         .into_iter()
         .chain(keep_moving(grid, pos, "R", C(y, -x)))
         .collect()
 }
 
-fn find_path(grid: &[Vec<char>]) -> Vec<String> {
-    let (pos, dir) = (0..grid.len())
-        .find_map(|r| {
-            (0..grid[r].len()).find_map(|c| {
-                "^><v"
-                    .contains(grid[r][c])
-                    .then(|| (C(r as i64, c as i64), grid[r][c]))
-            })
-        })
+fn find_path(grid: &Grid<char>) -> Vec<String> {
+    let (pos, dir) = grid
+        .idx_iter()
+        .find_map(|(C(r, c), &v)| "^><v".contains(v).then_some((C(r as i64, c as i64), v)))
         .unwrap();
     let res = go(
         grid,

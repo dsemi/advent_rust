@@ -11,15 +11,11 @@ enum Outcome {
     EndedEarly,
 }
 
-fn parse_graph(input: &str) -> Vec<Vec<(char, i32)>> {
+fn parse_graph(input: &str) -> Grid<(char, i32)> {
     input
-        .lines()
-        .map(|line| {
-            line.chars()
-                .map(|v| (v, if "EG".contains(v) { 200 } else { 0 }))
-                .collect()
-        })
-        .collect()
+        .chars()
+        .collect::<Grid<_>>()
+        .transform(|v| (v, if "EG".contains(v) { 200 } else { 0 }))
 }
 
 fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
@@ -29,7 +25,7 @@ fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
         .map(|(x, y)| C(x, y) + *coord)
 }
 
-fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: C<i32>) -> Option<C<i32>> {
+fn find_next_move(grid: &Grid<(char, i32)>, enemy: char, coord: C<i32>) -> Option<C<i32>> {
     let mut path = AHashMap::new();
     let mut visited = AHashSet::new();
     visited.insert(coord);
@@ -55,25 +51,19 @@ fn find_next_move(grid: &[Vec<(char, i32)>], enemy: char, coord: C<i32>) -> Opti
     result
 }
 
-fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: bool) -> Outcome {
+fn run_round(grid: &mut Grid<(char, i32)>, elf_power: i32, allow_elf_death: bool) -> Outcome {
     let mut elves = 0;
     let mut goblins = 0;
     let units = grid
-        .iter()
-        .enumerate()
-        .flat_map(|(r, row)| {
-            row.iter()
-                .enumerate()
-                .filter(|(_, v)| "EG".contains(v.0))
-                .map(|(c, v)| {
-                    if v.0 == 'E' {
-                        elves += 1;
-                    } else {
-                        goblins += 1;
-                    }
-                    C(r as i32, c as i32)
-                })
-                .collect::<Vec<_>>()
+        .idx_iter()
+        .filter(|(_, v)| "EG".contains(v.0))
+        .map(|(C(r, c), v)| {
+            if v.0 == 'E' {
+                elves += 1;
+            } else {
+                goblins += 1;
+            }
+            C(r as i32, c as i32)
         })
         .collect::<Vec<_>>();
     for mut pos in units {
@@ -115,27 +105,25 @@ fn run_round(grid: &mut [Vec<(char, i32)>], elf_power: i32, allow_elf_death: boo
     Finished
 }
 
-fn score(grid: &[Vec<(char, i32)>], c: i32) -> Option<i32> {
+fn score(grid: &Grid<(char, i32)>, c: i32) -> Option<i32> {
     let mut elves = false;
     let mut goblins = false;
     let mut total = 0;
-    for row in grid {
-        for (t, v) in row {
-            if t == &'E' {
-                elves = true;
-            } else if t == &'G' {
-                goblins = true;
-            }
-            if elves && goblins {
-                return None;
-            }
-            total += v;
+    for &(t, v) in grid {
+        if t == 'E' {
+            elves = true;
+        } else if t == 'G' {
+            goblins = true;
         }
+        if elves && goblins {
+            return None;
+        }
+        total += v;
     }
     Some(c * total)
 }
 
-fn run(mut grid: Vec<Vec<(char, i32)>>, elf_pwr: i32, allow_elf_death: bool) -> Option<i32> {
+fn run(mut grid: Grid<(char, i32)>, elf_pwr: i32, allow_elf_death: bool) -> Option<i32> {
     for c in 0.. {
         let res = run_round(&mut grid, elf_pwr, allow_elf_death);
         if res == ElfDied {

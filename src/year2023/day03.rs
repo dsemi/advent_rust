@@ -4,21 +4,21 @@ use itertools::Itertools;
 
 struct Engine {
     nums: Vec<u32>,
-    mask: Vec<Vec<usize>>,
+    mask: Grid<usize>,
     parts: Vec<(u8, C<usize>)>,
 }
 
 fn parse(input: &str) -> Engine {
-    let grid: Vec<Vec<_>> = input.lines().map(|line| line.bytes().collect()).collect();
+    let grid: Grid<_> = input.bytes().collect();
     let mut nums = vec![0];
-    let mut mask = vec![vec![0; grid[0].len()]; grid.len()];
+    let mut mask = grid.same_size();
     let mut parts = Vec::new();
-    for (r, row) in grid.into_iter().enumerate() {
-        let mut it = row.into_iter().enumerate().peekable();
+    for (r, row) in grid.rows().enumerate() {
+        let mut it = row.iter().enumerate().peekable();
         while it.peek().is_some() {
             if let Some(n) = it
                 .peeking_take_while(|(_, v)| v.is_ascii_digit())
-                .inspect(|&(c, _)| mask[C(r, c)] = nums.len())
+                .inspect(|&(c, _)| mask[(r, c)] = nums.len())
                 .map(|(_, v)| (v - b'0') as u32)
                 .reduce(|a, b| 10 * a + b)
             {
@@ -26,8 +26,8 @@ fn parse(input: &str) -> Engine {
             }
 
             it.peeking_take_while(|(_, v)| !v.is_ascii_digit())
-                .filter(|&(_, v)| v != b'.')
-                .for_each(|(c, v)| parts.push((v, C(r, c))));
+                .filter(|&(_, v)| *v != b'.')
+                .for_each(|(c, v)| parts.push((*v, C(r, c))));
         }
     }
     Engine { nums, mask, parts }
