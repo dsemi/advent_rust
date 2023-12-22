@@ -898,11 +898,25 @@ impl<T: Add<Output = T> + Copy> Add<T> for Interval<T> {
     }
 }
 
+impl<T: AddAssign + Copy> AddAssign<T> for Interval<T> {
+    fn add_assign(&mut self, diff: T) {
+        self.lo += diff;
+        self.hi += diff;
+    }
+}
+
 impl<T: Sub<Output = T> + Copy> Sub<T> for Interval<T> {
     type Output = Self;
 
     fn sub(self, diff: T) -> Self::Output {
         Interval::new(self.lo - diff, self.hi - diff)
+    }
+}
+
+impl<T: SubAssign + Copy> SubAssign<T> for Interval<T> {
+    fn sub_assign(&mut self, diff: T) {
+        self.lo -= diff;
+        self.hi -= diff;
     }
 }
 
