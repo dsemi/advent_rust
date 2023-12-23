@@ -38,11 +38,11 @@ fn dirs(v: char) -> u8 {
     }
 }
 
-fn parse(input: &str) -> (C<i32>, u8, Grid<char>) {
-    let grid: Grid<_> = input.chars().collect();
+fn parse(input: &str) -> (C<i32>, u8, Grid<char, i32>) {
+    let grid: Grid<_, i32> = input.chars().collect();
     let start = grid
         .idx_iter()
-        .find_map(|(C(r, c), &v)| (v == 'S').then_some(C(r as i32, c as i32)))
+        .find_map(|(C(r, c), &v)| (v == 'S').then_some(C(r, c)))
         .unwrap();
     let dir = if matches!(grid.get(start + coord(UP)), Some('|' | '7' | 'F')) {
         UP

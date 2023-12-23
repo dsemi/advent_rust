@@ -11,10 +11,10 @@ enum Outcome {
     EndedEarly,
 }
 
-fn parse_graph(input: &str) -> Grid<(char, i32)> {
+fn parse_graph(input: &str) -> Grid<(char, i32), i32> {
     input
         .chars()
-        .collect::<Grid<_>>()
+        .collect::<Grid<_, i32>>()
         .transform(|v| (v, if "EG".contains(v) { 200 } else { 0 }))
 }
 
@@ -25,7 +25,7 @@ fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
         .map(|(x, y)| C(x, y) + *coord)
 }
 
-fn find_next_move(grid: &Grid<(char, i32)>, enemy: char, coord: C<i32>) -> Option<C<i32>> {
+fn find_next_move(grid: &Grid<(char, i32), i32>, enemy: char, coord: C<i32>) -> Option<C<i32>> {
     let mut path = AHashMap::new();
     let mut visited = AHashSet::new();
     visited.insert(coord);
@@ -51,7 +51,7 @@ fn find_next_move(grid: &Grid<(char, i32)>, enemy: char, coord: C<i32>) -> Optio
     result
 }
 
-fn run_round(grid: &mut Grid<(char, i32)>, elf_power: i32, allow_elf_death: bool) -> Outcome {
+fn run_round(grid: &mut Grid<(char, i32), i32>, elf_power: i32, allow_elf_death: bool) -> Outcome {
     let mut elves = 0;
     let mut goblins = 0;
     let units = grid
@@ -63,7 +63,7 @@ fn run_round(grid: &mut Grid<(char, i32)>, elf_power: i32, allow_elf_death: bool
             } else {
                 goblins += 1;
             }
-            C(r as i32, c as i32)
+            C(r, c)
         })
         .collect::<Vec<_>>();
     for mut pos in units {
@@ -105,7 +105,7 @@ fn run_round(grid: &mut Grid<(char, i32)>, elf_power: i32, allow_elf_death: bool
     Finished
 }
 
-fn score(grid: &Grid<(char, i32)>, c: i32) -> Option<i32> {
+fn score(grid: &Grid<(char, i32), i32>, c: i32) -> Option<i32> {
     let mut elves = false;
     let mut goblins = false;
     let mut total = 0;
@@ -123,7 +123,7 @@ fn score(grid: &Grid<(char, i32)>, c: i32) -> Option<i32> {
     Some(c * total)
 }
 
-fn run(mut grid: Grid<(char, i32)>, elf_pwr: i32, allow_elf_death: bool) -> Option<i32> {
+fn run(mut grid: Grid<(char, i32), i32>, elf_pwr: i32, allow_elf_death: bool) -> Option<i32> {
     for c in 0.. {
         let res = run_round(&mut grid, elf_pwr, allow_elf_death);
         if res == ElfDied {

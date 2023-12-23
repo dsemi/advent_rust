@@ -2,15 +2,14 @@ use crate::utils::*;
 use itertools::iterate;
 
 fn trees(input: &str) -> impl Iterator<Item = (bool, u32)> {
-    let grid: Grid<u32> = Grid::ints(input.bytes());
+    let grid: Grid<u32, i32> = Grid::ints(input.bytes());
     assert!(grid.rows == grid.cols);
-    (0..grid.elems.len()).map(move |i| {
-        let (r, c) = (i / grid.rows, i % grid.rows);
+    grid.idxs().map(move |i| {
         [C(-1, 0), C(1, 0), C(0, -1), C(0, 1)].into_iter().fold(
             (false, 1),
             |(visible_from_edge, scenic_score), d| {
                 let mut cnt = 0;
-                let reaches_edge = iterate(C(r as i32, c as i32) + d, |x| x + d)
+                let reaches_edge = iterate(i + d, |x| x + d)
                     .scan((), |_, p| grid.get(p))
                     .inspect(|_| cnt += 1)
                     .all(|&x| x < grid[i]);

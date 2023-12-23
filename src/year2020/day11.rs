@@ -2,12 +2,11 @@ use crate::utils::*;
 use itertools::iterate;
 
 fn stabilize(s: &str, p2: bool) -> usize {
-    let mut grid: Grid<char> = s.chars().collect();
+    let mut grid: Grid<char, i64> = s.chars().collect();
     let seats: Vec<(C<i64>, Vec<C<i64>>)> = grid
         .idx_iter()
         .filter(|&(_, x)| x == &'L')
-        .map(|(C(r, c), _)| {
-            let st_coord = C(r as i64, c as i64);
+        .map(|(st_coord, _)| {
             let mut vec = Vec::new();
             for dr in -1..=1 {
                 for dc in -1..=1 {
@@ -36,14 +35,12 @@ fn stabilize(s: &str, p2: bool) -> usize {
     while std::mem::replace(&mut changed, false) {
         let mut grid2 = grid.clone();
         for (coord, adjs) in &seats {
-            let r = coord.0 as usize;
-            let c = coord.1 as usize;
             let adjs_occ: u32 = adjs.iter().map(|&c| (grid[c] == '#') as u32).sum();
-            if grid[(r, c)] == 'L' && adjs_occ == 0 {
-                grid2[(r, c)] = '#';
+            if grid[*coord] == 'L' && adjs_occ == 0 {
+                grid2[*coord] = '#';
                 changed = true;
-            } else if grid[(r, c)] == '#' && adjs_occ >= (if p2 { 5 } else { 4 }) {
-                grid2[(r, c)] = 'L';
+            } else if grid[*coord] == '#' && adjs_occ >= (if p2 { 5 } else { 4 }) {
+                grid2[*coord] = 'L';
                 changed = true;
             }
         }

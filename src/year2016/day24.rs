@@ -4,7 +4,7 @@ use itertools::Itertools;
 
 type Adj = AHashMap<(char, char), usize>;
 
-fn neighbors(grid: &Grid<char>, xy: &C<i32>) -> Vec<C<i32>> {
+fn neighbors(grid: &Grid<char, i32>, xy: &C<i32>) -> Vec<C<i32>> {
     [C(1, 0), C(-1, 0), C(0, 1), C(0, -1)]
         .iter()
         .filter_map(|d| {
@@ -14,7 +14,7 @@ fn neighbors(grid: &Grid<char>, xy: &C<i32>) -> Vec<C<i32>> {
         .collect()
 }
 
-fn find_all_distances(grid: &Grid<char>, ns: &[(C<i32>, char)]) -> Adj {
+fn find_all_distances(grid: &Grid<char, i32>, ns: &[(C<i32>, char)]) -> Adj {
     let mut result = AHashMap::new();
     for (p1, n1) in ns {
         for (p2, n2) in ns {

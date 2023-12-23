@@ -1,18 +1,15 @@
 use super::intcode;
 use crate::utils::*;
 
-fn parse_grid(input: Vec<i64>) -> Grid<char> {
+fn parse_grid(input: Vec<i64>) -> Grid<char, i64> {
     input.into_iter().map(|x| x as u8 as char).collect()
 }
 
-fn is_scaffold<I, T>(grid: &T, pos: C<I>) -> bool
-where
-    T: GridIdx<I, char> + ?Sized,
-{
+fn is_scaffold(grid: &Grid<char, i64>, pos: C<i64>) -> bool {
     grid.get(pos).is_some_and(|&c| "#^<>v".contains(c))
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> i64 {
     let mut prog = intcode::new(input);
     prog.run();
     let ins = prog.output.drain(..).collect();
@@ -27,7 +24,7 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-fn keep_moving(grid: &Grid<char>, pos: C<i64>, c: &str, d: C<i64>) -> Vec<String> {
+fn keep_moving(grid: &Grid<char, i64>, pos: C<i64>, c: &str, d: C<i64>) -> Vec<String> {
     let mut p = pos + d;
     if !is_scaffold(grid, p) {
         return vec![];
@@ -40,18 +37,15 @@ fn keep_moving(grid: &Grid<char>, pos: C<i64>, c: &str, d: C<i64>) -> Vec<String
     result
 }
 
-fn go(grid: &Grid<char>, pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
+fn go(grid: &Grid<char, i64>, pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
     keep_moving(grid, pos, "L", C(-y, x))
         .into_iter()
         .chain(keep_moving(grid, pos, "R", C(y, -x)))
         .collect()
 }
 
-fn find_path(grid: &Grid<char>) -> Vec<String> {
-    let (pos, dir) = grid
-        .idx_iter()
-        .find_map(|(C(r, c), &v)| "^><v".contains(v).then_some((C(r as i64, c as i64), v)))
-        .unwrap();
+fn find_path(grid: &Grid<char, i64>) -> Vec<String> {
+    let (pos, dir) = grid.idx_iter().find(|(_, &v)| "^><v".contains(v)).unwrap();
     let res = go(
         grid,
         pos,

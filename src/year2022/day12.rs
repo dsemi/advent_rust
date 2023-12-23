@@ -1,6 +1,6 @@
 use crate::utils::*;
 
-fn neighbors(grid: &Grid<u8>, pos: &C<i32>) -> Vec<C<i32>> {
+fn neighbors(grid: &Grid<u8, i32>, pos: &C<i32>) -> Vec<C<i32>> {
     let curr_h = grid[*pos];
     [C(-1, 0), C(1, 0), C(0, -1), C(0, 1)]
         .into_iter()
@@ -14,15 +14,15 @@ fn neighbors(grid: &Grid<u8>, pos: &C<i32>) -> Vec<C<i32>> {
 fn solve(input: &str, sts: &[u8]) -> Option<usize> {
     let mut starts = Vec::new();
     let mut done = C(0, 0);
-    let mut grid: Grid<u8> = input.bytes().collect();
-    for (C(r, c), v) in grid.idx_iter_mut() {
+    let mut grid: Grid<u8, i32> = input.bytes().collect();
+    for (pos, v) in grid.idx_iter_mut() {
         if sts.contains(v) {
-            starts.push(C(r as i32, c as i32));
+            starts.push(pos);
         }
         if v == &b'S' {
             *v = b'a';
         } else if v == &b'E' {
-            done = C(r as i32, c as i32);
+            done = pos;
             *v = b'z';
         }
     }

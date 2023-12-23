@@ -34,17 +34,17 @@ fn parse(i: &mut &str) -> PResult<(i32, C<i32>)> {
         .parse_next(i)
 }
 
-fn erosion_levels(depth: i32, target: C<i32>) -> Grid<Tool> {
-    let mx = max(target.0, target.1) as usize + 3; // Arbitrary buffer size for search
-    let mut arr: Grid<usize> = Grid::new(mx, mx);
+fn erosion_levels(depth: i32, target: C<i32>) -> Grid<Tool, i32> {
+    let mx = max(target.0, target.1) + 3; // Arbitrary buffer size for search
+    let mut arr: Grid<usize, i32> = Grid::new(mx, mx);
     for x in 0..mx {
         for y in 0..mx {
-            let geologic_index = if C(x as i32, y as i32) == target {
+            let geologic_index = if C(x, y) == target {
                 0
             } else if x == 0 {
-                y * 48271
+                y as usize * 48271
             } else if y == 0 {
-                x * 16807
+                x as usize * 16807
             } else {
                 arr[(x - 1, y)] * arr[(x, y - 1)]
             };
@@ -58,7 +58,7 @@ pub fn part1(input: &str) -> u32 {
     let (depth, target) = parse.read(input);
     erosion_levels(depth, target)
         .into_idx_iter()
-        .filter(|&(C(x, y), _)| x as i32 <= target.0 && y as i32 <= target.1)
+        .filter(|&(C(x, y), _)| x <= target.0 && y <= target.1)
         .map(|(_, v)| ToPrimitive::to_u32(&v).unwrap())
         .sum()
 }
@@ -67,7 +67,7 @@ pub fn part2(input: &str) -> usize {
     let (depth, target) = parse.read(input);
     let els = erosion_levels(depth, target);
 
-    fn neighbors(els: &Grid<Tool>, node: &Node) -> Vec<(usize, Node)> {
+    fn neighbors(els: &Grid<Tool, i32>, node: &Node) -> Vec<(usize, Node)> {
         vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
             .into_iter()
             .filter_map(move |d| {
