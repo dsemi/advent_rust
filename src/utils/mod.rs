@@ -1374,7 +1374,7 @@ where
 
 impl<T, I> Grid<T, I>
 where
-    I: AsPrimitive<usize> + Copy + Mul<Output = I> + Ord + One + Zero,
+    I: AsPrimitive<usize> + Copy + Ord + Zero,
     std::ops::Range<I>: Iterator<Item = I>,
 {
     pub fn transform<S, F: FnMut(T) -> S>(self, f: F) -> Grid<S, I> {
@@ -1437,8 +1437,7 @@ where
     }
 
     pub fn rows(&self) -> impl Iterator<Item = &[T]> {
-        (I::zero()..self.rows)
-            .map(|r| &self.elems[(r * self.cols).as_()..((r + I::one()) * self.cols).as_()])
+        (0..self.rows.as_()).map(|r| &self.elems[r * self.cols.as_()..(r + 1) * self.cols.as_()])
     }
 
     pub fn in_bounds(&self, C(r, c): C<I>) -> bool {
