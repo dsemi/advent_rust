@@ -78,7 +78,7 @@ impl Visited {
 
 pub fn part1(input: &str) -> usize {
     let grid: Grid<_, i8> = input.bytes().collect();
-    assert!(grid.rows == grid.cols);
+    assert_eq!(grid.rows, grid.cols);
     let mut tiles = Visited::new(grid.rows);
     tiles.expand_ew(&grid, C(0, 0), C(0, 1));
     tiles.energized()
@@ -86,7 +86,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> Option<usize> {
     let grid: Grid<_, i8> = input.bytes().collect();
-    assert!(grid.rows == grid.cols);
+    assert_eq!(grid.rows, grid.cols);
     let tiles = Visited::new(grid.rows);
     let dim = grid.rows;
     (0..dim)

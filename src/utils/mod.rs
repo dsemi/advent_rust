@@ -1298,7 +1298,7 @@ where
     T: Eq,
     I: IntoIterator<Item = T>,
     F: Fn(T) -> E,
-    Idx: 'static + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
+    Idx: 'static + AsPrimitive<usize> + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
     usize: AsPrimitive<Idx>,
 {
     let mut elems = Vec::new();
@@ -1318,7 +1318,7 @@ where
     }
     assert!(c.is_zero() || c == cols);
     Grid {
-        rows: elems.len().as_() / cols,
+        rows: (elems.len() / cols.as_()).as_(),
         cols,
         elems,
     }
@@ -1326,7 +1326,7 @@ where
 
 impl<Idx> FromIterator<u8> for Grid<u8, Idx>
 where
-    Idx: 'static + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
+    Idx: 'static + AsPrimitive<usize> + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
     usize: AsPrimitive<Idx>,
 {
     fn from_iter<I: IntoIterator<Item = u8>>(iter: I) -> Self {
@@ -1336,7 +1336,7 @@ where
 
 impl<Idx> FromIterator<char> for Grid<char, Idx>
 where
-    Idx: 'static + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
+    Idx: 'static + AsPrimitive<usize> + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
     usize: AsPrimitive<Idx>,
 {
     fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> Self {
@@ -1364,7 +1364,7 @@ impl<T: Clone, I: AsPrimitive<usize>> Grid<T, I> {
 
 impl<T: FromPrimitive, Idx> Grid<T, Idx>
 where
-    Idx: 'static + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
+    Idx: 'static + AsPrimitive<usize> + AddAssign + Copy + Div<Output = Idx> + Eq + One + Zero,
     usize: AsPrimitive<Idx>,
 {
     pub fn ints<I: IntoIterator<Item = u8>>(iter: I) -> Self {
@@ -1454,31 +1454,31 @@ where
     }
 }
 
-impl<T, I: AsPrimitive<usize> + Add<Output = I> + Mul<Output = I>> Index<C<I>> for Grid<T, I> {
+impl<T, I: AsPrimitive<usize>> Index<C<I>> for Grid<T, I> {
     type Output = T;
 
     fn index(&self, C(r, c): C<I>) -> &Self::Output {
-        &self.elems[(r * self.cols + c).as_()]
+        &self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
 
-impl<T, I: AsPrimitive<usize> + Add<Output = I> + Mul<Output = I>> IndexMut<C<I>> for Grid<T, I> {
+impl<T, I: AsPrimitive<usize>> IndexMut<C<I>> for Grid<T, I> {
     fn index_mut(&mut self, C(r, c): C<I>) -> &mut T {
-        &mut self.elems[(r * self.cols + c).as_()]
+        &mut self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
 
-impl<T, I: AsPrimitive<usize> + Add<Output = I> + Mul<Output = I>> Index<(I, I)> for Grid<T, I> {
+impl<T, I: AsPrimitive<usize>> Index<(I, I)> for Grid<T, I> {
     type Output = T;
 
     fn index(&self, (r, c): (I, I)) -> &Self::Output {
-        &self.elems[(r * self.cols + c).as_()]
+        &self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
 
-impl<T, I: AsPrimitive<usize> + Add<Output = I> + Mul<Output = I>> IndexMut<(I, I)> for Grid<T, I> {
+impl<T, I: AsPrimitive<usize>> IndexMut<(I, I)> for Grid<T, I> {
     fn index_mut(&mut self, (r, c): (I, I)) -> &mut T {
-        &mut self.elems[(r * self.cols + c).as_()]
+        &mut self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
 
