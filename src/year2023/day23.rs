@@ -92,29 +92,33 @@ impl Maze {
         }
     }
 
-    fn dfs(&self, vis: u64, pos: usize, dist: usize) -> Option<usize> {
+    fn dfs(&self, vis: u64, pos: usize, dist: usize) -> usize {
         if pos == self.end {
-            return Some(dist);
+            return dist;
         }
         // Somewhat arbitrary number to limit amount of attempted parallelism
         if vis.count_ones() < 10 {
             self.adj[pos]
                 .par_iter()
                 .filter(|&(_, p)| vis & (1 << p) == 0)
-                .filter_map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
+                .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
                 .max()
+                .unwrap_or(0)
         } else {
             self.adj[pos]
                 .iter()
                 .filter(|&(_, p)| vis & (1 << p) == 0)
-                .filter_map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
+                .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
                 .max()
+                .unwrap_or(0)
         }
     }
 }
 
 fn solve(input: &str, p2: bool) -> usize {
-    Maze::new(input, p2).dfs(1 | (1 << 1), 1, 91).unwrap()
+    let maze = Maze::new(input, p2);
+    let (dist, pos) = maze.adj[0][0];
+    maze.dfs(1 | (1 << pos), pos, dist)
 }
 
 pub fn part1(input: &str) -> usize {
