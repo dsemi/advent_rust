@@ -889,6 +889,10 @@ impl<T: Eq + Hash> UniqueIdx<T> {
         let c = self.m.len();
         *self.m.entry(k).or_insert(c)
     }
+
+    pub fn len(&self) -> usize {
+        self.m.len()
+    }
 }
 
 impl<T: Eq + Hash> FromIterator<T> for UniqueIdx<T> {
@@ -1025,12 +1029,14 @@ pub fn held_karp<T: Copy + Add<Output = T>>(
         .reduce(f)
 }
 
+#[derive(Clone)]
 struct UnionFindNode<T> {
     val: T,
     parent: usize,
     rank: usize,
 }
 
+#[derive(Clone)]
 pub struct UnionFind<T> {
     nodes: Vec<UnionFindNode<T>>,
 }

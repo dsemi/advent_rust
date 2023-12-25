@@ -43,6 +43,7 @@ dependencies = [
  "openssl-sys",
  "proc-macro2",
  "quote",
+ "rand",
  "rayon",
  "reqwest",
  "select",
