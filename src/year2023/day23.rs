@@ -96,35 +96,41 @@ impl Maze {
         if pos == self.end {
             return dist;
         }
-        // Somewhat arbitrary number to limit amount of attempted parallelism
-        if vis.count_ones() < 10 {
-            self.adj[pos]
-                .par_iter()
-                .filter(|&(_, p)| vis & (1 << p) == 0)
-                .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
-                .max()
-                .unwrap_or(0)
-        } else {
+        self.adj[pos]
+            .iter()
+            .filter(|&(_, p)| vis & (1 << p) == 0)
+            .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
+            .max()
+            .unwrap_or(0)
+    }
+
+    fn dfs_iter(&self) -> usize {
+        let mut paths = Vec::new();
+        let (dist, pos) = self.adj[0][0];
+        let mut stack = vec![(1 | (1 << pos), pos, dist, 0)];
+        while let Some((vis, pos, dist, depth)) = stack.pop() {
+            // Somewhat arbitrary number to limit amount of attempted parallelism
+            if depth >= 10 || pos == self.end {
+                paths.push((vis, pos, dist));
+                continue;
+            }
             self.adj[pos]
                 .iter()
                 .filter(|&(_, p)| vis & (1 << p) == 0)
-                .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
-                .max()
-                .unwrap_or(0)
+                .for_each(|&(d, p)| stack.push((vis | (1 << p), p, dist + d, depth + 1)))
         }
+        paths
+            .into_par_iter()
+            .map(|(vis, pos, dist)| self.dfs(vis, pos, dist))
+            .max()
+            .unwrap()
     }
 }
 
-fn solve(input: &str, p2: bool) -> usize {
-    let maze = Maze::new(input, p2);
-    let (dist, pos) = maze.adj[0][0];
-    maze.dfs(1 | (1 << pos), pos, dist)
-}
-
 pub fn part1(input: &str) -> usize {
-    solve(input, false)
+    Maze::new(input, false).dfs_iter()
 }
 
 pub fn part2(input: &str) -> usize {
-    solve(input, true)
+    Maze::new(input, true).dfs_iter()
 }
