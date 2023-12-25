@@ -33,6 +33,6 @@ pub fn part1(input: &str) -> usize {
     constellations(parse_points(input))
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_string()
+pub fn part2(_input: &str) -> &str {
+    " "
 }

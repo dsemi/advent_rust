@@ -74,6 +74,6 @@ pub fn part1(input: &str) -> usize {
     tape.into_iter().sum()
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_string()
+pub fn part2(_input: &str) -> &str {
+    " "
 }

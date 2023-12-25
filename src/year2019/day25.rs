@@ -30,6 +30,6 @@ pub fn part1(input: &str) -> String {
         .collect()
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_string()
+pub fn part2(_input: &str) -> &str {
+    " "
 }

@@ -143,6 +143,6 @@ pub fn part1(input: &str) -> usize {
     unreachable!()
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_string()
+pub fn part2(_input: &str) -> &str {
+    " "
 }

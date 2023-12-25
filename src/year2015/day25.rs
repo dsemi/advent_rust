@@ -10,6 +10,6 @@ pub fn part1(input: &str) -> i64 {
     (Mod::<33554393>(252533).pow(index) * Mod(20151125)).0
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_string()
+pub fn part2(_input: &str) -> &str {
+    " "
 }

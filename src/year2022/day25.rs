@@ -12,6 +12,6 @@ pub fn part1(input: &str) -> String {
     ds.iter().rev().map(|n| OUT[(n % 5) as usize]).collect()
 }
 
-pub fn part2(_input: &str) -> String {
-    " ".to_owned()
+pub fn part2(_input: &str) -> &str {
+    " "
 }
