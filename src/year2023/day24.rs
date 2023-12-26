@@ -44,7 +44,7 @@ pub fn part1(input: &str) -> usize {
     for (i, r1) in rays.iter().enumerate() {
         for r2 in rays.iter().skip(i + 1) {
             if let Some(C(x, y)) = r1.intersect_2d(r2) {
-                if x >= LO && x <= HI && y >= LO && y <= HI {
+                if (LO..=HI).contains(&x) && (LO..=HI).contains(&y) {
                     ints += 1;
                 }
             }

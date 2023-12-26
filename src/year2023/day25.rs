@@ -51,7 +51,7 @@ pub fn part1(input: &str) -> usize {
             uf.union(a, b);
         }
     }
-    let cnts = (0..ui.len()).into_iter().map(|n| uf.find(n)).counts();
+    let cnts = (0..ui.len()).map(|n| uf.find(n)).counts();
     assert!(cnts.len() == 2);
     cnts.into_values().product()
 }
