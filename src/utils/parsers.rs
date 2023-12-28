@@ -68,6 +68,22 @@ where
     dec_uint(input).map(|n: u64| n as usize)
 }
 
+macro_rules! impl_float {
+    ($($i:ident),*) => ($(
+        #[allow(dead_code)]
+        pub fn $i<I>(input: &mut I) -> PResult<$i>
+        where
+            I: StreamIsPartial + Stream + Compare<&'static str> + AsBStr,
+            <I as Stream>::Slice: ParseSlice<$i>,
+            <I as Stream>::Token: AsChar + Clone,
+            <I as Stream>::IterOffsets: Clone,
+        {
+            float(input)
+        }
+    )*)
+}
+impl_float!(f32, f64);
+
 pub trait LitExt<O = Self> {
     fn read(i: &str) -> O;
 }
@@ -84,6 +100,7 @@ macro_rules! impl_litext {
 
 impl_litext!(i8, i16, i32, i64, i128, isize);
 impl_litext!(u8, u16, u32, u64, u128, usize);
+impl_litext!(f32, f64);
 
 pub fn separated_triplet<I, O1, O2, O3, O4, O5, E, F1, F2, F3, G1, G2>(
     mut f1: F1,
@@ -273,4 +290,4 @@ macro_rules! read_trait {
     )
 }
 
-read_trait!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
+read_trait!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64);

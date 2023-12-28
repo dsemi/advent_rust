@@ -1,5 +1,6 @@
 use crate::utils::*;
 use rayon::prelude::*;
+use smallvec::{smallvec, SmallVec};
 use Tile::*;
 
 const ADJ: [C<i32>; 4] = [C(0, -1), C(0, 1), C(-1, 0), C(1, 0)];
@@ -16,7 +17,7 @@ enum Tile {
 
 struct Maze {
     end: usize,
-    adj: Vec<Vec<(usize, usize)>>,
+    adj: Vec<SmallVec<[(usize, usize); 4]>>,
 }
 
 fn open_adj(grid: &Grid<u8, i32>, p: C<i32>) -> usize {
@@ -70,12 +71,12 @@ impl Maze {
         end = fork_before_end[0].1;
 
         let mut ui = UniqueIdx::new();
-        let mut adj: Vec<Vec<(usize, usize)>> = Vec::new();
+        let mut adj: Vec<SmallVec<[(usize, usize); 4]>> = Vec::new();
         for (p, &v) in grid.idx_iter() {
             if matches!(v, Start | End(_) | Fork) {
                 let i = ui.idx(p);
                 if i >= adj.len() {
-                    adj.resize(i + 1, vec![]);
+                    adj.resize(i + 1, smallvec![]);
                 }
                 adj[i] = neighbors(&grid, p2, &p)
                     .into_iter()

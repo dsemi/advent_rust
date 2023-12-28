@@ -27,11 +27,7 @@ fn next(t: &Tool) -> Tool {
 }
 
 fn parse(i: &mut &str) -> PResult<(i32, C<i32>)> {
-    (
-        preceded("depth: ", i32),
-        preceded("\ntarget: ", coord(i32).output_into()),
-    )
-        .parse_next(i)
+    (preceded("depth: ", i32), preceded("\ntarget: ", c(i32))).parse_next(i)
 }
 
 fn erosion_levels(depth: i32, target: C<i32>) -> Grid<Tool, i32> {

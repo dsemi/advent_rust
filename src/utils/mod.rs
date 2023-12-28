@@ -1,5 +1,7 @@
 use ahash::{AHashMap, AHashSet};
 use itertools::Itertools;
+use nalgebra::Vector2;
+use nalgebra::Vector3;
 use num::{Num, PrimInt, Signed};
 use num_traits::ops::saturating::SaturatingAdd;
 use num_traits::{AsPrimitive, Bounded, FromPrimitive, One, Pow, Zero};
@@ -237,30 +239,30 @@ pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
 }
 
 macro_rules! forward_ref_binop {
-    (impl $imp:ident, $method:ident for $t:ty, $u:ty, $g:tt) => {
-        impl<'a, $g: Num + Copy> $imp<$u> for &'a $t {
-            type Output = <$t as $imp<$u>>::Output;
+    (impl $imp:ident, $method:ident for $t:ty, $g:tt) => {
+        impl<'a, $g: Num + Copy> $imp<$t> for &'a $t {
+            type Output = <$t as $imp<$t>>::Output;
 
             #[inline]
-            fn $method(self, other: $u) -> <$t as $imp<$u>>::Output {
+            fn $method(self, other: $t) -> <$t as $imp<$t>>::Output {
                 $imp::$method(*self, other)
             }
         }
 
-        impl<$g: Num + Copy> $imp<&$u> for $t {
-            type Output = <$t as $imp<$u>>::Output;
+        impl<$g: Num + Copy> $imp<&$t> for $t {
+            type Output = <$t as $imp<$t>>::Output;
 
             #[inline]
-            fn $method(self, other: &$u) -> <$t as $imp<$u>>::Output {
+            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
                 $imp::$method(self, *other)
             }
         }
 
-        impl<$g: Num + Copy> $imp<&$u> for &$t {
-            type Output = <$t as $imp<$u>>::Output;
+        impl<$g: Num + Copy> $imp<&$t> for &$t {
+            type Output = <$t as $imp<$t>>::Output;
 
             #[inline]
-            fn $method(self, other: &$u) -> <$t as $imp<$u>>::Output {
+            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
                 $imp::$method(*self, *other)
             }
         }
@@ -286,6 +288,37 @@ impl_abs_diff!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct C<T>(pub T, pub T);
+
+mod cparse {
+    use winnow::error::ParserError;
+    use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
+    use winnow::Parser;
+
+    pub fn c<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C<O>, E> + 'a
+    where
+        I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+        <I as Stream>::Token: AsChar + Clone,
+        O: 'a,
+        E: ParserError<I> + 'a,
+        F: Parser<I, O, E> + 'a,
+    {
+        super::parsers::coord(f).output_into()
+    }
+}
+pub use cparse::*;
+
+impl<T> C<T> {
+    pub fn as_<U: Copy + 'static>(self) -> C<U>
+    where
+        T: AsPrimitive<U>,
+    {
+        C(self.0.as_(), self.1.as_())
+    }
+
+    pub fn vec(self) -> Vector2<T> {
+        Vector2::new(self.0, self.1)
+    }
+}
 
 impl<T: Num + Copy> C<T> {
     pub fn sum(&self) -> T {
@@ -335,7 +368,7 @@ impl<T: Num> Add for C<T> {
         Self(self.0 + other.0, self.1 + other.1)
     }
 }
-forward_ref_binop! { impl Add, add for C<T>, C<T>, T }
+forward_ref_binop! { impl Add, add for C<T>, T }
 
 impl<T: Num + Copy> AddAssign for C<T> {
     #[inline]
@@ -352,7 +385,7 @@ impl<T: Num> Sub for C<T> {
         Self(self.0 - other.0, self.1 - other.1)
     }
 }
-forward_ref_binop! { impl Sub, sub for C<T>, C<T>, T }
+forward_ref_binop! { impl Sub, sub for C<T>, T }
 
 impl<T: Num + Copy> SubAssign for C<T> {
     #[inline]
@@ -372,7 +405,7 @@ impl<T: Num + Copy> Mul for C<T> {
         )
     }
 }
-forward_ref_binop! { impl Mul, mul for C<T>, C<T>, T }
+forward_ref_binop! { impl Mul, mul for C<T>, T }
 
 impl<T: Num + Copy> MulAssign for C<T> {
     #[inline]
@@ -458,6 +491,41 @@ where
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct C3<T>(pub T, pub T, pub T);
 
+mod c3parse {
+    use winnow::error::ParserError;
+    use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
+    use winnow::Parser;
+
+    pub fn c3<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C3<O>, E> + 'a
+    where
+        I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+        <I as Stream>::Token: AsChar + Clone,
+        O: 'a,
+        E: ParserError<I> + 'a,
+        F: Parser<I, O, E> + 'a,
+    {
+        super::parsers::coord3(f).output_into()
+    }
+}
+pub use c3parse::*;
+
+impl<T> C3<T> {
+    pub fn xy(self) -> C<T> {
+        C(self.0, self.1)
+    }
+
+    pub fn as_<U: Copy + 'static>(self) -> C3<U>
+    where
+        T: AsPrimitive<U>,
+    {
+        C3(self.0.as_(), self.1.as_(), self.2.as_())
+    }
+
+    pub fn vec(self) -> Vector3<T> {
+        Vector3::new(self.0, self.1, self.2)
+    }
+}
+
 impl<T: Num + Copy> C3<T> {
     pub fn sum(&self) -> T {
         self.0 + self.1 + self.2
@@ -506,7 +574,7 @@ impl<T: Num> Add for C3<T> {
         Self(self.0 + other.0, self.1 + other.1, self.2 + other.2)
     }
 }
-forward_ref_binop! { impl Add, add for C3<T>, C3<T>, T }
+forward_ref_binop! { impl Add, add for C3<T>, T }
 
 impl<T: Num + Copy> AddAssign for C3<T> {
     #[inline]
@@ -523,7 +591,7 @@ impl<T: Num> Sub for C3<T> {
         Self(self.0 - other.0, self.1 - other.1, self.2 - other.2)
     }
 }
-forward_ref_binop! { impl Sub, sub for C3<T>, C3<T>, T }
+forward_ref_binop! { impl Sub, sub for C3<T>, T }
 
 impl<T: Num + Copy> SubAssign for C3<T> {
     #[inline]

@@ -14,7 +14,7 @@ fn adj(&C3(x, y, z): &C3<i32>) -> Vec<C3<i32>> {
 }
 
 fn cubes(input: &str) -> AHashSet<C3<i32>> {
-    lines_iter(input, coord3(i32).output_into()).collect()
+    lines_iter(input, c3(i32)).collect()
 }
 
 pub fn part1(input: &str) -> usize {

@@ -1,6 +1,6 @@
 use crate::utils::ocr::*;
 use crate::utils::parsers::*;
-use crate::utils::C;
+use crate::utils::*;
 use ahash::AHashSet;
 use std::cmp::{max, min};
 
@@ -10,8 +10,8 @@ struct Obj {
 }
 
 fn object(i: &mut &str) -> PResult<Obj> {
-    let pos = delimited("position=<", coord(i32).output_into(), "> ").parse_next(i)?;
-    let vel = delimited("velocity=<", coord(i32).output_into(), '>').parse_next(i)?;
+    let pos = delimited("position=<", c(i32), "> ").parse_next(i)?;
+    let vel = delimited("velocity=<", c(i32), '>').parse_next(i)?;
     Ok(Obj { pos, vel })
 }
 

@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use crate::utils::C3;
+use crate::utils::*;
 use std::cmp::{max, min};
 
 struct Nanobot {
@@ -15,7 +15,7 @@ impl Nanobot {
 }
 
 fn nanobot(i: &mut &str) -> PResult<Nanobot> {
-    let pos = preceded("pos=<", coord3(i64).output_into()).parse_next(i)?;
+    let pos = preceded("pos=<", c3(i64)).parse_next(i)?;
     let radius = preceded(">, r=", i64).parse_next(i)?;
     Ok(Nanobot { pos, radius })
 }

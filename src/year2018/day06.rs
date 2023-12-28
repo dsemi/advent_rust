@@ -5,10 +5,6 @@ use std::cmp::{max, min};
 use std::collections::VecDeque;
 use Tile::*;
 
-fn parse_coords(input: &str) -> Vec<C<i32>> {
-    lines(coord(i32).output_into()).read(input)
-}
-
 struct Pos {
     id: usize,
     dist: usize,
@@ -34,7 +30,7 @@ fn bounding_box(xs: &[C<i32>]) -> (C<usize>, C<usize>) {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    let coords = parse_coords(input);
+    let coords = lines(c(i32)).read(input);
     let (minp, mut maxp) = bounding_box(&coords);
     maxp -= minp;
     let mut grid = vec![vec![Empty; maxp.0]; maxp.1];
@@ -106,8 +102,8 @@ pub fn part1(input: &str) -> Option<usize> {
 }
 
 pub fn part2(input: &str) -> usize {
-    let n = 10_000;
-    let coords = parse_coords(input);
+    const N: i32 = 10_000;
+    let coords = lines(c(i32)).read(input);
     let avg_coord = C(
         coords.iter().map(|c| c.0).sum::<i32>() / coords.len() as i32,
         coords.iter().map(|c| c.1).sum::<i32>() / coords.len() as i32,
@@ -119,7 +115,7 @@ pub fn part2(input: &str) -> usize {
         if !visited.insert(p) {
             continue;
         }
-        if coords.iter().map(|c| p.dist(c)).sum::<i32>() < n {
+        if coords.iter().map(|c| p.dist(c)).sum::<i32>() < N {
             region_size += 1;
             frontier.push_back(p - C(1, 0));
             frontier.push_back(p - C(0, 1));
