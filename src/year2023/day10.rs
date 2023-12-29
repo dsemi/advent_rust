@@ -1,39 +1,31 @@
 use crate::utils::*;
 use std::iter::once;
 
-const UP: u8 = 0b1000;
-const DOWN: u8 = 0b0100;
-const LEFT: u8 = 0b0010;
-const RIGHT: u8 = 0b0001;
+const U: u8 = 0b1000;
+const L: u8 = 0b0100;
+const D: u8 = 0b0010;
+const R: u8 = 0b0001;
+
+fn turn(dir: u8, pipe: char) -> u8 {
+    let dir = (dir & 3) << 2 | (dir & 12) >> 2;
+    let pipe = match pipe {
+        '|' => U | D,
+        '-' => L | R,
+        'L' => U | R,
+        'J' => U | L,
+        '7' => D | L,
+        'F' => D | R,
+        _ => unreachable!(),
+    };
+    dir ^ pipe
+}
 
 fn coord(dir: u8) -> C<i32> {
     match dir {
-        UP => C(-1, 0),
-        DOWN => C(1, 0),
-        LEFT => C(0, -1),
-        RIGHT => C(0, 1),
-        _ => unreachable!(),
-    }
-}
-
-fn invert(dir: u8) -> u8 {
-    match dir {
-        UP => DOWN,
-        DOWN => UP,
-        LEFT => RIGHT,
-        RIGHT => LEFT,
-        _ => unreachable!(),
-    }
-}
-
-fn dirs(v: char) -> u8 {
-    match v {
-        '|' => UP | DOWN,
-        '-' => LEFT | RIGHT,
-        'L' => UP | RIGHT,
-        'J' => UP | LEFT,
-        '7' => DOWN | LEFT,
-        'F' => DOWN | RIGHT,
+        U => C(-1, 0),
+        L => C(0, -1),
+        D => C(1, 0),
+        R => C(0, 1),
         _ => unreachable!(),
     }
 }
@@ -44,15 +36,14 @@ fn parse(input: &str) -> (C<i32>, u8, Grid<char, i32>) {
         .idx_iter()
         .find_map(|(C(r, c), &v)| (v == 'S').then_some(C(r, c)))
         .unwrap();
-    let dir = if matches!(grid.get(start + coord(UP)), Some('|' | '7' | 'F')) {
-        UP
-    } else if matches!(grid.get(start + coord(DOWN)), Some('|' | 'L' | 'J')) {
-        DOWN
-    } else if matches!(grid.get(start + coord(LEFT)), Some('-' | 'L' | 'F')) {
-        LEFT
-    } else {
-        RIGHT
-    };
+    let dir = [U, L, D, R]
+        .into_iter()
+        .find(|&d| {
+            grid.get(start + coord(d))
+                .filter(|&&v| (turn(d, v)).count_ones() == 1)
+                .is_some()
+        })
+        .unwrap();
     (start, dir, grid)
 }
 
@@ -63,7 +54,7 @@ fn main_pts(input: &str) -> impl Iterator<Item = C<i32>> {
         if grid[acc.0] == 'S' {
             return None;
         }
-        acc.1 = invert(acc.1) ^ dirs(grid[acc.0]);
+        acc.1 = turn(acc.1, grid[acc.0]);
         Some(acc.0)
     }))
 }
