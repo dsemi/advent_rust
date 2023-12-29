@@ -8,9 +8,7 @@ fn wins(i: &mut &str) -> PResult<usize> {
 }
 
 pub fn part1(input: &str) -> u32 {
-    lines(wins)
-        .read(input)
-        .into_iter()
+    lines_iter(input, wins)
         .filter(|&n| n > 0)
         .map(|n| 1 << (n - 1))
         .sum()

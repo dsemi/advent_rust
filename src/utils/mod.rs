@@ -1312,22 +1312,6 @@ impl<const M: i64> Neg for Mod<M> {
     }
 }
 
-pub fn positions<T, U>(grid: &[U], elem: T) -> Vec<(usize, usize)>
-where
-    T: Copy + PartialEq,
-    U: AsRef<[T]>,
-{
-    grid.iter()
-        .enumerate()
-        .flat_map(|(r, row)| {
-            row.as_ref()
-                .iter()
-                .enumerate()
-                .filter_map(move |(c, &v)| (v == elem).then_some((r, c)))
-        })
-        .collect()
-}
-
 /// Area of polygon given a list of points.
 pub fn shoelace<T: Copy + Num + Signed + Sum>(pts: &[C<T>]) -> T {
     pts.windows(2)
@@ -1510,8 +1494,22 @@ where
         self.idxs().zip(self)
     }
 
+    pub fn positions<'a>(&'a self, f: impl Fn(&T) -> bool + 'a) -> impl Iterator<Item = C<I>> + 'a {
+        self.idx_iter().filter(move |(_, v)| f(v)).map(|(i, _)| i)
+    }
+
     pub fn rows(&self) -> impl Iterator<Item = &[T]> {
         (0..self.rows.as_()).map(|r| &self.elems[r * self.cols.as_()..(r + 1) * self.cols.as_()])
+    }
+
+    pub fn row(&self, r: I) -> impl Iterator<Item = &T> {
+        let r = r.as_();
+        self.elems[r * self.cols.as_()..(r + 1) * self.cols.as_()].iter()
+    }
+
+    pub fn col(&self, c: I) -> impl Iterator<Item = &T> {
+        let c = c.as_();
+        self.elems.iter().skip(c).step_by(self.cols.as_())
     }
 
     pub fn in_bounds(&self, C(r, c): C<I>) -> bool {
