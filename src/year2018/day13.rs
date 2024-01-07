@@ -84,7 +84,7 @@ impl Tracks {
     async fn tick(&mut self, co: Co<'_, (i32, i32)>) {
         while self.carts.len() > 1 {
             let mut ps = self.carts.keys().copied().collect::<Vec<_>>();
-            ps.sort_unstable();
+            ps.sort_unstable_by_key(|p| (p.0, p.1));
             for p in ps {
                 if let Some(mut cart) = self.carts.remove(&p) {
                     move_cart(&mut cart, &self.grid);

@@ -5,14 +5,14 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use std::cmp::max;
 use Tool::*;
 
-#[derive(Clone, Copy, Eq, FromPrimitive, Hash, Ord, PartialEq, PartialOrd, ToPrimitive)]
+#[derive(Clone, Copy, Eq, FromPrimitive, Hash, PartialEq, ToPrimitive)]
 enum Tool {
     Neither,
     Torch,
     ClimbingGear,
 }
 
-#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
 struct Node {
     pos: C<i32>,
     tool: Tool,

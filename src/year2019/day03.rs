@@ -39,7 +39,7 @@ fn parse_wires(input: &str) -> Vec<Wire> {
                         let n = p[1..].i32();
                         let prev = pos;
                         pos += d * n;
-                        let (d, a, b, r) = if prev < pos {
+                        let (d, a, b, r) = if d.0 > 0 || d.1 > 0 {
                             (steps, prev, pos, false)
                         } else {
                             (steps + n, pos, prev, true)

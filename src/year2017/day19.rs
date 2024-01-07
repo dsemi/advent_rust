@@ -25,7 +25,7 @@ fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
 }
 
 fn follow_path(grid: AHashMap<C<i32>, char>) -> Vec<char> {
-    let mut coord = *grid.keys().min().unwrap();
+    let mut coord = *grid.keys().min_by_key(|p| p.0).unwrap();
     let mut dir = C(1, 0);
     let mut result = Vec::new();
     while grid.contains_key(&coord) {

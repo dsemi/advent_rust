@@ -53,14 +53,14 @@ pub fn part2(input: &str) -> Option<usize> {
     let nodes = parse_nodes(input);
     let mut grid = AHashMap::new();
     let mut opn = C(0, 0);
-    let mut mx = C(0, 0);
+    let mut mx = 0;
     for node in nodes {
         grid.insert(node.coord, node.clone());
         if node.used == 0 {
             opn = node.coord;
         }
-        mx = max(mx, node.coord);
+        mx = max(mx, node.coord.0);
     }
-    bfs((opn, C(mx.0, 0)), move |st| neighbors(&grid, st))
+    bfs((opn, C(mx, 0)), move |st| neighbors(&grid, st))
         .find_map(|(d, v)| (v.1 == C(0, 0)).then_some(d))
 }

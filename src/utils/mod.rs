@@ -96,6 +96,24 @@ where
     }
 }
 
+#[derive(Eq, PartialEq)]
+struct AStarNode<T> {
+    weight: usize,
+    elem: T,
+}
+
+impl<T: Eq> PartialOrd for AStarNode<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T: Eq> Ord for AStarNode<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.weight.cmp(&self.weight)
+    }
+}
+
 pub fn a_star<T, F, I, I2, F2, F3>(
     neighbors: F,
     heur: F2,
@@ -106,7 +124,6 @@ where
     T: Clone,
     T: Eq,
     T: Hash,
-    T: Ord,
     F: Fn(&T) -> I,
     I: IntoIterator<Item = (usize, T), IntoIter = I2>,
     I2: Iterator<Item = (usize, T)>,
@@ -114,12 +131,15 @@ where
     F3: Fn(&T) -> bool,
 {
     let mut visited: AHashSet<T> = vec![start.clone()].into_iter().collect();
-    let mut queue: BinaryHeap<(Reverse<usize>, T)> = BinaryHeap::new();
-    queue.push((Reverse(0), start.clone()));
+    let mut queue: BinaryHeap<AStarNode<T>> = BinaryHeap::new();
+    queue.push(AStarNode {
+        weight: 0,
+        elem: start.clone(),
+    });
     let mut came_from: AHashMap<T, T> = AHashMap::new();
     let mut g_score: AHashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
     let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
-    while let Some((_, st)) = queue.pop() {
+    while let Some(AStarNode { elem: st, .. }) = queue.pop() {
         if goal(&st) {
             let mut result = vec![(g_score[&st], st.clone())];
             let mut curr = &st;
@@ -142,7 +162,10 @@ where
                 g_score.insert(st2.clone(), tent_g_score);
                 f_score.insert(st2.clone(), tent_g_score + heur(&st2));
                 if visited.insert(st2.clone()) {
-                    queue.push((Reverse(f_score[&st2]), st2));
+                    queue.push(AStarNode {
+                        weight: f_score[&st2],
+                        elem: st2,
+                    });
                 }
             }
         }
@@ -286,7 +309,7 @@ macro_rules! impl_abs_diff {
 
 impl_abs_diff!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct C<T>(pub T, pub T);
 
 mod cparse {
@@ -488,7 +511,7 @@ where
     .into_iter()
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct C3<T>(pub T, pub T, pub T);
 
 mod c3parse {
