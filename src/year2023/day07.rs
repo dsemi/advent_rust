@@ -17,6 +17,7 @@ impl Hand {
             (HighCard, 2) => *self = Pair,
             (Pair, 2) => *self = TwoPair,
             (Pair, 3) => *self = ThreeOfAKind,
+            (TwoPair, 3) => *self = FullHouse,
             (ThreeOfAKind, 2) => *self = FullHouse,
             (ThreeOfAKind, 4) => *self = FourOfAKind,
             (FourOfAKind, 5) => *self = FiveOfAKind,
@@ -36,7 +37,7 @@ fn val(j: u8, a: u8) -> u8 {
     }
 }
 
-fn solve(input: &str, j: u8) -> usize {
+fn solve(input: &str, j: u8) -> u64 {
     let mut hands: Vec<_> = lines_iter(input, separated_pair(alphanumeric1, space1, u64))
         .map(|(cards, bid)| {
             let mut cnt = [0_u8; 15];
@@ -51,7 +52,7 @@ fn solve(input: &str, j: u8) -> usize {
                 }
             });
             let jokers = std::mem::take(&mut cnt[1]);
-            let most_freq_card = cnt.iter().enumerate().max_by_key(|x| x.1).unwrap().0;
+            let most_freq_card = cnt.iter().zip(0..).max().unwrap().1;
             for _ in 0..jokers {
                 cnt[most_freq_card] += 1;
                 hand.add_card(cnt[most_freq_card]);
@@ -63,15 +64,15 @@ fn solve(input: &str, j: u8) -> usize {
     hands.sort_unstable();
     hands
         .into_iter()
-        .enumerate()
-        .map(|(rank, hand)| (rank + 1) * (hand & u16::MAX as u64) as usize)
+        .zip(1..)
+        .map(|(hand, rank)| rank * (hand & u16::MAX as u64))
         .sum()
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> u64 {
     solve(input, 11)
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u64 {
     solve(input, 1)
 }
