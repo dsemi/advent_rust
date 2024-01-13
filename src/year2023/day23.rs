@@ -1,137 +1,150 @@
 use crate::utils::*;
-use rayon::prelude::*;
-use smallvec::{smallvec, SmallVec};
-use Tile::*;
+use ahash::AHashMap;
 
-const ADJ: [C<i32>; 4] = [C(0, -1), C(0, 1), C(-1, 0), C(1, 0)];
+const DIM: i32 = 6;
 
-#[derive(Copy, Clone)]
-enum Tile {
-    Wall,
-    Floor,
-    Slope(C<i32>),
-    Start,
-    End(usize),
-    Fork,
+struct Graph {
+    base_cost: u32,
+    down_cost: Grid<u32, i32>,
+    right_cost: Grid<u32, i32>,
 }
 
-struct Maze {
-    end: usize,
-    adj: Vec<SmallVec<[(usize, usize); 4]>>,
-}
-
-fn open_adj(grid: &Grid<u8, i32>, p: C<i32>) -> usize {
-    ADJ.into_iter()
-        .filter(|d| matches!(grid.get(p + d), Some(v) if *v != b'#'))
-        .count()
-}
-
-fn neighbors(grid: &Grid<Tile, i32>, p2: bool, pos: &C<i32>) -> Vec<(usize, C<i32>)> {
-    bfs(*pos, |st| {
-        if st != pos && matches!(grid[*st], Start | End(_) | Fork) {
-            return vec![];
+impl Graph {
+    fn pathfind(&mut self, grid: &Grid<u8, i32>, coord: C<i32>, dir: C<i32>, node: C<i32>) -> u32 {
+        let mut step = dir;
+        let mut coord = coord + dir;
+        if coord.0 == grid.rows || grid[coord] == b'#' {
+            return 0;
         }
-        ADJ.into_iter()
-            .filter_map(|d| {
-                let p = st + d;
-                grid.get(p).and_then(|&v| match v {
-                    Slope(s) if !p2 && s != d => None,
-                    Wall => None,
-                    _ => Some(p),
-                })
-            })
-            .collect()
-    })
-    .skip(1)
-    .filter(|&(_, st)| matches!(grid[st], Start | End(_) | Fork))
-    .collect()
-}
-
-impl Maze {
-    fn new(input: &str, p2: bool) -> Self {
-        let grid: Grid<_, i32> = input.bytes().collect();
-        let (start, mut end) = (C(0, 1), C(grid.rows - 1, grid.cols - 2));
-        let mut grid = grid.clone().itransform(|(p, v)| match v {
-            b'<' => Slope(C(0, -1)),
-            b'>' => Slope(C(0, 1)),
-            b'^' => Slope(C(-1, 0)),
-            b'v' => Slope(C(1, 0)),
-            b'#' => Wall,
-            b'.' if p == start => Start,
-            b'.' if p == end => End(0),
-            b'.' if open_adj(&grid, p) > 2 => Fork,
-            b'.' => Floor,
-            _ => unreachable!(),
-        });
-        // Move end into last fork to avoid unnecessary pathing.
-        let fork_before_end = neighbors(&grid, true, &end);
-        assert_eq!(fork_before_end.len(), 1);
-        grid[fork_before_end[0].1] = End(fork_before_end[0].0);
-        grid[end] = Wall;
-        end = fork_before_end[0].1;
-
-        let mut ui = UniqueIdx::new();
-        let mut adj: Vec<SmallVec<[(usize, usize); 4]>> = Vec::new();
-        for (p, &v) in grid.idx_iter() {
-            if matches!(v, Start | End(_) | Fork) {
-                let i = ui.idx(p);
-                if i >= adj.len() {
-                    adj.resize(i + 1, smallvec![]);
+        let (mut length, mut markers_seen) = (1, 0);
+        while markers_seen < 2 {
+            length += 1;
+            if grid[coord] != b'.' {
+                markers_seen += 1;
+            }
+            for next_step in [step, C(-step.1, step.0), C(step.1, -step.0)] {
+                let next_coord = coord + next_step;
+                if grid[next_coord] != b'#' {
+                    coord = next_coord;
+                    step = next_step;
+                    break;
                 }
-                adj[i] = neighbors(&grid, p2, &p)
-                    .into_iter()
-                    .map(|(j, pos)| {
-                        let d = if let End(d) = grid[pos] { d } else { 0 };
-                        (j + d, ui.idx(pos))
-                    })
-                    .collect();
             }
         }
-        Self {
-            end: ui.idx(end),
-            adj,
+        let node = node + dir.swol(step);
+        if self.down_cost[node] == 0 {
+            self.down_cost[node] = self.pathfind(grid, coord, C(1, 0), node);
         }
+        if self.right_cost[node] == 0 {
+            self.right_cost[node] = self.pathfind(grid, coord, C(0, 1), node);
+        }
+        length
     }
 
-    fn dfs(&self, vis: u64, pos: usize, dist: usize) -> usize {
-        if pos == self.end {
-            return dist;
-        }
-        self.adj[pos]
-            .iter()
-            .filter(|&(_, p)| vis & (1 << p) == 0)
-            .map(|&(d, p)| self.dfs(vis | (1 << p), p, dist + d))
-            .max()
-            .unwrap_or(0)
-    }
-
-    fn dfs_iter(&self) -> usize {
-        let mut paths = Vec::new();
-        let (dist, pos) = self.adj[0][0];
-        let mut stack = vec![(1 | (1 << pos), pos, dist, 0)];
-        while let Some((vis, pos, dist, depth)) = stack.pop() {
-            // Somewhat arbitrary number to limit amount of attempted parallelism
-            if depth >= 10 || pos == self.end {
-                paths.push((vis, pos, dist));
-                continue;
-            }
-            self.adj[pos]
-                .iter()
-                .filter(|&(_, p)| vis & (1 << p) == 0)
-                .for_each(|&(d, p)| stack.push((vis | (1 << p), p, dist + d, depth + 1)))
-        }
-        paths
-            .into_par_iter()
-            .map(|(vis, pos, dist)| self.dfs(vis, pos, dist))
-            .max()
-            .unwrap()
+    fn parse(input: &str) -> Self {
+        let mut grid: Grid<u8, i32> = input.bytes().collect();
+        grid[C(1, 1)] = b'v';
+        let (rows, cols) = (grid.rows, grid.cols);
+        grid[C(rows - 2, cols - 2)] = b'v';
+        let mut graph = Self {
+            base_cost: 0,
+            down_cost: Grid::new(DIM + 1, DIM + 1),
+            right_cost: Grid::new(DIM + 1, DIM + 1),
+        };
+        graph.base_cost = graph.pathfind(&grid, C(0, 1), C(1, 0), C(-1, 0));
+        graph
     }
 }
 
-pub fn part1(input: &str) -> usize {
-    Maze::new(input, false).dfs_iter()
+pub fn part1(input: &str) -> u32 {
+    let graph = Graph::parse(input);
+    let mut from_above = vec![0; DIM as usize];
+    for r in 0..DIM {
+        let mut from_left = 0;
+        for c in 0..DIM {
+            let cost = from_left.max(from_above[c as usize]);
+            from_above[c as usize] = cost + graph.down_cost[C(r, c)];
+            from_left = cost + graph.right_cost[C(r, c)];
+        }
+    }
+    graph.base_cost + from_above.last().unwrap()
 }
 
-pub fn part2(input: &str) -> usize {
-    Maze::new(input, true).dfs_iter()
+fn matching_paren(key: &[u8], mut col: i32, step: i32) -> i32 {
+    let mut nest = step;
+    while nest != 0 {
+        col += step;
+        if key[col as usize] == b'(' {
+            nest += 1;
+        } else if key[col as usize] == b')' {
+            nest -= 1;
+        }
+    }
+    col
+}
+
+fn transition(
+    graph: &Graph,
+    dp: &mut AHashMap<[u8; 7], u32>,
+    mut key: [u8; 7],
+    cost: u32,
+    row: i32,
+    col: i32,
+    left: u8,
+) {
+    if col == DIM {
+        if left == b'.' {
+            let e = dp.entry(key).or_default();
+            *e = (*e).max(cost);
+        }
+        return;
+    }
+    let mut next_col = |key: &mut [u8; 7], down, right| {
+        let mut cost_delta = 0;
+        if down != b'.' {
+            cost_delta += graph.down_cost[C(row, col)];
+        }
+        if right != b'.' {
+            cost_delta += graph.right_cost[C(row, col)];
+        }
+        key[col as usize] = down;
+        transition(graph, dp, *key, cost + cost_delta, row, col + 1, right);
+    };
+
+    let up = key[col as usize];
+    match (left, up) {
+        (b'.', b'(') | (b'.', b')') | (b'(', b'.') | (b')', b'.') => {
+            next_col(&mut key, up, left);
+            next_col(&mut key, left, up);
+        }
+        (b'.', b'.') => {
+            next_col(&mut key, b'(', b')');
+            next_col(&mut key, b'.', b'.');
+        }
+        (b'(', b'(') => {
+            key[matching_paren(&key, col, 1) as usize] = b'(';
+            next_col(&mut key, b'.', b'.');
+        }
+        (b')', b')') => {
+            key[matching_paren(&key, col, -1) as usize] = b')';
+            next_col(&mut key, b'.', b'.');
+        }
+        (b')', b'(') => {
+            next_col(&mut key, b'.', b'.');
+        }
+        _ => (),
+    }
+}
+
+pub fn part2(input: &str) -> u32 {
+    let graph = Graph::parse(input);
+    let mut dp = AHashMap::new();
+    dp.insert([b'(', b'.', b'.', b'.', b'.', b'.', b')'], graph.base_cost);
+    for row in 0..DIM {
+        let mut tmp = AHashMap::new();
+        dp.into_iter()
+            .for_each(|(key, cost)| transition(&graph, &mut tmp, key, cost, row, 0, b'.'));
+        dp = tmp;
+    }
+    dp[&[b'.', b'.', b'.', b'.', b'.', b'(', b')']]
 }
