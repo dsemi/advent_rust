@@ -45,6 +45,7 @@ toml = "0.8.8"
 winnow = "0.5.31"
 
 [lints.clippy]
+disallowed_types = "deny"
 filter_map_bool_then = "allow"
 many_single_char_names = "allow"
-disallowed_types = "deny"
+
