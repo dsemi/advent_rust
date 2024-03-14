@@ -1,46 +1,78 @@
-use crate::utils::Cache;
-use ahash::AHashMap;
+use crate::utils::parsers::*;
 use std::fmt::Write;
+use Wire::*;
 
-struct Node<'a>(&'a dyn Fn(u16, u16) -> u16, &'a str, &'a str);
+const LEN: usize = 729;
 
-type Network<'a> = AHashMap<&'a str, Node<'a>>;
-
-fn lookup<'a>(graph: Network<'a>, signal: &'a str) -> u16 {
-    let func = |cache: &mut Cache<&'a str, u16>, sig: &'a str| {
-        sig.parse().unwrap_or_else(|_| {
-            let Node(f, a, b) = graph[&sig];
-            f(cache.get(a), cache.get(b))
-        })
-    };
-    Cache::from(&func).get(signal)
+#[derive(Clone, Copy)]
+enum Wire {
+    Num(u16),
+    Id(usize),
 }
 
-fn parse_cmds(input: &str) -> Network<'_> {
-    input
-        .lines()
-        .map(|line| {
-            let cmd = line.split(' ').collect::<Vec<_>>();
-            let node = match cmd[..cmd.len() - 2] {
-                [a, "AND", b] => Node(&|a, b| a & b, a, b),
-                [a, "OR", b] => Node(&|a, b| a | b, a, b),
-                [a, "LSHIFT", b] => Node(&|a, b| a << b, a, b),
-                [a, "RSHIFT", b] => Node(&|a, b| a >> b, a, b),
-                ["NOT", b] => Node(&|_, b| !b, "1", b),
-                [b] => Node(&|_, b| b, "1", b),
-                _ => panic!("Bad parse {}", line),
-            };
-            (cmd[cmd.len() - 1], node)
-        })
-        .collect()
+type Op = fn(u16, u16) -> u16;
+#[derive(Clone, Copy)]
+struct Gate(Op, Wire, Wire);
+
+fn get(graph: &[Gate; LEN], cache: &mut [Option<u16>; LEN], sig: usize) -> u16 {
+    if let Some(v) = cache[sig] {
+        return v;
+    }
+    let Gate(f, a, b) = graph[sig];
+    let a = match a {
+        Num(n) => n,
+        Id(i) => get(graph, cache, i),
+    };
+    let b = match b {
+        Num(n) => n,
+        Id(i) => get(graph, cache, i),
+    };
+    let ans = f(a, b);
+    cache[sig] = Some(ans);
+    ans
+}
+
+fn lookup(graph: [Gate; LEN], signal: usize) -> u16 {
+    get(&graph, &mut [None; LEN], signal)
+}
+
+fn id(i: &mut &str) -> PResult<usize> {
+    repeat(1..=2, none_of([' ', '\n']))
+        .fold(|| 0, |acc, v| 27 * acc + (v as u8 - b'a' + 1) as usize)
+        .parse_next(i)
+}
+
+fn wire(i: &mut &str) -> PResult<Wire> {
+    alt((u16.map(Num), id.map(Id))).parse_next(i)
+}
+
+fn gate(i: &mut &str) -> PResult<Gate> {
+    let (a, op, b) = alt((
+        (wire, " AND ".value((|a, b| a & b) as Op), wire),
+        (wire, " OR ".value((|a, b| a | b) as Op), wire),
+        (wire, " LSHIFT ".value((|a, b| a << b) as Op), wire),
+        (wire, " RSHIFT ".value((|a, b| a >> b) as Op), wire),
+        (empty.value(Num(0)), "NOT ".value((|_, b| !b) as Op), wire),
+        (empty.value(Num(0)), empty.value((|_, b| b) as Op), wire),
+    ))
+    .parse_next(i)?;
+    Ok(Gate(op, a, b))
+}
+
+fn network(i: &str) -> [Gate; LEN] {
+    let mut it = iterator(i, terminated((gate, " -> ", id), opt('\n')));
+    let mut network = [Gate(|_, b| b, Num(0), Num(0)); LEN];
+    it.for_each(|(v, _, k)| network[k] = v);
+    assert_eq!("", it.finish().unwrap().0);
+    network
 }
 
 pub fn part1(input: &str) -> u16 {
-    lookup(parse_cmds(input), "a")
+    lookup(network(input), 1)
 }
 
 pub fn part2(input: &str) -> u16 {
     let mut inp = input.to_string();
     write!(&mut inp, "\n{} -> b", part1(input)).unwrap();
-    lookup(parse_cmds(&inp), "a")
+    lookup(network(&inp), 1)
 }

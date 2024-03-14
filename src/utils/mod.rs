@@ -744,33 +744,6 @@ pub fn prime_factors(n: u64) -> PrimeFactors<impl Iterator<Item = u64>> {
     }
 }
 
-pub struct Cache<'a, A, R> {
-    cache: AHashMap<A, R>,
-    func: &'a dyn Fn(&mut Self, A) -> R,
-}
-
-impl<'a, A, R> Cache<'a, A, R>
-where
-    A: Copy + Eq + Hash,
-    R: Copy,
-{
-    pub fn from(func: &'a dyn Fn(&mut Self, A) -> R) -> Self {
-        Self {
-            cache: AHashMap::new(),
-            func,
-        }
-    }
-
-    pub fn get(&mut self, arg: A) -> R {
-        if let Some(v) = self.cache.get(&arg) {
-            return *v;
-        }
-        let v = (self.func)(self, arg);
-        self.cache.insert(arg, v);
-        v
-    }
-}
-
 pub struct Partitions {
     buf: Vec<i32>,
     stack: Vec<(usize, i32, i32)>,

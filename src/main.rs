@@ -34,7 +34,7 @@ fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64,
     let start = Instant::now();
     let ans = f(input);
     let elapsed = start.elapsed();
-    let t: f64 = elapsed.as_micros() as f64; // / 1000000.0;
+    let t: f64 = elapsed.as_micros() as f64 / 1000000.0;
     (t, ans)
 }
 
