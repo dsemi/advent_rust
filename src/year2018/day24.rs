@@ -32,7 +32,7 @@ impl Group<'_> {
 
 fn attributes<'a>(i: &mut &'a str) -> PResult<(Vec<&'a str>, Vec<&'a str>)> {
     '('.parse_next(i)?;
-    let [weak, immune] = fold_repeat(
+    let [weak, immune] = repeat(
         0..=2,
         terminated(
             alt((
@@ -41,12 +41,11 @@ fn attributes<'a>(i: &mut &'a str) -> PResult<(Vec<&'a str>, Vec<&'a str>)> {
             )),
             opt("; "),
         ),
-        Default::default,
-        |mut acc: [Vec<&str>; 2], (i, xs)| {
-            acc[i].extend(xs);
-            acc
-        },
     )
+    .fold(Default::default, |mut acc: [Vec<&str>; 2], (i, xs)| {
+        acc[i].extend(xs);
+        acc
+    })
     .parse_next(i)?;
     ") ".parse_next(i)?;
     Ok((weak, immune))

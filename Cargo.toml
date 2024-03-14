@@ -11,7 +11,7 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ahash = "0.8.6"
+ahash = "0.8.11"
 bit-set = "0.5.3"
 derive_more = { version = "1.0.0-beta.6", features = ["add", "add_assign", "constructor"]}
 enum-map = "2.7.3"
@@ -19,33 +19,32 @@ genawaiter = "0.99.1"
 generic-array = "0.14.7"
 hex = "0.4.3"
 impl_ops = "0.1.1"
-itertools = "0.12.0"
+itertools = "0.12.1"
 md-5 = "0.10.6"
-nalgebra = "0.32.3"
+nalgebra = "0.32.4"
 ndarray = { version = "0.15.6", features = ["rayon"] }
 num = "0.4.1"
-num-complex = "0.4.4"
-num-derive = "0.4.1"
+num-complex = "0.4.5"
+num-derive = "0.4.2"
 num-rational = "0.4.1"
-num-traits = "0.2.17"
+num-traits = "0.2.18"
 once_cell = "1.19.0"
-openssl = "0.10.62"
-openssl-sys = "0.9.98"
-proc-macro2 = "1.0.71"
-quote = "1.0.33"
-rayon = "1.8.0"
-reqwest = { version = "0.11.23", features = ["blocking", "json"] }
+openssl = "0.10.64"
+openssl-sys = "0.9.101"
+proc-macro2 = "1.0.79"
+quote = "1.0.35"
+rayon = "1.9.0"
+reqwest = { version = "0.11.26", features = ["blocking", "json"] }
 select = "0.6.0"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
-smallvec = { version = "1.11.2", features = ["const_generics", "const_new"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+smallvec = { version = "1.13.1", features = ["const_generics", "const_new"] }
 streaming-iterator = "0.1.9"
-syn = "2.0.43"
-toml = "0.8.8"
-winnow = "0.5.31"
+syn = "2.0.52"
+toml = "0.8.11"
+winnow = "0.5.40"
 
 [lints.clippy]
 disallowed_types = "deny"
 filter_map_bool_then = "allow"
 many_single_char_names = "allow"
-

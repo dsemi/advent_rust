@@ -18,13 +18,9 @@ static DIRS: Lazy<AHashMap<&str, C<i32>>> = Lazy::new(|| {
 fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
     let mut tiles = AHashMap::new();
     for line in s.lines() {
-        let tile = fold_repeat(
-            0..,
-            alt(("e", "w", "se", "sw", "nw", "ne")),
-            || C(0, 0),
-            |a, b| a + DIRS[b],
-        )
-        .read(line);
+        let tile = repeat(0.., alt(("e", "w", "se", "sw", "nw", "ne")))
+            .fold(|| C(0, 0), |a, b| a + DIRS[b])
+            .read(line);
         *tiles.entry(tile).or_insert(0) += 1;
     }
     tiles

@@ -33,7 +33,7 @@ pub struct Prog {
 
 macro_rules! match_op {
     ($n:ident) => {
-        tag(advent::lower!($n)).value($n)
+        literal(advent::lower!($n)).value($n)
     };
 }
 
@@ -66,7 +66,7 @@ fn parse_instr(i: &mut &str) -> PResult<Instr> {
 impl Prog {
     pub fn parse_instrs(input: &str) -> Self {
         let mut gen = input.lines();
-        let ip = preceded(tag("#ip "), usize).read(gen.next().unwrap());
+        let ip = preceded("#ip ", usize).read(gen.next().unwrap());
         let instrs = gen.map(|line| parse_instr.read(line)).collect();
         Self {
             ip,

@@ -319,7 +319,7 @@ mod cparse {
 
     pub fn c<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C<O>, E> + 'a
     where
-        I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+        I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
         <I as Stream>::Token: AsChar + Clone,
         O: 'a,
         E: ParserError<I> + 'a,
@@ -521,7 +521,7 @@ mod c3parse {
 
     pub fn c3<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C3<O>, E> + 'a
     where
-        I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+        I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
         <I as Stream>::Token: AsChar + Clone,
         O: 'a,
         E: ParserError<I> + 'a,

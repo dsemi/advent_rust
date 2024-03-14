@@ -28,6 +28,7 @@ macro_rules! impl_signed {
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
             I: StreamIsPartial + Stream,
+            <I as Stream>::Slice: AsBStr,
             <I as Stream>::Token: AsChar + Clone,
         {
             dec_int(input)
@@ -40,6 +41,7 @@ impl_signed!(i8, i16, i32, i64, i128);
 pub fn isize<I>(input: &mut I) -> PResult<isize>
 where
     I: StreamIsPartial + Stream,
+    <I as Stream>::Slice: AsBStr,
     <I as Stream>::Token: AsChar + Clone,
 {
     dec_int(input).map(|n: i64| n as isize)
@@ -51,6 +53,7 @@ macro_rules! impl_unsigned {
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
             I: StreamIsPartial + Stream,
+            <I as Stream>::Slice: AsBStr,
             <I as Stream>::Token: AsChar + Clone,
         {
             dec_uint(input)
@@ -63,6 +66,7 @@ impl_unsigned!(u8, u16, u32, u64, u128);
 pub fn usize<I>(input: &mut I) -> PResult<usize>
 where
     I: StreamIsPartial + Stream,
+    <I as Stream>::Slice: AsBStr,
     <I as Stream>::Token: AsChar + Clone,
 {
     dec_uint(input).map(|n: u64| n as usize)
@@ -73,7 +77,7 @@ macro_rules! impl_float {
         #[allow(dead_code)]
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
-            I: StreamIsPartial + Stream + Compare<&'static str> + AsBStr,
+            I: StreamIsPartial + Stream + Compare<&'static str> + Compare<char> + AsBStr,
             <I as Stream>::Slice: ParseSlice<$i>,
             <I as Stream>::Token: AsChar + Clone,
             <I as Stream>::IterOffsets: Clone,
@@ -191,7 +195,7 @@ where
 
 pub fn coord<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O), E> + 'a
 where
-    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+    I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
@@ -202,7 +206,7 @@ where
 
 pub fn coord3<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O, O), E> + 'a
 where
-    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+    I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
@@ -224,7 +228,7 @@ where
 
 pub fn list<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
 where
-    I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
+    I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,

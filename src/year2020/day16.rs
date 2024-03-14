@@ -17,9 +17,9 @@ fn parse_rules(s: &str) -> Input {
     separated_triplet(
         lines(rule),
         "\n\n",
-        preceded(tag("your ticket:\n"), list(i64)),
+        preceded("your ticket:\n", list(i64)),
         "\n\n",
-        preceded(tag("nearby tickets:\n"), lines(list(i64))),
+        preceded("nearby tickets:\n", lines(list(i64))),
     )
     .map(|(rules, yours, tix)| Input { rules, yours, tix })
     .read(s)
