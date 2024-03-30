@@ -1,9 +1,9 @@
 fn count_trees(right: usize, down: usize, s: &str) -> usize {
     s.lines()
-        .map(|x| x.chars().collect::<Vec<_>>())
+        .map(|x| x.as_bytes())
         .step_by(down)
         .enumerate()
-        .map(|(y, row)| (row[y * right % row.len()] == '#') as usize)
+        .map(|(y, row)| (row[y * right % row.len()] == b'#') as usize)
         .sum()
 }
 
