@@ -37,7 +37,7 @@ fn lookup(graph: [Gate; LEN], signal: usize) -> u16 {
 }
 
 fn id(i: &mut &str) -> PResult<usize> {
-    repeat(1..=2, none_of([' ', '\n']))
+    repeat(1..=2, one_of('a'..='z'))
         .fold(|| 0, |acc, v| 27 * acc + (v as u8 - b'a' + 1) as usize)
         .parse_next(i)
 }
