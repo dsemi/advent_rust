@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use itertools::Itertools;
+use num::Integer;
 use once_cell::sync::Lazy;
 use std::cmp::max;
 use std::ops::Add;
@@ -76,12 +77,7 @@ static ALL_EQUIP_COMBOS: Lazy<Vec<Person>> = Lazy::new(|| {
 
 fn is_winning(boss: Person, player: Person) -> bool {
     fn ttd(p1: Person, p2: Person) -> i32 {
-        let q = p1.hitpoints / max(1, p2.equip.damage - p1.equip.armor);
-        if p1.hitpoints % max(1, p2.equip.damage - p1.equip.armor) == 0 {
-            q
-        } else {
-            q + 1
-        }
+        Integer::div_ceil(&p1.hitpoints, &max(1, p2.equip.damage - p1.equip.armor))
     }
     ttd(player, boss) >= ttd(boss, player)
 }

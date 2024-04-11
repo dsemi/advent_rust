@@ -86,8 +86,7 @@ impl Ground {
             return true;
         }
         // Don't want short-circuiting here.
-        let (a, b) = (self.go(next_l), self.go(next_r));
-        a && b
+        self.go(next_l) & self.go(next_r)
     }
 }
 
