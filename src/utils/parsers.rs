@@ -282,6 +282,7 @@ pub(crate) use cons2;
 
 macro_rules! read_trait {
     ($($i:ident),*) => (
+        #[allow(dead_code)]
         pub trait ReadFromStr {
             $(fn $i(&self) -> $i;)*
         }
