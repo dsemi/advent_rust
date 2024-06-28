@@ -2,7 +2,7 @@
 use core::arch::aarch64::*;
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
 use core::arch::x86_64::*;
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
 
@@ -100,7 +100,7 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                 .map(|i| {
                     let mut h = hasher.clone();
                     h.update(&i.to_string());
-                    let mut res = GenericArray::default();
+                    let mut res = Array::default();
                     let mut out = Sum { hex: [0; 32] };
                     h.finalize_into_reset(&mut res);
                     write(<[u8; 16]>::from(res), &mut out);

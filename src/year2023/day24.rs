@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use nalgebra::{Matrix6, Vector6};
+use nalgebra::stack;
 
 fn intersect_2d((ap, av): &(C3<i64>, C3<i64>), (bp, bv): &(C3<i64>, C3<i64>)) -> Option<C<f64>> {
     let C(dx, dy) = bp.xy() - ap.xy();
@@ -32,20 +32,10 @@ pub fn part2(input: &str) -> i64 {
         .collect::<Vec<_>>()
         .try_into()
         .unwrap();
-    let mut rhs = Vector6::zeros();
-    rhs.view_mut((0, 0), (3, 1))
-        .copy_from(&(bp.cross(&bv) - ap.cross(&av)));
-    rhs.view_mut((3, 0), (3, 1))
-        .copy_from(&(cp.cross(&cv) - ap.cross(&av)));
-    let mut m = Matrix6::zeros();
-    m.view_mut((0, 0), (3, 3))
-        .copy_from(&(av.cross_matrix() - bv.cross_matrix()));
-    m.view_mut((3, 0), (3, 3))
-        .copy_from(&(av.cross_matrix() - cv.cross_matrix()));
-    m.view_mut((0, 3), (3, 3))
-        .copy_from(&(bp.cross_matrix() - ap.cross_matrix()));
-    m.view_mut((3, 3), (3, 3))
-        .copy_from(&(cp.cross_matrix() - ap.cross_matrix()));
+    let rhs = stack![ bp.cross(&bv) - ap.cross(&av);
+                      cp.cross(&cv) - ap.cross(&av) ];
+    let m = stack![ av.cross_matrix() - bv.cross_matrix(), bp.cross_matrix() - ap.cross_matrix();
+                    av.cross_matrix() - cv.cross_matrix(), cp.cross_matrix() - ap.cross_matrix() ];
     let result = m.try_inverse().unwrap() * rhs;
     (result[0] + result[1] + result[2]) as i64
 }

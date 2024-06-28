@@ -28,24 +28,14 @@ macro_rules! impl_signed {
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
             I: StreamIsPartial + Stream,
-            <I as Stream>::Slice: AsBStr,
+            <I as Stream>::Slice: AsBStr + ParseSlice<$i>,
             <I as Stream>::Token: AsChar + Clone,
         {
-            dec_int(input)
+            (opt(one_of(['-', '+'])), digit1).recognize().parse_to().parse_next(input)
         }
     )*)
 }
-impl_signed!(i8, i16, i32, i64, i128);
-
-#[allow(dead_code)]
-pub fn isize<I>(input: &mut I) -> PResult<isize>
-where
-    I: StreamIsPartial + Stream,
-    <I as Stream>::Slice: AsBStr,
-    <I as Stream>::Token: AsChar + Clone,
-{
-    dec_int(input).map(|n: i64| n as isize)
-}
+impl_signed!(i8, i16, i32, i64, i128, isize);
 
 macro_rules! impl_unsigned {
     ($($i:ident),*) => ($(
@@ -53,31 +43,21 @@ macro_rules! impl_unsigned {
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
             I: StreamIsPartial + Stream,
-            <I as Stream>::Slice: AsBStr,
-            <I as Stream>::Token: AsChar + Clone,
+            <I as Stream>::Slice: AsBStr + ParseSlice<$i>,
+            <I as Stream>::Token: AsChar,
         {
-            dec_uint(input)
+            digit1.parse_to().parse_next(input)
         }
     )*)
 }
-impl_unsigned!(u8, u16, u32, u64, u128);
-
-#[allow(dead_code)]
-pub fn usize<I>(input: &mut I) -> PResult<usize>
-where
-    I: StreamIsPartial + Stream,
-    <I as Stream>::Slice: AsBStr,
-    <I as Stream>::Token: AsChar + Clone,
-{
-    dec_uint(input).map(|n: u64| n as usize)
-}
+impl_unsigned!(u8, u16, u32, u64, u128, usize);
 
 macro_rules! impl_float {
     ($($i:ident),*) => ($(
         #[allow(dead_code)]
         pub fn $i<I>(input: &mut I) -> PResult<$i>
         where
-            I: StreamIsPartial + Stream + Compare<&'static str> + Compare<char> + AsBStr,
+            I: StreamIsPartial + Stream + Compare<Caseless<&'static str>> + Compare<char> + AsBStr,
             <I as Stream>::Slice: ParseSlice<$i>,
             <I as Stream>::Token: AsChar + Clone,
             <I as Stream>::IterOffsets: Clone,

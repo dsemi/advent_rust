@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
 use std::sync::Mutex;
-use winnow::ascii::dec_int;
+use winnow::ascii::digit1;
 use winnow::combinator::preceded;
 use winnow::prelude::*;
 
@@ -47,7 +47,7 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
 }
 
 fn i64(input: &mut &str) -> PResult<i64> {
-    dec_int(input)
+    digit1.parse_to().parse_next(input)
 }
 
 #[proc_macro]
@@ -58,14 +58,17 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
     let mut map = PROBS.lock().unwrap();
     for entry in fs::read_dir(d.value()).unwrap().map(|x| x.unwrap().path()) {
         let path = entry.to_str().unwrap();
-        if let Ok((_, year, _, day, _)) = ("src/year", i64, "/day", i64, ".rs").parse(path) {
-            let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
-            let mstr = m.to_string();
-            let day = preceded("day", i64).parse(mstr.as_str()).unwrap();
-            map.entry(year).or_default().insert(day);
-            mods.extend(quote! {
-                pub mod #m;
-            });
+        match ("src/year", i64, "/day", i64, ".rs").parse(path) {
+            Ok((_, year, _, day, _)) => {
+                let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
+                let mstr = m.to_string();
+                let day = preceded("day", i64).parse(mstr.as_str()).unwrap();
+                map.entry(year).or_default().insert(day);
+                mods.extend(quote! {
+                    pub mod #m;
+                });
+            }
+            Err(_) => {}
         }
     }
     mods.into()

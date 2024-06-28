@@ -1,3 +1,6 @@
+use crate::utils::replace_with;
+use std::iter::from_fn;
+
 fn bin(bs: &mut dyn Iterator<Item = u64>, n: usize) -> u64 {
     bs.take(n).fold(0, |a, b| a << 1 | b)
 }
@@ -6,15 +9,16 @@ fn packet(bs: &mut dyn Iterator<Item = u64>, vsum: &mut u64) -> u64 {
     *vsum += bin(bs, 3);
     let type_id = bin(bs, 3);
     if type_id == 4 {
-        return itertools::unfold(true, |b| {
-            std::mem::replace(b, *b && bs.next() == Some(1)).then(|| bin(bs, 4))
+        let mut b = true;
+        return from_fn(|| {
+            replace_with(&mut b, |b| *b && bs.next() == Some(1)).then(|| bin(bs, 4))
         })
         .fold(0, |a, b| a << 4 | b);
     }
     let ns: Vec<u64> = if let Some(0) = bs.next() {
         let n = bin(bs, 15);
-        let r = bs.take(n as usize).peekable();
-        itertools::unfold(r, |mut r| r.peek().is_some().then(|| packet(&mut r, vsum))).collect()
+        let mut r = bs.take(n as usize).peekable();
+        from_fn(|| r.peek().is_some().then(|| packet(&mut r, vsum))).collect()
     } else {
         (0..bin(bs, 11)).map(|_| packet(bs, vsum)).collect()
     };

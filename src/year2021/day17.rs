@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use std::cmp::max;
+use std::iter::from_fn;
 
 fn parse(i: &mut &str) -> PResult<(i64, i64, i64, i64)> {
     let (_, x0, _, x1, _, y0, _, y1) =
@@ -8,12 +9,13 @@ fn parse(i: &mut &str) -> PResult<(i64, i64, i64, i64)> {
 }
 
 fn hits_target(x0: i64, x1: i64, y0: i64, y1: i64, mut vx: i64, mut vy: i64) -> bool {
-    itertools::unfold((0, 0), |p| {
+    let mut p = (0, 0);
+    from_fn(|| {
         p.0 += vx;
         p.1 += vy;
         vx = max(0, vx - 1);
         vy -= 1;
-        (p.0 <= x1 && p.1 >= y0).then_some(*p)
+        (p.0 <= x1 && p.1 >= y0).then_some(p)
     })
     .any(|(x, y)| x0 <= x && x <= x1 && y0 <= y && y <= y1)
 }
