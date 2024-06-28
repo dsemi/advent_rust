@@ -130,7 +130,7 @@ where
     F2: Fn(&T) -> usize,
     F3: Fn(&T) -> bool,
 {
-    let mut visited: AHashSet<T> = vec![start.clone()].into_iter().collect();
+    let mut open_set: AHashSet<T> = vec![start.clone()].into_iter().collect();
     let mut queue: BinaryHeap<AStarNode<T>> = BinaryHeap::new();
     queue.push(AStarNode {
         weight: 0,
@@ -140,6 +140,9 @@ where
     let mut g_score: AHashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
     let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
     while let Some(AStarNode { elem: st, .. }) = queue.pop() {
+        if !open_set.remove(&st) {
+            continue;
+        }
         if goal(&st) {
             let mut result = vec![(g_score[&st], st.clone())];
             let mut curr = &st;
@@ -150,7 +153,6 @@ where
             result.reverse();
             return Some(result);
         }
-        visited.remove(&st);
         for (dist, st2) in neighbors(&st) {
             let tent_g_score = g_score
                 .get(&st)
@@ -161,12 +163,14 @@ where
                 came_from.insert(st2.clone(), st.clone());
                 g_score.insert(st2.clone(), tent_g_score);
                 f_score.insert(st2.clone(), tent_g_score + heur(&st2));
-                if visited.insert(st2.clone()) {
-                    queue.push(AStarNode {
-                        weight: f_score[&st2],
-                        elem: st2,
-                    });
-                }
+                // Could maybe be more efficient here by using a priority search queue and
+                // getting rid of open_set. Keeps the queue smaller, but lookups might be slower?
+                // Hard to say without testing.
+                open_set.insert(st2.clone());
+                queue.push(AStarNode {
+                    weight: f_score[&st2],
+                    elem: st2,
+                });
             }
         }
     }
