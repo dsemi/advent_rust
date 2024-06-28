@@ -68,7 +68,9 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
                     pub mod #m;
                 });
             }
-            Err(_) => {}
+            Err(_) => {
+                // Add prints here if debugging is necessary.
+            }
         }
     }
     mods.into()

@@ -16,7 +16,7 @@ where
     (0..).step_by(CHUNK_SIZE).flat_map(move |n| {
         (n..n + CHUNK_SIZE)
             .into_par_iter()
-            .map(|i| hasher.clone().chain_update(&i.to_string()).finalize())
+            .map(|i| hasher.clone().chain_update(i.to_string()).finalize())
             .filter(pred)
             .map(transform)
             .collect::<Vec<_>>()
