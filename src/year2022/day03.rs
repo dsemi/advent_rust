@@ -10,10 +10,10 @@ pub fn part1(input: &str) -> usize {
     input
         .lines()
         .map(|line| {
-            let half = line.len() / 2;
             let mut v = [0; 52];
-            line[..half].bytes().for_each(|b| v[idx(b)] |= 1);
-            line[half..].bytes().map(idx).find(|&i| v[i] > 0).unwrap() + 1
+            let (a, b) = line.split_at(line.len() / 2);
+            a.bytes().for_each(|b| v[idx(b)] |= 1);
+            b.bytes().map(idx).find(|&i| v[i] > 0).unwrap() + 1
         })
         .sum()
 }
