@@ -9,7 +9,7 @@ fn find_num(f: fn(&[u8]) -> bool, key: &str) -> Option<usize> {
         (n..n + CHUNK_SIZE).into_par_iter().find_first(|i: &usize| {
             let mut hasher = Md5::new();
             hasher.update(keyb);
-            hasher.update(&i.to_string());
+            hasher.update(i.to_string());
             f(hasher.finalize().as_slice())
         })
     })

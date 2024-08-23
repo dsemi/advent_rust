@@ -99,7 +99,7 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                 .into_par_iter()
                 .map(|i| {
                     let mut h = hasher.clone();
-                    h.update(&i.to_string());
+                    h.update(i.to_string());
                     let mut res = Array::default();
                     let mut out = Sum { hex: [0; 32] };
                     h.finalize_into_reset(&mut res);
