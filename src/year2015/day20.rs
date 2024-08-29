@@ -28,8 +28,8 @@ pub fn part1(n: u64) -> u64 {
 pub fn part2(n: u32) -> Option<usize> {
     let mut vec = vec![0; 1000000];
     for i in 1..vec.len() {
-        for j in (i..vec.len()).step_by(i).take(50) {
-            vec[j] += 11 * i as u32;
+        for e in vec.iter_mut().skip(i).step_by(i).take(50) {
+            *e += 11 * i as u32;
         }
     }
     vec.into_iter().position(|x| x >= n)
