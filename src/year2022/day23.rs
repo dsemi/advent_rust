@@ -47,7 +47,7 @@ mod simd {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub fn or8(
         a: __m256i,
         b: __m256i,
@@ -142,7 +142,7 @@ mod simd {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments)]
     pub fn or8(
         a: uint8x16x2_t,
         b: uint8x16x2_t,
@@ -276,7 +276,7 @@ impl Grid {
     }
 
     // Can remove once map_windows is stabilized.
-    #[allow(unstable_name_collisions)]
+    #[expect(unstable_name_collisions)]
     fn step(&mut self, dirs: &mut [Dir; 4]) -> bool {
         let mut next = self.clone();
         let mut moved = false;

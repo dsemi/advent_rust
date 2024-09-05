@@ -3,7 +3,7 @@ use crate::utils::partition_point;
 use ahash::AHashMap;
 
 struct Reactions<'a> {
-    #[allow(clippy::type_complexity)]
+    #[expect(clippy::type_complexity)]
     graph: AHashMap<&'a str, (i64, Vec<(i64, &'a str)>)>,
     topo: Vec<&'a str>,
 }
@@ -12,7 +12,7 @@ fn chemical<'a>(i: &mut &'a str) -> PResult<(i64, &'a str)> {
     separated_pair(i64, space1, alpha1).parse_next(i)
 }
 
-#[allow(clippy::type_complexity)]
+#[expect(clippy::type_complexity)]
 fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, (i64, Vec<(i64, &'a str)>))> {
     separated_pair(list(chemical), " => ", chemical)
         .map(|(srcs, (n, out))| (out, (n, srcs)))

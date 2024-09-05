@@ -30,9 +30,9 @@ fn solve(input: &str, sts: &[u8]) -> Option<usize> {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    solve(input, &[b'S'])
+    solve(input, b"S")
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    solve(input, &[b'S', b'a'])
+    solve(input, b"Sa")
 }

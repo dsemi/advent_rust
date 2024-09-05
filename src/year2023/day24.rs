@@ -33,10 +33,10 @@ pub fn part2(input: &str) -> i64 {
         .try_into()
         .unwrap();
     // Remove after https://github.com/dimforge/nalgebra/issues/1422 is fixed
-    #[allow(clippy::toplevel_ref_arg)]
+    #[expect(clippy::toplevel_ref_arg)]
     let rhs = stack![ &(bp.cross(&bv) - ap.cross(&av));
                       cp.cross(&cv) - ap.cross(&av) ];
-    #[allow(clippy::toplevel_ref_arg)]
+    #[expect(clippy::toplevel_ref_arg)]
     let m = stack![ av.cross_matrix() - bv.cross_matrix(), bp.cross_matrix() - ap.cross_matrix();
                     av.cross_matrix() - cv.cross_matrix(), cp.cross_matrix() - ap.cross_matrix() ];
     let result = m.try_inverse().unwrap() * rhs;

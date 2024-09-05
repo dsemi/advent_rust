@@ -146,5 +146,5 @@ pub fn part2(input: &str) -> u32 {
             .for_each(|(key, cost)| transition(&graph, &mut tmp, key, cost, row, 0, b'.'));
         dp = tmp;
     }
-    dp[&[b'.', b'.', b'.', b'.', b'.', b'(', b')']]
+    dp[b".....()"]
 }
