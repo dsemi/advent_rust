@@ -48,7 +48,8 @@ impl Graph {
         Graph { flow, valves, dist }
     }
 
-    fn dfs(&self, res: &mut [u16], i: usize, closed: u16, open: u16, pressure: u16, time_left: u8) {
+    fn dfs(&self, res: &mut [u16], i: usize, open: u16, pressure: u16, time_left: u8) {
+        let closed = self.valves ^ open;
         let upper_bd = self.upper_bound(closed, pressure, time_left);
         let e = res.get_mut(open as usize % res.len()).unwrap();
         if upper_bd <= *e {
@@ -62,7 +63,6 @@ impl Graph {
                 self.dfs(
                     res,
                     j,
-                    closed & !bit,
                     open | bit,
                     pressure + self.flow[j] as u16 * time_left as u16,
                     time_left,
@@ -74,7 +74,7 @@ impl Graph {
     fn sim(&self, time: u8, bins: usize) -> Vec<u16> {
         let mut res = vec![0; bins];
         let start = self.valves.count_ones() as usize;
-        self.dfs(&mut res, start, self.valves, 0, 0, time);
+        self.dfs(&mut res, start, 0, 0, time);
         res
     }
 
