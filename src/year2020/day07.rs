@@ -3,7 +3,7 @@ use ahash::{AHashMap, AHashSet};
 
 fn bag<'a>(i: &mut &'a str) -> PResult<&'a str> {
     terminated(
-        (alpha1, space1, alpha1).recognize(),
+        (alpha1, space1, alpha1).take(),
         (alt((" bags", " bag")), opt('.')),
     )
     .parse_next(i)

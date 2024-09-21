@@ -1,5 +1,5 @@
 use ahash::AHashMap;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 const SMALL_K: &str = "
  ##  ###   ##  #### ####  ##  #  # ###   ## #  # #     ##  ###  ###   ### #  # #   # ####
@@ -62,19 +62,19 @@ fn separate_letters(input: &str, fill_opt: Option<char>) -> Vec<String> {
     res
 }
 
-static SMALL_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+static SMALL_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
     separate_letters(SMALL_K, None)
         .into_iter()
         .zip(SMALL_V.chars())
         .collect()
 });
-static LARGE_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+static LARGE_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
     separate_letters(LARGE_K, None)
         .into_iter()
         .zip(LARGE_V.chars())
         .collect()
 });
-static SPECIAL_LETTERS: Lazy<AHashMap<String, char>> = Lazy::new(|| {
+static SPECIAL_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
     separate_letters(SPECIAL_K, None)
         .into_iter()
         .zip(SPECIAL_V.chars())

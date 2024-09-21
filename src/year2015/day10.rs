@@ -1,6 +1,6 @@
 use enum_map::{enum_map, Enum, EnumMap};
-use once_cell::sync::Lazy;
 use smallvec::{smallvec as sv, SmallVec};
+use std::sync::LazyLock;
 use Atom::*;
 
 #[rustfmt::skip]
@@ -21,7 +21,7 @@ struct A {
 }
 
 #[rustfmt::skip]
-static MAPPINGS: Lazy<EnumMap<Atom, A>> = Lazy::new(|| {
+static MAPPINGS: LazyLock<EnumMap<Atom, A>> = LazyLock::new(|| {
     enum_map! {
         H  => A{decay: sv![H],                     seq: "22"},
         He => A{decay: sv![Hf, Pa, H, Ca, Li],     seq: "13112221133211322112211213322112"},

@@ -4,30 +4,26 @@ use std::ops;
 const HEIGHT: usize = 137;
 
 #[derive(PartialEq)]
-struct Cucumbers {
-    c: [[u64; 4]; HEIGHT],
-}
+struct Cucumbers([[u64; 4]; HEIGHT]);
 
 impl ops::Index<usize> for Cucumbers {
     type Output = [u64; 4];
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.c[index]
+        &self.0[index]
     }
 }
 
 impl ops::IndexMut<usize> for Cucumbers {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.c[index]
+        &mut self.0[index]
     }
 }
 
 macro_rules! impl_operator {
     ($op:tt) => {
         impl_op_ex!($op |a: &Cucumbers, b: &Cucumbers| -> Cucumbers {
-            let mut result = Cucumbers {
-                c: [[0; 4]; HEIGHT],
-            };
+            let mut result = Cucumbers ([[0; 4]; HEIGHT]);
             for r in 0..HEIGHT {
                 for i in 0..4 {
                     result[r][i] = a[r][i] $op b[r][i];
@@ -44,9 +40,7 @@ impl_operator!(^);
 
 impl Cucumbers {
     fn shift_up(&self) -> Self {
-        let mut result = Self {
-            c: [[0; 4]; HEIGHT],
-        };
+        let mut result = Self([[0; 4]; HEIGHT]);
         result[HEIGHT - 1] = self[0];
         for r in 1..HEIGHT {
             result[r - 1] = self[r];
@@ -55,9 +49,7 @@ impl Cucumbers {
     }
 
     fn shift_down(&self) -> Self {
-        let mut result = Self {
-            c: [[0; 4]; HEIGHT],
-        };
+        let mut result = Self([[0; 4]; HEIGHT]);
         result[0] = self[HEIGHT - 1];
         for r in 1..HEIGHT {
             result[r] = self[r - 1];
@@ -66,9 +58,7 @@ impl Cucumbers {
     }
 
     fn shift_left(&self) -> Self {
-        let mut result = Self {
-            c: [[0; 4]; HEIGHT],
-        };
+        let mut result = Self([[0; 4]; HEIGHT]);
         for r in 0..HEIGHT {
             result[r][0] = (self[r][0] >> 1) | (self[r][1] << 63);
             result[r][1] = (self[r][1] >> 1) | (self[r][2] << 63);
@@ -80,9 +70,7 @@ impl Cucumbers {
     }
 
     fn shift_right(&self) -> Self {
-        let mut result = Self {
-            c: [[0; 4]; HEIGHT],
-        };
+        let mut result = Self([[0; 4]; HEIGHT]);
         for r in 0..HEIGHT {
             result[r][0] = (self[r][0] << 1) | (self[r][2] >> 10);
             result[r][1] = (self[r][1] << 1) | (self[r][0] >> 63);
@@ -118,13 +106,9 @@ pub fn part1(input: &str) -> usize {
         (d_mask, r_mask)
     }
 
-    let mut d = Cucumbers {
-        c: [[0; 4]; HEIGHT],
-    };
-    let mut r = Cucumbers {
-        c: [[0; 4]; HEIGHT],
-    };
-    for ((dr, rr), line) in d.c.iter_mut().zip(r.c.iter_mut()).zip(input.lines()) {
+    let mut d = Cucumbers([[0; 4]; HEIGHT]);
+    let mut r = Cucumbers([[0; 4]; HEIGHT]);
+    for ((dr, rr), line) in d.0.iter_mut().zip(r.0.iter_mut()).zip(input.lines()) {
         (dr[0], rr[0]) = to_mask(64, line);
         (dr[1], rr[1]) = to_mask(64, &line[64..]);
         (dr[2], rr[2]) = to_mask(11, &line[128..]);

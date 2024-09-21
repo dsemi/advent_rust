@@ -1,27 +1,15 @@
 use crate::utils::parsers::*;
+use derive_more::Add;
 use itertools::Itertools;
 use num::Integer;
-use once_cell::sync::Lazy;
 use std::cmp::max;
-use std::ops::Add;
+use std::sync::LazyLock;
 
-#[derive(Clone, Copy)]
+#[derive(Add, Clone, Copy)]
 struct Equip {
     cost: i32,
     damage: i32,
     armor: i32,
-}
-
-impl Add<Equip> for Equip {
-    type Output = Equip;
-
-    fn add(self, rhs: Equip) -> Equip {
-        Equip {
-            cost: self.cost + rhs.cost,
-            damage: self.damage + rhs.damage,
-            armor: self.armor + rhs.armor,
-        }
-    }
 }
 
 #[derive(Clone, Copy)]
@@ -31,41 +19,35 @@ struct Person {
 }
 
 #[rustfmt::skip]
-static SHOP1: Lazy<Vec<Equip>> = Lazy::new(|| {
-    vec![
-        Equip { cost: 8, damage: 4, armor: 0 },  // Dagger
-        Equip { cost: 10, damage: 5, armor: 0 }, // Shortsword
-        Equip { cost: 25, damage: 6, armor: 0 }, // Warhammer
-        Equip { cost: 40, damage: 7, armor: 0 }, // Longsword
-        Equip { cost: 74, damage: 8, armor: 0 }, // Greataxe
-    ]}
-);
+const SHOP1: &[Equip] = &[
+    Equip { cost: 8, damage: 4, armor: 0 },  // Dagger
+    Equip { cost: 10, damage: 5, armor: 0 }, // Shortsword
+    Equip { cost: 25, damage: 6, armor: 0 }, // Warhammer
+    Equip { cost: 40, damage: 7, armor: 0 }, // Longsword
+    Equip { cost: 74, damage: 8, armor: 0 }, // Greataxe
+];
 #[rustfmt::skip]
-static SHOP2: Lazy<Vec<Equip>> = Lazy::new(|| {
-    vec![
-        Equip { cost: 13, damage: 0, armor: 1 },  // Leather
-        Equip { cost: 31, damage: 0, armor: 2 },  // Chainmail
-        Equip { cost: 53, damage: 0, armor: 3 },  // Splintmail
-        Equip { cost: 75, damage: 0, armor: 4 },  // Bandedmail
-        Equip { cost: 102, damage: 0, armor: 5 }, // Platemail
-    ]}
-);
+const SHOP2: &[Equip] = &[
+    Equip { cost: 13, damage: 0, armor: 1 },  // Leather
+    Equip { cost: 31, damage: 0, armor: 2 },  // Chainmail
+    Equip { cost: 53, damage: 0, armor: 3 },  // Splintmail
+    Equip { cost: 75, damage: 0, armor: 4 },  // Bandedmail
+    Equip { cost: 102, damage: 0, armor: 5 }, // Platemail
+];
 #[rustfmt::skip]
-static SHOP3: Lazy<Vec<Equip>> = Lazy::new(|| {
-    vec![
-        Equip { cost: 25, damage: 1, armor: 0 },  // Damage +1
-        Equip { cost: 50, damage: 2, armor: 0 },  // Damage +2
-        Equip { cost: 100, damage: 3, armor: 0 }, // Damage +3
-        Equip { cost: 20, damage: 0, armor: 1 },  // Defense +1
-        Equip { cost: 40, damage: 0, armor: 2 },  // Defense +2
-        Equip { cost: 80, damage: 0, armor: 3 },  // Defense +3
-        Equip { cost: 0, damage: 0, armor: 0 },   // None
-    ]}
-);
-static ALL_EQUIP_COMBOS: Lazy<Vec<Person>> = Lazy::new(|| {
+const SHOP3: &[Equip] = &[
+    Equip { cost: 25, damage: 1, armor: 0 },  // Damage +1
+    Equip { cost: 50, damage: 2, armor: 0 },  // Damage +2
+    Equip { cost: 100, damage: 3, armor: 0 }, // Damage +3
+    Equip { cost: 20, damage: 0, armor: 1 },  // Defense +1
+    Equip { cost: 40, damage: 0, armor: 2 },  // Defense +2
+    Equip { cost: 80, damage: 0, armor: 3 },  // Defense +3
+    Equip { cost: 0, damage: 0, armor: 0 },   // None
+];
+static ALL_EQUIP_COMBOS: LazyLock<Vec<Person>> = LazyLock::new(|| {
     let mut v = Vec::new();
-    for &weapon in SHOP1.iter() {
-        for &armor in SHOP2.iter() {
+    for &weapon in SHOP1 {
+        for &armor in SHOP2 {
             for rings in SHOP3.iter().combinations(2) {
                 v.push(person(weapon + armor + *rings[0] + *rings[1]));
             }

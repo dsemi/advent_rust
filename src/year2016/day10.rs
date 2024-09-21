@@ -29,7 +29,7 @@ fn populate_ins<'a>(m: &mut AHashMap<&'a str, Vec<i64>>, t: &AHashMap<&str, Node
 }
 
 fn bot<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
-    let mut loc = |i: &mut &'a str| separated_pair(alpha1, space1, u8).recognize().parse_next(i);
+    let mut loc = |i: &mut &'a str| separated_pair(alpha1, space1, u8).take().parse_next(i);
     let name = loc.parse_next(i)?;
     let lo = preceded(" gives low to ", loc).parse_next(i)?;
     let hi = preceded(" and high to ", loc).parse_next(i)?;
@@ -38,7 +38,7 @@ fn bot<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
 
 fn value<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
     let val = preceded("value ", i64).parse_next(i)?;
-    let b = preceded(" goes to ", ("bot ", u8).recognize()).parse_next(i)?;
+    let b = preceded(" goes to ", ("bot ", u8).take()).parse_next(i)?;
     Ok(vec![(b, Value(val))])
 }
 

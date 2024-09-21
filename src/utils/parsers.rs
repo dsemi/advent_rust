@@ -31,7 +31,7 @@ macro_rules! impl_signed {
             <I as Stream>::Slice: AsBStr + ParseSlice<$i>,
             <I as Stream>::Token: AsChar + Clone,
         {
-            (opt(one_of(['-', '+'])), digit1).recognize().parse_to().parse_next(input)
+            (opt(one_of(['-', '+'])), digit1).take().parse_to().parse_next(input)
         }
     )*)
 }

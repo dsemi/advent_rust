@@ -203,15 +203,15 @@ make_problems!();
 #[cfg(test)]
 mod tests {
     use advent::make_tests;
-    use once_cell::sync::Lazy;
     use std::error::Error;
+    use std::sync::LazyLock;
     use toml::value::Table;
     use toml::value::Value;
 
     use super::{get_file_input, get_prob};
 
     const EXP: &str = include_str!("../test/expectedAnswers.toml");
-    static DICT: Lazy<Table> = Lazy::new(|| toml::from_str(EXP).unwrap());
+    static DICT: LazyLock<Table> = LazyLock::new(|| toml::from_str(EXP).unwrap());
 
     fn get_expected_solutions(year: i64, day: i64) -> Result<(String, String), String> {
         match &DICT[&year.to_string()][day.to_string()] {
