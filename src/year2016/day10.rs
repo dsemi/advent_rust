@@ -1,70 +1,72 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
-use std::cmp::{max, min};
-use Src::*;
+use crate::utils::DefaultVec;
 
-enum Src<'a> {
-    Value(i64),
-    Bot(&'a str, fn(i64, i64) -> i64),
+#[derive(Clone, Copy)]
+enum Loc {
+    Output(usize),
+    Bot(usize),
 }
 
-type Node<'a> = Vec<Src<'a>>;
+#[derive(Clone, Copy, Default)]
+struct Bot(usize, [i64; 2], Option<(Loc, Loc)>);
 
-fn populate_ins<'a>(m: &mut AHashMap<&'a str, Vec<i64>>, t: &AHashMap<&str, Node<'a>>, k: &'a str) {
-    if m.contains_key(&k) {
-        return;
+impl Bot {
+    fn recv(&mut self, val: i64) {
+        self.1[self.0] = val;
+        self.0 += 1;
     }
-    let mut inps: Vec<i64> = t[k]
-        .iter()
-        .map(|src| match src {
-            Value(v) => *v,
-            Bot(b, f) => {
-                populate_ins(m, t, b);
-                m[b].iter().copied().reduce(f).unwrap()
+}
+
+#[derive(Default)]
+struct Factory {
+    bots: DefaultVec<Bot>,
+    outs: DefaultVec<i64>,
+}
+
+impl Factory {
+    fn run(input: &str) -> Self {
+        let mut f = Self::default();
+        let loc =
+            |i: &mut &str| alt((cons1!(Loc::Output, usize), cons1!(Loc::Bot, usize))).parse_next(i);
+        let mut bot_pat = ("bot ", usize, " gives low to ", loc, " and high to ", loc);
+        for line in input.lines() {
+            if let Ok((_, v, _, t)) = ("value ", i64, " goes to ", loc).parse(line) {
+                f.send(v, t);
+            } else if let Ok((_, n, _, lo, _, hi)) = bot_pat.parse(line) {
+                f.bots.get_mut(n).2 = Some((lo, hi));
+                f.run_bot(n);
             }
-        })
-        .collect();
-    inps.sort_unstable();
-    m.insert(k, inps);
-}
+        }
+        f
+    }
 
-fn bot<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
-    let mut loc = |i: &mut &'a str| separated_pair(alpha1, space1, u8).take().parse_next(i);
-    let name = loc.parse_next(i)?;
-    let lo = preceded(" gives low to ", loc).parse_next(i)?;
-    let hi = preceded(" and high to ", loc).parse_next(i)?;
-    Ok(vec![(lo, Bot(name, min)), (hi, Bot(name, max))])
-}
-
-fn value<'a>(i: &mut &'a str) -> PResult<Vec<(&'a str, Src<'a>)>> {
-    let val = preceded("value ", i64).parse_next(i)?;
-    let b = preceded(" goes to ", ("bot ", u8).take()).parse_next(i)?;
-    Ok(vec![(b, Value(val))])
-}
-
-fn run_factory(input: &str) -> AHashMap<&str, Vec<i64>> {
-    let mut tbl: AHashMap<&str, Node> = AHashMap::new();
-    for line in input.lines() {
-        for (k, src) in alt((value, bot)).read(line) {
-            tbl.entry(k).or_default().push(src);
+    fn send(&mut self, val: i64, loc: Loc) {
+        match loc {
+            Loc::Output(i) => *self.outs.get_mut(i) = val,
+            Loc::Bot(i) => {
+                self.bots.get_mut(i).recv(val);
+                self.run_bot(i);
+            }
         }
     }
-    let mut result: AHashMap<&str, Vec<i64>> = AHashMap::new();
-    for k in tbl.keys() {
-        populate_ins(&mut result, &tbl, k);
+
+    fn run_bot(&mut self, idx: usize) {
+        if let Bot(2, [a, b], Some((lo, hi))) = *self.bots.get(idx) {
+            self.send(a.min(b), lo);
+            self.send(a.max(b), hi);
+        }
     }
-    result
 }
 
-pub fn part1(input: &str) -> Option<String> {
-    run_factory(input)
-        .into_iter()
-        .filter(|(_k, v)| v == &vec![17, 61])
-        .map(|x| x.0.rsplit_once(' ').unwrap().1.to_string())
-        .next()
+pub fn part1(input: &str) -> Option<usize> {
+    Factory::run(input)
+        .bots
+        .iter()
+        .enumerate()
+        .find(|&(_, &Bot(_, vals, _))| vals == [17, 61] || vals == [61, 17])
+        .map(|x| x.0)
 }
 
 pub fn part2(input: &str) -> i64 {
-    let m = run_factory(input);
-    m["output 0"][0] * m["output 1"][0] * m["output 2"][0]
+    Factory::run(input).outs.iter().take(3).product()
 }

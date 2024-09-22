@@ -12,6 +12,7 @@ use std::collections::{BinaryHeap, VecDeque};
 use std::convert::{identity, From};
 use std::hash::Hash;
 use std::iter::Sum;
+use std::ops::Deref;
 use std::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr,
     ShrAssign, Sub, SubAssign,
@@ -1560,5 +1561,32 @@ impl<T, I: AsPrimitive<usize>> Index<I> for Grid<T, I> {
 impl<T, I: AsPrimitive<usize>> IndexMut<I> for Grid<T, I> {
     fn index_mut(&mut self, idx: I) -> &mut T {
         &mut self.elems[idx.as_()]
+    }
+}
+
+#[derive(Default)]
+pub struct DefaultVec<T>(Vec<T>);
+
+impl<T: Default> DefaultVec<T> {
+    pub fn get(&mut self, idx: usize) -> &T {
+        if idx >= self.0.len() {
+            self.0.resize_with(idx + 1, T::default);
+        }
+        self.0.index(idx)
+    }
+
+    pub fn get_mut(&mut self, idx: usize) -> &mut T {
+        if idx >= self.0.len() {
+            self.0.resize_with(idx + 1, T::default);
+        }
+        self.0.index_mut(idx)
+    }
+}
+
+impl<T> Deref for DefaultVec<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

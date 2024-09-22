@@ -246,14 +246,14 @@ where
 }
 
 macro_rules! cons1 {
-    ($make:ident, $arg1:expr) => {
+    ($make:path, $arg1:expr) => {
         (advent::lower!($make), space1, $arg1).map(move |(_, _, a)| $make(a))
     };
 }
 pub(crate) use cons1;
 
 macro_rules! cons2 {
-    ($make:ident, $arg1:expr, $arg2:expr) => {
+    ($make:path, $arg1:expr, $arg2:expr) => {
         (advent::lower!($make), space1, $arg1, space1, $arg2)
             .map(move |(_, _, a, _, b)| $make(a, b))
     };
