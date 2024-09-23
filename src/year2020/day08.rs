@@ -1,36 +1,19 @@
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use advent::Parser;
 use Instr::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Parser)]
 enum Instr {
     Acc(i64),
     Jmp(i64),
     Nop(i64),
 }
 
-fn parse_prog(s: &str) -> Vec<Instr> {
-    s.lines()
-        .map(|line| {
-            let w: Vec<&str> = line.split(' ').collect();
-            match w[0] {
-                "acc" => Acc(w[1].i64()),
-                "jmp" => Jmp(w[1].i64()),
-                "nop" => Nop(w[1].i64()),
-                _ => panic!("Invalid instr: {}", w[0]),
-            }
-        })
-        .collect()
-}
-
 fn run_prog(prog: &[Instr]) -> (i64, bool) {
-    let mut visited = AHashSet::new();
+    let mut vis = vec![false; prog.len()];
     let mut acc = 0;
     let mut i = 0;
-    while 0 <= i && i < prog.len() as i64 {
-        if !visited.insert(i) {
-            return (acc, false);
-        }
+    while 0 <= i && i < prog.len() as i64 && !std::mem::replace(&mut vis[i as usize], true) {
         match prog[i as usize] {
             Acc(n) => acc += n,
             Jmp(n) => i += n - 1,
@@ -38,11 +21,11 @@ fn run_prog(prog: &[Instr]) -> (i64, bool) {
         }
         i += 1;
     }
-    (acc, true)
+    (acc, i == prog.len() as i64)
 }
 
 pub fn part1(input: &str) -> i64 {
-    run_prog(&parse_prog(input)).0
+    run_prog(&lines(instr).read(input)).0
 }
 
 fn flip(prog: &mut [Instr], i: usize) {
@@ -53,15 +36,12 @@ fn flip(prog: &mut [Instr], i: usize) {
     };
 }
 
-pub fn part2(input: &str) -> i64 {
-    let mut prog = parse_prog(input);
-    for i in 0..prog.len() {
+pub fn part2(input: &str) -> Option<i64> {
+    let mut prog = lines(instr).read(input);
+    (0..prog.len()).find_map(|i| {
         flip(&mut prog, i);
         let (ans, fin) = run_prog(&prog);
         flip(&mut prog, i);
-        if fin {
-            return ans;
-        }
-    }
-    0
+        fin.then_some(ans)
+    })
 }

@@ -1,7 +1,8 @@
 use crate::utils::parsers::*;
 use crate::utils::DefaultVec;
+use advent::Parser;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Parser)]
 enum Loc {
     Output(usize),
     Bot(usize),
@@ -26,8 +27,6 @@ struct Factory {
 impl Factory {
     fn run(input: &str) -> Self {
         let mut f = Self::default();
-        let loc =
-            |i: &mut &str| alt((cons1!(Loc::Output, usize), cons1!(Loc::Bot, usize))).parse_next(i);
         let mut bot_pat = ("bot ", usize, " gives low to ", loc, " and high to ", loc);
         for line in input.lines() {
             if let Ok((_, v, _, t)) = ("value ", i64, " goes to ", loc).parse(line) {

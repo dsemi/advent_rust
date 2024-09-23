@@ -1,10 +1,10 @@
-use self::Instr::*;
-use self::Value::*;
 use crate::utils::parsers::*;
 use ahash::AHashSet;
+use Instr::*;
+use Val::*;
 
 #[derive(Clone, Copy, Debug)]
-enum Value {
+enum Val {
     Reg(usize),
     Lit(i64),
 }
@@ -12,11 +12,11 @@ enum Value {
 #[derive(Clone, Debug)]
 enum Instr {
     Inp(usize),
-    Add(usize, Value),
-    Mul(usize, Value),
-    Div(usize, Value),
-    Mod(usize, Value),
-    Eql(usize, Value),
+    Add(usize, Val),
+    Mul(usize, Val),
+    Div(usize, Val),
+    Mod(usize, Val),
+    Eql(usize, Val),
 }
 
 #[derive(Clone)]
@@ -31,7 +31,7 @@ fn reg(i: &mut &str) -> PResult<usize> {
         .parse_next(i)
 }
 
-fn val(i: &mut &str) -> PResult<Value> {
+fn val(i: &mut &str) -> PResult<Val> {
     alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
 }
 
@@ -59,7 +59,7 @@ impl Prog {
         }
     }
 
-    fn val(&self, v: &Value) -> i64 {
+    fn val(&self, v: &Val) -> i64 {
         match v {
             Reg(r) => self.regs[*r],
             Lit(n) => *n,

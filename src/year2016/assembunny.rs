@@ -1,23 +1,23 @@
-use self::Instr::*;
-use self::Value::*;
 use crate::utils::parsers::*;
+use Instr::*;
+use Val::*;
 
 #[derive(Clone, Copy)]
-enum Value {
+enum Val {
     Reg(usize),
     Lit(i64),
 }
 
 #[derive(Clone)]
 enum Instr {
-    Cpy(Value, Value),
+    Cpy(Val, Val),
     Inc(usize),
     Dec(usize),
     Tgl(usize),
-    Out(Value),
-    Jnz(Value, Value),
+    Out(Val),
+    Jnz(Val, Val),
     Add(usize, usize),
-    Mul(Value, usize, usize, usize),
+    Mul(Val, usize, usize, usize),
     Nop,
 }
 
@@ -66,7 +66,7 @@ fn reg(i: &mut &str) -> PResult<usize> {
         .parse_next(i)
 }
 
-fn val(i: &mut &str) -> PResult<Value> {
+fn val(i: &mut &str) -> PResult<Val> {
     alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
 }
 
@@ -93,7 +93,7 @@ pub fn parse_instrs(input: &str) -> Sim {
 }
 
 impl Sim {
-    fn val(&self, v: &Value) -> i64 {
+    fn val(&self, v: &Val) -> i64 {
         match v {
             Reg(i) => self.regs[*i],
             Lit(n) => *n,

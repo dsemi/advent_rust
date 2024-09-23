@@ -20,10 +20,8 @@ pub fn part2(input: &str) -> i64 {
     let mut dp = vec![0; ns[ns.len() - 1] as usize + 1];
     dp[0] = 1;
     for n in ns[1..].iter() {
-        for i in (n - 3)..*n {
-            if i >= 0 {
-                dp[*n as usize] += dp[i as usize];
-            }
+        for i in (n - 3).max(0)..*n {
+            dp[*n as usize] += dp[i as usize];
         }
     }
     dp[ns[ns.len() - 1] as usize]

@@ -1,8 +1,9 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use advent::Parser;
 use Op::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Parser)]
 pub enum Op {
     Addr,
     Addi,
@@ -22,7 +23,7 @@ pub enum Op {
     Eqrr,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Parser)]
 pub struct Instr(pub Op, pub i64, pub i64, pub i64);
 
 pub struct Prog {
@@ -31,43 +32,11 @@ pub struct Prog {
     pub reg: [i64; 6],
 }
 
-macro_rules! match_op {
-    ($n:ident) => {
-        literal(advent::lower!($n)).value($n)
-    };
-}
-
-fn parse_instr(i: &mut &str) -> PResult<Instr> {
-    let op = alt((
-        match_op!(Addr),
-        match_op!(Addi),
-        match_op!(Mulr),
-        match_op!(Muli),
-        match_op!(Banr),
-        match_op!(Bani),
-        match_op!(Borr),
-        match_op!(Bori),
-        match_op!(Setr),
-        match_op!(Seti),
-        match_op!(Gtir),
-        match_op!(Gtri),
-        match_op!(Gtrr),
-        match_op!(Eqir),
-        match_op!(Eqri),
-        match_op!(Eqrr),
-    ))
-    .parse_next(i)?;
-    let a = preceded(space1, i64).parse_next(i)?;
-    let b = preceded(space1, i64).parse_next(i)?;
-    let c = preceded(space1, i64).parse_next(i)?;
-    Ok(Instr(op, a, b, c))
-}
-
 impl Prog {
     pub fn parse_instrs(input: &str) -> Self {
         let mut gen = input.lines();
         let ip = preceded("#ip ", usize).read(gen.next().unwrap());
-        let instrs = gen.map(|line| parse_instr.read(line)).collect();
+        let instrs = gen.map(|line| instr.read(line)).collect();
         Self {
             ip,
             instrs,
