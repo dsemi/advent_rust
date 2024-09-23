@@ -1,22 +1,30 @@
-use std::collections::BTreeSet;
+use std::cmp::Ordering::*;
 
-fn solve(x: usize, ns: BTreeSet<i64>) -> Option<i64> {
-    fn go(n: usize, c: i64, xs: BTreeSet<i64>) -> Option<i64> {
-        if n == 1 {
-            xs.contains(&c).then_some(c)
-        } else {
-            xs.iter()
-                .find_map(|x2| go(n - 1, c - x2, xs.clone().split_off(&(x2 + 1))).map(|x3| x2 * x3))
+const TARGET: i64 = 2020;
+
+fn two_sum(target: i64, entries: &[i64]) -> Option<i64> {
+    let mut gen = entries.iter();
+    let mut lo = gen.next();
+    let mut hi = gen.next_back();
+    while let (Some(a), Some(b)) = (lo, hi) {
+        match (a + b).cmp(&target) {
+            Equal => return Some(a * b),
+            Less => lo = gen.next(),
+            Greater => hi = gen.next_back(),
         }
     }
-
-    go(x, 2020, ns)
+    None
 }
 
-pub fn part1(input: BTreeSet<i64>) -> Option<i64> {
-    solve(2, input)
+pub fn part1(mut input: Vec<i64>) -> Option<i64> {
+    input.sort_unstable();
+    two_sum(TARGET, &input)
 }
 
-pub fn part2(input: BTreeSet<i64>) -> Option<i64> {
-    solve(3, input)
+pub fn part2(mut input: Vec<i64>) -> Option<i64> {
+    input.sort_unstable();
+    (0..input.len()).find_map(|i| {
+        let a = input[i];
+        two_sum(TARGET - a, &input[i + 1..]).map(|p| a * p)
+    })
 }
