@@ -112,6 +112,8 @@ pub fn lower(item: TokenStream) -> TokenStream {
     result.into()
 }
 
+const PARSER_IDENT: &str = "parser";
+
 fn parse_fields(
     fields: &syn::Fields,
     cons: proc_macro2::TokenStream,
@@ -134,7 +136,7 @@ fn parse_fields(
                     Span::call_site(),
                 );
                 for attr in &field.attrs {
-                    if attr.path().is_ident("parser") {
+                    if attr.path().is_ident(PARSER_IDENT) {
                         attr.parse_nested_meta(|meta| {
                             if meta.path.is_ident("impl") {
                                 let ident: syn::Ident = meta.value()?.parse()?;
@@ -172,7 +174,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
     let ast: syn::DeriveInput = syn::parse(input).unwrap();
     let mut parse_name = true;
     for attr in &ast.attrs {
-        if attr.path().is_ident("parser") {
+        if attr.path().is_ident(PARSER_IDENT) {
             attr.parse_nested_meta(|meta| {
                 if meta.path.is_ident("dont_parse_name") {
                     parse_name = false;
@@ -191,7 +193,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
                 .filter(|val| {
                     !val.attrs.iter().any(|attr| {
                         let mut val = false;
-                        if attr.path().is_ident("parser") {
+                        if attr.path().is_ident(PARSER_IDENT) {
                             attr.parse_nested_meta(|meta| {
                                 if meta.path.is_ident("skip") {
                                     val = true;
