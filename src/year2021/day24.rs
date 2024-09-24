@@ -1,28 +1,14 @@
 use crate::utils::parsers::*;
+use advent::Parser;
 use ahash::AHashSet;
 use Instr::*;
 use Val::*;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Parser)]
+#[parser(dont_parse_name)]
 enum Val {
-    Reg(usize),
+    Reg(#[parser(impl = reg)] usize),
     Lit(i64),
-}
-
-#[derive(Clone, Debug)]
-enum Instr {
-    Inp(usize),
-    Add(usize, Val),
-    Mul(usize, Val),
-    Div(usize, Val),
-    Mod(usize, Val),
-    Eql(usize, Val),
-}
-
-#[derive(Clone)]
-struct Prog {
-    regs: [i64; 4],
-    pc: usize,
 }
 
 fn reg(i: &mut &str) -> PResult<usize> {
@@ -31,24 +17,24 @@ fn reg(i: &mut &str) -> PResult<usize> {
         .parse_next(i)
 }
 
-fn val(i: &mut &str) -> PResult<Val> {
-    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
+#[derive(Clone, Debug, Parser)]
+enum Instr {
+    Inp(#[parser(impl = reg)] usize),
+    Add(#[parser(impl = reg)] usize, Val),
+    Mul(#[parser(impl = reg)] usize, Val),
+    Div(#[parser(impl = reg)] usize, Val),
+    Mod(#[parser(impl = reg)] usize, Val),
+    Eql(#[parser(impl = reg)] usize, Val),
 }
 
-fn parse_instr(i: &mut &str) -> PResult<Instr> {
-    alt((
-        cons1!(Inp, reg),
-        cons2!(Add, reg, val),
-        cons2!(Mul, reg, val),
-        cons2!(Div, reg, val),
-        cons2!(Mod, reg, val),
-        cons2!(Eql, reg, val),
-    ))
-    .parse_next(i)
+#[derive(Clone)]
+struct Prog {
+    regs: [i64; 4],
+    pc: usize,
 }
 
 fn parse(input: &str) -> Vec<Instr> {
-    lines(parse_instr).read(input)
+    lines(instr).read(input)
 }
 
 impl Prog {

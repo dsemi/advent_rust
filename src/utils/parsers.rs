@@ -245,21 +245,6 @@ where
     i.lines().map(move |line| f.read(line))
 }
 
-macro_rules! cons1 {
-    ($make:path, $arg1:expr) => {
-        (advent::lower!($make), space1, $arg1).map(move |(_, _, a)| $make(a))
-    };
-}
-pub(crate) use cons1;
-
-macro_rules! cons2 {
-    ($make:path, $arg1:expr, $arg2:expr) => {
-        (advent::lower!($make), space1, $arg1, space1, $arg2)
-            .map(move |(_, _, a, _, b)| $make(a, b))
-    };
-}
-pub(crate) use cons2;
-
 macro_rules! read_trait {
     ($($i:ident),*) => (
         #[allow(dead_code)]

@@ -1,7 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
-use quote::ToTokens;
+use quote::{quote, ToTokens};
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
@@ -113,89 +112,115 @@ pub fn lower(item: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[proc_macro_derive(Parser)]
+fn parse_fields(
+    fields: &syn::Fields,
+    cons: proc_macro2::TokenStream,
+    name_matcher: proc_macro2::TokenStream,
+    parse_name: bool,
+) -> proc_macro2::TokenStream {
+    match fields {
+        syn::Fields::Unnamed(fields) => {
+            let mut parsing_tup = Vec::new();
+            let mut fn_match_arg_tup = Vec::new();
+            let mut fn_apply_arg_tup = Vec::new();
+            if parse_name {
+                parsing_tup.push(name_matcher);
+                fn_match_arg_tup.push(quote! { _ });
+            }
+            let mut arg = 'a';
+            for field in &fields.unnamed {
+                let mut fun = syn::Ident::new(
+                    &field.ty.to_token_stream().to_string().to_lowercase(),
+                    Span::call_site(),
+                );
+                for attr in &field.attrs {
+                    if attr.path().is_ident("parser") {
+                        attr.parse_nested_meta(|meta| {
+                            if meta.path.is_ident("impl") {
+                                let ident: syn::Ident = meta.value()?.parse()?;
+                                fun = ident;
+                            }
+                            Ok(())
+                        })
+                        .unwrap();
+                    }
+                }
+                if !parsing_tup.is_empty() {
+                    parsing_tup.push(quote! { space1 });
+                }
+                parsing_tup.push(quote! { #fun });
+                if !fn_match_arg_tup.is_empty() {
+                    fn_match_arg_tup.push(quote! { _ });
+                }
+                let id = syn::Ident::new(&arg.to_string(), Span::call_site());
+                fn_match_arg_tup.push(quote! { #id });
+                fn_apply_arg_tup.push(quote! { #id });
+                arg = char::from_u32(arg as u32 + 1).unwrap();
+            }
+            quote! {
+                (#(#parsing_tup),*).map(move |(#(#fn_match_arg_tup),*)|
+                                        #cons(#(#fn_apply_arg_tup),*))
+            }
+        }
+        syn::Fields::Unit => quote! { #name_matcher.value(#cons) },
+        _ => unimplemented!(),
+    }
+}
+
+#[proc_macro_derive(Parser, attributes(parser))]
 pub fn parser(input: TokenStream) -> TokenStream {
     let ast: syn::DeriveInput = syn::parse(input).unwrap();
+    let mut parse_name = true;
+    for attr in &ast.attrs {
+        if attr.path().is_ident("parser") {
+            attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("dont_parse_name") {
+                    parse_name = false;
+                }
+                Ok(())
+            })
+            .unwrap();
+        }
+    }
     let data_ident = &ast.ident;
     let inner = match &ast.data {
         syn::Data::Enum(enum_data) => {
-            let mut parser_alts = quote! {};
-            for val in &enum_data.variants {
-                let variant_ident = &val.ident;
-                let name_matcher = quote! { advent::lower!(#variant_ident) };
-
-                let parser_alt = match &val.fields {
-                    syn::Fields::Unnamed(fields) => {
-                        let mut parsing_tup = quote! { #name_matcher };
-                        let mut fn_match_arg_tup = quote! { _ };
-                        let mut fn_apply_arg_tup = quote! {};
-                        let mut arg = 'a';
-                        for field in &fields.unnamed {
-                            let fun = syn::Ident::new(
-                                &field.ty.to_token_stream().to_string().to_lowercase(),
-                                Span::call_site(),
-                            );
-                            let id = syn::Ident::new(&arg.to_string(), Span::call_site());
-                            parsing_tup = quote! { #parsing_tup, space1, #fun };
-                            fn_match_arg_tup = quote! { #fn_match_arg_tup, _, #id };
-                            fn_apply_arg_tup = quote! { #fn_apply_arg_tup #id, };
-                            arg = char::from_u32(arg as u32 + 1).unwrap();
+            let parser_alts = enum_data
+                .variants
+                .iter()
+                .filter(|val| {
+                    !val.attrs.iter().any(|attr| {
+                        let mut val = false;
+                        if attr.path().is_ident("parser") {
+                            attr.parse_nested_meta(|meta| {
+                                if meta.path.is_ident("skip") {
+                                    val = true;
+                                }
+                                Ok(())
+                            })
+                            .unwrap()
                         }
-                        quote! {
-                            (#parsing_tup).map(move |(#fn_match_arg_tup)|
-                                               #data_ident::#variant_ident(#fn_apply_arg_tup))
-                        }
-                    }
-                    syn::Fields::Unit => {
-                        quote! { #name_matcher.value(#data_ident::#variant_ident) }
-                    }
-                    _ => unimplemented!(),
-                };
-                parser_alts = quote! { #parser_alts #parser_alt, };
-            }
-            quote! { alt((#parser_alts)) }
+                        val
+                    })
+                })
+                .map(|val| {
+                    let variant_ident = &val.ident;
+                    let cons = quote! { #data_ident::#variant_ident };
+                    let name_matcher = quote! { advent::lower!(#variant_ident) };
+                    parse_fields(&val.fields, cons, name_matcher, parse_name)
+                })
+                .collect::<Vec<_>>();
+            quote! { alt((#(#parser_alts),*)) }
         }
         syn::Data::Struct(struct_data) => {
+            let cons = quote! { #data_ident };
             let name_matcher = quote! { advent::lower!(#data_ident) };
-            match &struct_data.fields {
-                syn::Fields::Unnamed(fields) => {
-                    let mut parsing_tup = quote! {};
-                    let mut fn_match_arg_tup = quote! {};
-                    let mut fn_apply_arg_tup = quote! {};
-                    let mut arg = 'a';
-                    let mut first = true;
-                    for field in &fields.unnamed {
-                        let fun = syn::Ident::new(
-                            &field.ty.to_token_stream().to_string().to_lowercase(),
-                            Span::call_site(),
-                        );
-                        let id = syn::Ident::new(&arg.to_string(), Span::call_site());
-                        if first {
-                            parsing_tup = quote! { #fun };
-                            fn_match_arg_tup = quote! { #id };
-                            fn_apply_arg_tup = quote! { #id };
-                        } else {
-                            parsing_tup = quote! { #parsing_tup, space1, #fun };
-                            fn_match_arg_tup = quote! { #fn_match_arg_tup, _, #id };
-                            fn_apply_arg_tup = quote! { #fn_apply_arg_tup, #id };
-                        }
-                        arg = char::from_u32(arg as u32 + 1).unwrap();
-                        first = false;
-                    }
-                    quote! {
-                        (#parsing_tup).map(move |(#fn_match_arg_tup)|
-                                           #data_ident(#fn_apply_arg_tup))
-                    }
-                }
-                syn::Fields::Unit => {
-                    quote! { #name_matcher.value(#data_ident) }
-                }
-                _ => unimplemented!(),
-            }
+            parse_fields(&struct_data.fields, cons, name_matcher, parse_name)
         }
         _ => unimplemented!(),
     };
-    let fn_name = syn::Ident::new(&data_ident.to_string().to_lowercase(), Span::call_site());
+    let lower_ident = data_ident.to_string().to_lowercase();
+    let fn_name = syn::Ident::new(&lower_ident, Span::call_site());
     quote! {
         fn #fn_name(i: &mut &str) -> PResult<#data_ident> {
             #inner.parse_next(i)

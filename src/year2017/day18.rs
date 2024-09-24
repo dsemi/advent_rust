@@ -1,23 +1,29 @@
 use crate::utils::parsers::*;
+use advent::Parser;
 use std::cell::Cell;
 use std::collections::VecDeque;
 use Instr::*;
 use Val::*;
 
-#[derive(Clone)]
+#[derive(Clone, Parser)]
+#[parser(dont_parse_name)]
 enum Val {
     Lit(i64),
-    Reg(usize),
+    Reg(#[parser(impl = reg)] usize),
 }
 
-#[derive(Clone)]
+fn reg(i: &mut &str) -> PResult<usize> {
+    any.map(|c| c as usize - 'a' as usize).parse_next(i)
+}
+
+#[derive(Clone, Parser)]
 enum Instr {
     Snd(Val),
-    Set(usize, Val),
-    Add(usize, Val),
-    Mul(usize, Val),
-    Mod(usize, Val),
-    Rcv(usize),
+    Set(#[parser(impl = reg)] usize, Val),
+    Add(#[parser(impl = reg)] usize, Val),
+    Mul(#[parser(impl = reg)] usize, Val),
+    Mod(#[parser(impl = reg)] usize, Val),
+    Rcv(#[parser(impl = reg)] usize),
     Jgz(Val, Val),
 }
 
@@ -29,33 +35,12 @@ struct Sim {
     sends: usize,
 }
 
-fn reg(i: &mut &str) -> PResult<usize> {
-    any.map(|c| c as usize - 'a' as usize).parse_next(i)
-}
-
-fn val(i: &mut &str) -> PResult<Val> {
-    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
-}
-
-fn parse_instr(i: &mut &str) -> PResult<Instr> {
-    alt((
-        cons1!(Snd, val),
-        cons2!(Set, reg, val),
-        cons2!(Add, reg, val),
-        cons2!(Mul, reg, val),
-        cons2!(Mod, reg, val),
-        cons1!(Rcv, reg),
-        cons2!(Jgz, val, val),
-    ))
-    .parse_next(i)
-}
-
 impl Sim {
     fn parse(input: &str) -> Self {
         Self {
             line: 0,
             reg: [0; 26],
-            instrs: lines(parse_instr).read(input),
+            instrs: lines(instr).read(input),
             sends: 0,
         }
     }

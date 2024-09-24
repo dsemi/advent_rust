@@ -24,6 +24,7 @@ pub enum Op {
 }
 
 #[derive(Clone, Copy, Parser)]
+#[parser(dont_parse_name)]
 pub struct Instr(pub Op, pub i64, pub i64, pub i64);
 
 pub struct Prog {

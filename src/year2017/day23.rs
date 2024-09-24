@@ -1,16 +1,24 @@
 use crate::utils::parsers::*;
+use advent::Parser;
 use Instr::*;
 use Val::*;
 
+#[derive(Parser)]
+#[parser(dont_parse_name)]
 enum Val {
     Lit(i64),
-    Reg(usize),
+    Reg(#[parser(impl = reg)] usize),
 }
 
+fn reg(i: &mut &str) -> PResult<usize> {
+    any.map(|c| c as usize - 'a' as usize).parse_next(i)
+}
+
+#[derive(Parser)]
 enum Instr {
-    Set(usize, Val),
-    Sub(usize, Val),
-    Mul(usize, Val),
+    Set(#[parser(impl = reg)] usize, Val),
+    Sub(#[parser(impl = reg)] usize, Val),
+    Mul(#[parser(impl = reg)] usize, Val),
     Jnz(Val, Val),
 }
 
@@ -20,26 +28,8 @@ struct Prog {
     instrs: Vec<Instr>,
 }
 
-fn reg(i: &mut &str) -> PResult<usize> {
-    any.map(|c| c as usize - 'a' as usize).parse_next(i)
-}
-
-fn val(i: &mut &str) -> PResult<Val> {
-    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
-}
-
-fn parse_instr(i: &mut &str) -> PResult<Instr> {
-    alt((
-        cons2!(Set, reg, val),
-        cons2!(Sub, reg, val),
-        cons2!(Mul, reg, val),
-        cons2!(Jnz, val, val),
-    ))
-    .parse_next(i)
-}
-
 fn parse_instrs(input: &str) -> Prog {
-    let instrs = lines(parse_instr).read(input);
+    let instrs = lines(instr).read(input);
     Prog {
         reg: [0; 8],
         line: 0,

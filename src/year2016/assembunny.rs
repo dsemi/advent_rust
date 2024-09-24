@@ -1,23 +1,34 @@
 use crate::utils::parsers::*;
+use advent::Parser;
 use Instr::*;
 use Val::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Parser)]
+#[parser(dont_parse_name)]
 enum Val {
-    Reg(usize),
+    Reg(#[parser(impl = reg)] usize),
     Lit(i64),
 }
 
-#[derive(Clone)]
+fn reg(i: &mut &str) -> PResult<usize> {
+    one_of(&['a', 'b', 'c', 'd'])
+        .map(|c| c as usize - 'a' as usize)
+        .parse_next(i)
+}
+
+#[derive(Clone, Parser)]
 enum Instr {
     Cpy(Val, Val),
-    Inc(usize),
-    Dec(usize),
-    Tgl(usize),
+    Inc(#[parser(impl = reg)] usize),
+    Dec(#[parser(impl = reg)] usize),
+    Tgl(#[parser(impl = reg)] usize),
     Out(Val),
     Jnz(Val, Val),
+    #[parser(skip)]
     Add(usize, usize),
+    #[parser(skip)]
     Mul(Val, usize, usize, usize),
+    #[parser(skip)]
     Nop,
 }
 
@@ -60,30 +71,8 @@ fn optimize(instrs: &mut [Instr]) {
     }
 }
 
-fn reg(i: &mut &str) -> PResult<usize> {
-    one_of(&['a', 'b', 'c', 'd'])
-        .map(|c| c as usize - 'a' as usize)
-        .parse_next(i)
-}
-
-fn val(i: &mut &str) -> PResult<Val> {
-    alt((i64.map(Lit), reg.map(Reg))).parse_next(i)
-}
-
-fn parse_instr(i: &mut &str) -> PResult<Instr> {
-    alt((
-        cons2!(Cpy, val, val),
-        cons1!(Inc, reg),
-        cons1!(Dec, reg),
-        cons1!(Tgl, reg),
-        cons1!(Out, val),
-        cons2!(Jnz, val, val),
-    ))
-    .parse_next(i)
-}
-
 pub fn parse_instrs(input: &str) -> Sim {
-    let mut instrs = lines(parse_instr).read(input);
+    let mut instrs = lines(instr).read(input);
     optimize(&mut instrs);
     Sim {
         regs: [0; 4],
