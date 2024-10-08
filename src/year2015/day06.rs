@@ -43,6 +43,6 @@ pub fn part2(input: &str) -> u32 {
     run_commands(input, |cmd, mut slice| match cmd {
         On => slice += 1,
         Toggle => slice += 2,
-        Off => slice.mapv_inplace(|v: u32| v.saturating_sub(1)),
+        Off => slice.mapv_inplace(|v| v.saturating_sub(1)),
     })
 }
