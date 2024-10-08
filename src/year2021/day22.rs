@@ -1,39 +1,9 @@
 use crate::utils::parsers::*;
-use crate::utils::Interval;
+use crate::utils::Cube;
 use bit_set::BitSet;
 use St::*;
 
-struct Cube {
-    axis: [Interval<i64>; 3],
-}
-
-impl Cube {
-    fn volume(&self) -> i64 {
-        self.axis.iter().map(|i| i.len()).product()
-    }
-
-    fn intersects(&self, o: &Self) -> bool {
-        self.axis
-            .iter()
-            .zip(o.axis.iter())
-            .all(|(a, b)| a.intersects(b))
-    }
-
-    fn intersect(&self, o: &Self) -> Cube {
-        Cube {
-            axis: self
-                .axis
-                .iter()
-                .zip(o.axis.iter())
-                .map(|(a, b)| a.intersect(b))
-                .collect::<Vec<_>>()
-                .try_into()
-                .unwrap(),
-        }
-    }
-}
-
-fn intersect_volume(cubes: &[Cube], bs: &[BitSet], cube: &Cube, set: &BitSet) -> i64 {
+fn intersect_volume(cubes: &[Cube<i64>], bs: &[BitSet], cube: &Cube<i64>, set: &BitSet) -> i64 {
     let mut vol = cube.volume();
     for idx in set {
         let common = cube.intersect(&cubes[idx]);
@@ -49,28 +19,16 @@ enum St {
     On,
 }
 
-fn parse_cube(i: &mut &str) -> PResult<(St, Cube)> {
+fn parse_cube(i: &mut &str) -> PResult<(St, Cube<i64>)> {
     let st = terminated(alt(("off".value(Off), "on".value(On))), ' ').parse_next(i)?;
     let ((x0, x1), (y0, y1), (z0, z1)) =
         sep3(preceded((any, '='), sep2(i64, "..")), ',').parse_next(i)?;
-    let cube = Cube {
-        axis: [
-            Interval::new(x0, x1 + 1),
-            Interval::new(y0, y1 + 1),
-            Interval::new(z0, z1 + 1),
-        ],
-    };
+    let cube = Cube::new(x0, x1 + 1, y0, y1 + 1, z0, z1 + 1);
     Ok((st, cube))
 }
 
 fn solve(input: &str, lo: i64, hi: i64) -> i64 {
-    let active_cube = Cube {
-        axis: [
-            Interval::new(lo, hi),
-            Interval::new(lo, hi),
-            Interval::new(lo, hi),
-        ],
-    };
+    let active_cube = Cube::new(lo, hi, lo, hi, lo, hi);
     let mut cubes = Vec::new();
     let mut on = Vec::new();
     for line in input.lines() {

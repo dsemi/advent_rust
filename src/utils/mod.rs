@@ -863,6 +863,12 @@ impl<T: Copy> Interval<T> {
     }
 }
 
+impl<T: Copy + Sub<Output = T>> Interval<T> {
+    pub fn len(&self) -> T {
+        self.hi - self.lo
+    }
+}
+
 impl<T: Copy + Ord + Sub<Output = T>> Interval<T> {
     pub fn intersects(&self, o: &Self) -> bool {
         self.lo < o.hi && o.lo < self.hi
@@ -875,10 +881,6 @@ impl<T: Copy + Ord + Sub<Output = T>> Interval<T> {
     pub fn union(&self, o: &Self) -> Option<Self> {
         (self.lo <= o.hi && o.lo <= self.hi)
             .then(|| Self::new(min(self.lo, o.lo), max(self.hi, o.hi)))
-    }
-
-    pub fn len(&self) -> T {
-        self.hi - self.lo
     }
 
     pub fn contains(&self, v: T) -> bool {
@@ -942,6 +944,64 @@ impl<T: Ord + Copy> Sub<Interval<T>> for Interval<T> {
             result.push(Interval::new(max(self.lo, other.hi), self.hi));
         }
         result
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Rect<T> {
+    pub l: Interval<T>,
+    pub w: Interval<T>,
+}
+
+impl<T> Rect<T> {
+    pub fn new(l_lo: T, l_hi: T, w_lo: T, w_hi: T) -> Self {
+        Self {
+            l: Interval::new(l_lo, l_hi),
+            w: Interval::new(w_lo, w_hi),
+        }
+    }
+}
+
+impl<T: Copy + Mul<Output = T> + Sub<Output = T>> Rect<T> {
+    pub fn area(&self) -> T {
+        self.l.len() * self.w.len()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Cube<T> {
+    pub l: Interval<T>,
+    pub w: Interval<T>,
+    pub h: Interval<T>,
+}
+
+impl<T> Cube<T> {
+    pub fn new(l_lo: T, l_hi: T, w_lo: T, w_hi: T, h_lo: T, h_hi: T) -> Self {
+        Self {
+            l: Interval::new(l_lo, l_hi),
+            w: Interval::new(w_lo, w_hi),
+            h: Interval::new(h_lo, h_hi),
+        }
+    }
+}
+
+impl<T: Copy + Mul<Output = T> + Sub<Output = T>> Cube<T> {
+    pub fn volume(&self) -> T {
+        self.l.len() * self.w.len() * self.h.len()
+    }
+}
+
+impl<T: Copy + Ord + Sub<Output = T>> Cube<T> {
+    pub fn intersects(&self, o: &Self) -> bool {
+        self.l.intersects(&o.l) && self.w.intersects(&o.w) && self.h.intersects(&o.h)
+    }
+
+    pub fn intersect(&self, o: &Self) -> Self {
+        Self {
+            l: self.l.intersect(&o.l),
+            w: self.w.intersect(&o.w),
+            h: self.h.intersect(&o.h),
+        }
     }
 }
 
@@ -1568,17 +1628,22 @@ impl<T, I: AsPrimitive<usize>> IndexMut<I> for Grid<T, I> {
 pub struct DefaultVec<T>(Vec<T>);
 
 impl<T: Default> DefaultVec<T> {
-    pub fn get(&mut self, idx: usize) -> &T {
+    #[inline]
+    fn ensure_size(&mut self, idx: usize) {
         if idx >= self.0.len() {
             self.0.resize_with(idx + 1, T::default);
         }
+    }
+
+    #[inline]
+    pub fn get(&mut self, idx: usize) -> &T {
+        self.ensure_size(idx);
         self.0.index(idx)
     }
 
+    #[inline]
     pub fn get_mut(&mut self, idx: usize) -> &mut T {
-        if idx >= self.0.len() {
-            self.0.resize_with(idx + 1, T::default);
-        }
+        self.ensure_size(idx);
         self.0.index_mut(idx)
     }
 }

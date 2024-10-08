@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
-use ndarray::{s, Array2, ArrayViewMut2};
+use crate::utils::{Interval, Rect};
+use ndarray::{s, Array2, ArrayViewMut2, Zip};
 use Cmd::*;
 
 #[derive(Clone)]
@@ -9,7 +10,12 @@ enum Cmd {
     Off,
 }
 
-fn instr(i: &mut &str) -> PResult<(Cmd, usize, usize, usize, usize)> {
+struct Instr {
+    cmd: Cmd,
+    rect: Rect<usize>,
+}
+
+fn instr(i: &mut &str) -> PResult<Instr> {
     let cmd = alt((
         "turn on ".value(On),
         "toggle ".value(Toggle),
@@ -17,18 +23,52 @@ fn instr(i: &mut &str) -> PResult<(Cmd, usize, usize, usize, usize)> {
     ))
     .parse_next(i)?;
     let ((x0, y0), (x1, y1)) = sep2(coord(usize), "through").parse_next(i)?;
-    Ok((cmd, x0, x1, y0, y1))
+    let rect = Rect::new(x0, x1 + 1, y0, y1 + 1);
+    Ok(Instr { cmd, rect })
 }
 
-// Use Saturating if it gets included in num_traits::Zero.
+// Use Saturating<u32> if it gets included in num_traits::Zero.
 fn run_commands(input: &str, f: fn(Cmd, ArrayViewMut2<u32>)) -> u32 {
-    let mut grid = Array2::zeros((1000, 1000));
-    for line in input.lines() {
-        let (cmd, x0, x1, y0, y1) = instr.read(line);
-        let slice = grid.slice_mut(s![x0..=x1, y0..=y1]);
-        f(cmd, slice);
+    let instrs: Vec<_> = input.lines().map(|line| instr.read(line)).collect();
+    let (mut ls, mut ws) = (vec![], vec![]);
+    instrs.iter().for_each(|instr| {
+        ls.push(instr.rect.l.lo);
+        ls.push(instr.rect.l.hi);
+        ws.push(instr.rect.w.lo);
+        ws.push(instr.rect.w.hi);
+    });
+    ls.sort_unstable();
+    ls.dedup();
+    ws.sort_unstable();
+    ws.dedup();
+    let mut l_idxs = vec![0; 1001];
+    for (i, &l) in ls.iter().enumerate() {
+        l_idxs[l] = i;
     }
-    grid.sum()
+    let mut w_idxs = vec![0; 1001];
+    for (i, &w) in ws.iter().enumerate() {
+        w_idxs[w] = i;
+    }
+    let rects: Vec<_> = ls
+        .iter()
+        .zip(ls.iter().skip(1))
+        .flat_map(|(&l_lo, &l_hi)| {
+            ws.iter()
+                .zip(ws.iter().skip(1))
+                .map(move |(&w_lo, &w_hi)| Rect::new(l_lo, l_hi, w_lo, w_hi))
+        })
+        .collect();
+    let rects = Array2::from_shape_vec((ls.len() - 1, ws.len() - 1), rects).unwrap();
+    let mut grid = Array2::zeros(rects.raw_dim());
+    for instr in instrs {
+        let ls = Interval::new(l_idxs[instr.rect.l.lo], l_idxs[instr.rect.l.hi]);
+        let ws = Interval::new(w_idxs[instr.rect.w.lo], w_idxs[instr.rect.w.hi]);
+        let slice = grid.slice_mut(s![ls.range(), ws.range()]);
+        f(instr.cmd, slice);
+    }
+    Zip::from(&rects)
+        .and(&grid)
+        .fold(0, |acc, rect, v| acc + rect.area() as u32 * v)
 }
 
 pub fn part1(input: &str) -> u32 {
