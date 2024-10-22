@@ -18,7 +18,7 @@ fn parse_graph(input: &str) -> Grid<(char, i32), i32> {
         .transform(|v| (v, if "EG".contains(v) { 200 } else { 0 }))
 }
 
-fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + use<'_> {
+fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
     // reading order
     vec![(-1, 0), (0, -1), (0, 1), (1, 0)]
         .into_iter()

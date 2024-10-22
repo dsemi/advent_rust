@@ -36,7 +36,7 @@ struct Blueprint {
     max_obs: u16,
 }
 
-fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + use<'_> {
+fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
     input.lines().map(|line| {
         let line = line.replace(|c: char| !c.is_ascii_digit(), " ");
         let [

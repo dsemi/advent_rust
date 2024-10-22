@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 use num::Integer;
 
-fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + use<'_> {
+fn parse_firewall(input: &str) -> impl Iterator<Item = (i64, i64)> + '_ {
     input.lines().map(|line| {
         let (a, b) = sep2(i64, ": ").read(line);
         (a, 2 * b - 2)

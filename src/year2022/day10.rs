@@ -1,7 +1,7 @@
 use crate::utils::ocr::*;
 use itertools::Itertools;
 
-fn run(input: &str) -> impl Iterator<Item = i32> + use<'_> {
+fn run(input: &str) -> impl Iterator<Item = i32> + '_ {
     input
         .split_whitespace()
         .map(|tok| tok.parse().unwrap_or(0))

@@ -1,4 +1,4 @@
-fn seat_ids(s: &str) -> impl Iterator<Item = i64> + use<'_> {
+fn seat_ids(s: &str) -> impl Iterator<Item = i64> + '_ {
     s.lines().map(|line| {
         line.bytes()
             .map(|b| (b & 0b100) >> 2 ^ 1)

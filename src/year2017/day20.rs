@@ -11,7 +11,7 @@ fn particle(i: &mut &str) -> PResult<C3<i64>> {
     delimited((any, "=<"), c3(i64), '>').parse_next(i)
 }
 
-fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + use<'_> {
+fn parse_particles(input: &str) -> impl Iterator<Item = Particle> + '_ {
     input.lines().map(move |line| {
         let (pos, vel, acc) = coord3(particle).read(line);
         Particle { pos, vel, acc }

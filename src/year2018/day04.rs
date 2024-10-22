@@ -8,7 +8,7 @@ enum Record {
     SleepToggle(usize),
 }
 
-fn parse_records(input: &str) -> impl Iterator<Item = Record> + use<'_> {
+fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
     input.lines().sorted().map(|line| {
         let (time, rest) = line.split_once("] ").unwrap();
         if rest.starts_with("Guard") {

@@ -54,7 +54,7 @@ fn parse_wires(input: &str) -> Vec<Wire> {
 }
 
 impl Wire {
-    fn intersections<'a>(&'a self, other: &'a Self) -> impl Iterator<Item = (i32, i32)> + use<'a> {
+    fn intersections<'a>(&'a self, other: &'a Self) -> impl Iterator<Item = (i32, i32)> + 'a {
         self.parts.iter().flat_map(move |w1| {
             other.parts.iter().filter_map(move |w2| {
                 if w1.o == w2.o {

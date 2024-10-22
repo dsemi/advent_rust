@@ -9,7 +9,7 @@ fn single_repls<'a>(
     src: &'a str,
     k: &'a str,
     v: &'a str,
-) -> impl Iterator<Item = String> + use<'a> {
+) -> impl Iterator<Item = String> + 'a {
     src.match_indices(k).map(|(i, _)| {
         let mut s = src.to_string();
         s.replace_range(i..i + k.len(), v);

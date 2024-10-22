@@ -5,7 +5,7 @@ fn is_winner(brd: &[Vec<i32>]) -> bool {
         .any(|i| (0..brd.len()).all(|j| brd[i][j] == -1) || (0..brd.len()).all(|j| brd[j][i] == -1))
 }
 
-fn winner_scores(input: &str) -> impl Iterator<Item = i32> + use<'_> {
+fn winner_scores(input: &str) -> impl Iterator<Item = i32> + '_ {
     let (nums, boards) = input.split_once("\n\n").unwrap();
     let mut boards: Vec<Vec<Vec<_>>> =
         separated(1.., lines(repeat(1.., strip(i32))), "\n\n").read(boards);
