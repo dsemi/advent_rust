@@ -5,7 +5,11 @@ fn parse_mappings(input: &str) -> (Vec<(&str, &str)>, &str) {
     separated_pair(lines(sep2(alpha1, " => ")), "\n\n", alpha1).read(input)
 }
 
-fn single_repls<'a>(src: &'a str, k: &'a str, v: &'a str) -> impl Iterator<Item = String> + 'a {
+fn single_repls<'a>(
+    src: &'a str,
+    k: &'a str,
+    v: &'a str,
+) -> impl Iterator<Item = String> + use<'a> {
     src.match_indices(k).map(|(i, _)| {
         let mut s = src.to_string();
         s.replace_range(i..i + k.len(), v);

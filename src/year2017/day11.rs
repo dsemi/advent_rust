@@ -17,7 +17,7 @@ fn ap(p: &C3<i64>, d: &str) -> C3<i64> {
     *p + x
 }
 
-fn path(input: &str) -> impl Iterator<Item = C3<i64>> + '_ {
+fn path(input: &str) -> impl Iterator<Item = C3<i64>> + use<'_> {
     input.split(',').scan(C3(0, 0, 0), |acc, p| {
         *acc = ap(acc, p);
         Some(*acc)

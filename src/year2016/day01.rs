@@ -3,7 +3,7 @@ use crate::utils::C;
 use ahash::AHashSet;
 use std::iter::{once, repeat};
 
-fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
+fn path(input: &str) -> impl Iterator<Item = C<i32>> + use<'_> {
     input
         .split(", ")
         .flat_map(|x| {

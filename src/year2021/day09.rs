@@ -1,6 +1,6 @@
 use crate::utils::*;
 
-fn neighbs<'a>(grid: &'a Grid<u32>, c: &C<usize>) -> impl Iterator<Item = C<usize>> + 'a {
+fn neighbs<'a>(grid: &'a Grid<u32>, c: &C<usize>) -> impl Iterator<Item = C<usize>> + use<'a> {
     [
         C(c.0 - 1, c.1),
         C(c.0 + 1, c.1),
@@ -11,7 +11,7 @@ fn neighbs<'a>(grid: &'a Grid<u32>, c: &C<usize>) -> impl Iterator<Item = C<usiz
     .filter_map(|p| grid.get(p).map(|_| p))
 }
 
-fn lows(grid: &Grid<u32>) -> impl Iterator<Item = C<usize>> + '_ {
+fn lows(grid: &Grid<u32>) -> impl Iterator<Item = C<usize>> + use<'_> {
     (0..grid.rows).flat_map(move |r| {
         (0..grid.cols).filter_map(move |c| {
             neighbs(grid, &C(r, c))

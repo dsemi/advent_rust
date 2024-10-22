@@ -28,7 +28,7 @@ fn parse(input: &str) -> (Vec<Vec<(usize, usize)>>, usize) {
     (adj, edges)
 }
 
-fn neighbors(adj: &[Vec<(usize, usize)>], curr: usize) -> impl Iterator<Item = usize> + '_ {
+fn neighbors(adj: &[Vec<(usize, usize)>], curr: usize) -> impl Iterator<Item = usize> + use<'_> {
     adj[curr].iter().map(|x| x.0)
 }
 

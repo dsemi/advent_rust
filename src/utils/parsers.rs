@@ -238,7 +238,7 @@ where
 // todo!()
 // }
 
-pub fn lines_iter<'a, O, F>(i: &'a str, mut f: F) -> impl Iterator<Item = O> + 'a
+pub fn lines_iter<'a, O, F>(i: &'a str, mut f: F) -> impl Iterator<Item = O> + use<'a, O, F>
 where
     F: Parser<&'a str, O, ContextError> + 'a,
 {

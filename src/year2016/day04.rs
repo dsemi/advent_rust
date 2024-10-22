@@ -7,7 +7,7 @@ struct Room<'a> {
     checksum: &'a str,
 }
 
-fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + '_ {
+fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + use<'_> {
     input.lines().map(|line| {
         let (name, rest) = line.rsplit_once('-').unwrap();
         let (sector, rest2) = rest.split_once('[').unwrap();

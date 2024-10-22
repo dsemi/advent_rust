@@ -2,7 +2,7 @@ use crate::utils::*;
 
 const FREQS: &[usize] = &[42, 17, 34, 39, 30, 37, 41, 25, 49, 45];
 
-fn parse(input: &str) -> impl Iterator<Item = Vec<usize>> + '_ {
+fn parse(input: &str) -> impl Iterator<Item = Vec<usize>> + use<'_> {
     input.lines().map(|line| {
         let (key, ns) = line.split_once(" | ").unwrap();
         let hist = key.replace(' ', "").chars().counts();
