@@ -1,4 +1,3 @@
-use crate::utils::parsers::*;
 use crate::utils::*;
 use ahash::AHashMap;
 use num::integer::lcm;
@@ -46,24 +45,24 @@ struct Module {
 }
 
 fn parse(input: &str) -> (usize, Vec<Module>) {
-    let prefix: &[char] = &['%', '&'];
-    let mut ui: UniqueIdx<_> = input
+    let lines: Vec<_> = input
         .lines()
-        .map(|line| line.split_once(' ').unwrap().0.trim_start_matches(prefix))
+        .map(|line| line.split_once(" -> ").unwrap())
         .collect();
-    let mut modules: Vec<_> = input
-        .lines()
-        .map(|line| {
-            let (t, outs) = (
-                opt(alt((
-                    '%'.value(FlipFlop(false)),
-                    '&'.value(Conjunction(0, 0)),
-                )))
-                .map(|x| x.unwrap_or(Broadcast)),
-                preceded((alpha1, " -> "), list(alpha1)),
-            )
-                .read(line);
-            let outs = outs.into_iter().map(|o| ui.idx(o)).collect();
+    let mut ui: UniqueIdx<_> = lines
+        .iter()
+        .map(|(k, _)| k.trim_start_matches(['%', '&']))
+        .collect();
+    let mut modules: Vec<_> = lines
+        .into_iter()
+        .map(|(k, v)| {
+            let t = match k.chars().next().unwrap() {
+                'b' => Broadcast,
+                '%' => FlipFlop(false),
+                '&' => Conjunction(0, 0),
+                _ => unreachable!(),
+            };
+            let outs = v.split(", ").map(|o| ui.idx(o)).collect();
             Module { t, outs }
         })
         .collect();
@@ -79,8 +78,7 @@ fn parse(input: &str) -> (usize, Vec<Module>) {
 }
 
 fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, usize, usize)) {
-    let mut q = VecDeque::new();
-    q.push_back((Low, 0, start));
+    let mut q = VecDeque::from([(Low, 0, start)]);
     while let Some((pulse, in_idx, idx)) = q.pop_front() {
         f(pulse, in_idx, idx);
         if let Some(m) = modules.get_mut(idx) {
