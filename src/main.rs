@@ -1,7 +1,7 @@
 use std::cmp::max_by;
 use std::cmp::Ordering::Equal;
 use std::env;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 mod utils;
 
@@ -30,23 +30,21 @@ fn colorize_time(n: f64) -> String {
     format!("{color}{n:.3}\x1b[0m")
 }
 
-fn run_part<'b>(f: Box<dyn Fn(&'b str) -> String + 'b>, input: &'b str) -> (f64, String) {
+fn run_part(f: fn(&str) -> String, input: &str) -> (String, Duration) {
     let start = Instant::now();
     let ans = f(input);
     let elapsed = start.elapsed();
-    let t: f64 = elapsed.as_micros() as f64 / 1000000.0;
-    (t, ans)
+    (ans, elapsed)
 }
 
-fn run_problem(year: i64, day: i64) -> Option<(f64, String, String)> {
-    if let Some(f) = problems::get_prob(year, day) {
+fn run_problem(year: i64, day: i64) -> Option<(Duration, String, String)> {
+    if let Some((part1, part2)) = problems::get_prob(year, day) {
         let contents = problems::get_file_input(year, day, true).unwrap();
 
-        let (part1, part2) = f();
         println!("Day {day}");
-        let (t1, ans1) = run_part(part1, &contents);
+        let (ans1, t1) = run_part(part1, &contents);
         print_output(1, &ans1, t1);
-        let (t2, ans2) = run_part(part2, &contents);
+        let (ans2, t2) = run_part(part2, &contents);
         print_output(2, &ans2, t2);
         println!();
         Some((t1 + t2, ans1, ans2))
@@ -56,9 +54,9 @@ fn run_problem(year: i64, day: i64) -> Option<(f64, String, String)> {
     }
 }
 
-fn print_output(part: usize, output: &str, t: f64) {
-    let t = colorize_time(t);
-    println!("Part {}: {:>54}  Elapsed time {} seconds", part, output, t);
+fn print_output(part: usize, output: &str, t: Duration) {
+    let t = colorize_time(t.as_secs_f64());
+    println!("Part {part}: {output:>54}  Elapsed time {t} seconds");
 }
 
 fn parse_day(daystr: &str) -> Vec<i64> {
@@ -91,16 +89,14 @@ fn main() {
         days = (1..=25).collect();
     }
 
-    let mut total: f64 = 0.0;
-    let mut max_day = (0.0, 0);
+    let mut total = Duration::ZERO;
+    let mut max = (Duration::ZERO, 0);
     for &day in days.iter() {
         if let Some((t, _, _)) = run_problem(year, day) {
-            max_day = max_by(max_day, (t, day), |a, b| {
-                a.0.partial_cmp(&b.0).unwrap_or(Equal)
-            });
+            max = max_by(max, (t, day), |a, b| a.0.partial_cmp(&b.0).unwrap_or(Equal));
             total += t;
         }
     }
-    println!("Max: Day {:2} {:70.3} seconds", max_day.1, max_day.0);
-    println!("Total: {total:75.3} seconds");
+    println!("Max: Day {:2} {:70.3} seconds", max.1, max.0.as_secs_f64());
+    println!("Total: {:75.3} seconds", total.as_secs_f64());
 }

@@ -181,20 +181,20 @@ impl<'a, T: PInput<'a> + std::cmp::Ord> PInput<'a> for BTreeSet<T> {
     }
 }
 
-type Part<'a> = Box<dyn Fn(&'a str) -> String>;
+type Part = fn(&str) -> String;
 
-fn wrap<'a, S, T, F>(f: F) -> Part<'a>
-where
-    S: PInput<'a>,
-    T: POutput,
-    F: 'static + Fn(S) -> T,
-{
-    Box::new(move |x: &'a str| f(PInput::un(x)).to())
+macro_rules! wrap {
+    ($f:expr) => {{
+        fn to_str(input: &str) -> String {
+            $f(PInput::un(input)).to()
+        }
+        to_str
+    }};
 }
 
 macro_rules! make_prob {
     ($y:ident, $d:ident) => {
-        || (wrap(crate::$y::$d::part1), wrap(crate::$y::$d::part2))
+        (wrap!(crate::$y::$d::part1), wrap!(crate::$y::$d::part2))
     };
 }
 
