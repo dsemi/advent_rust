@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 use crate::utils::parsers::*;
 use crate::utils::*;
 use std::cmp::Ordering::*;
@@ -7,16 +9,16 @@ fn parse_seeds(i: &mut &str) -> PResult<Vec<u32>> {
 }
 
 fn parse_map(input: &str) -> Vec<(Interval<u32>, u32)> {
-    let mut result = Vec::new();
-    for line in input.lines().skip(1) {
-        let (dest, src, len) = sep3(u32, space1).read(line);
-        result.push((Interval::new(src, src + len), dest - src))
-    }
-    result.sort_unstable_by_key(|(i, _)| i.lo);
-    result
+    input
+        .lines()
+        .skip(1)
+        .map(|line| sep3(u32, space1).read(line))
+        .map(|(dest, src, len)| (Interval::new(src, src + len), dest - src))
+        .sorted_unstable_by_key(|(i, _)| i.lo)
+        .collect()
 }
 
-pub fn part1(input: &str) -> u32 {
+pub fn part1(input: &str) -> Option<u32> {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds.read(parts.next().unwrap());
     let maps: Vec<_> = parts.map(parse_map).collect();
@@ -36,19 +38,15 @@ pub fn part1(input: &str) -> u32 {
             })
         })
         .min()
-        .unwrap()
 }
 
-pub fn part2(input: &str) -> u32 {
+pub fn part2(input: &str) -> Option<u32> {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds.read(parts.next().unwrap());
-    let seed_intervals: Vec<_> = seeds
+    let maps: Vec<_> = parts.map(parse_map).collect();
+    seeds
         .chunks(2)
         .map(|ns| Interval::new(ns[0], ns[0] + ns[1]))
-        .collect();
-    let maps: Vec<_> = parts.map(parse_map).collect();
-    seed_intervals
-        .into_iter()
         .flat_map(|interval| {
             maps.iter().fold(vec![interval], |mut intervals, map| {
                 let mut result = Vec::new();
@@ -69,5 +67,4 @@ pub fn part2(input: &str) -> u32 {
         })
         .map(|int| int.lo)
         .min()
-        .unwrap()
 }
