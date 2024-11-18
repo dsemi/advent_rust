@@ -17,10 +17,7 @@ use std::time::{Duration, Instant};
 
 fn client() -> Client {
     let mut headers = HeaderMap::new();
-    headers.insert(
-        "Cookie",
-        env::var("AOC_SESSION").unwrap().try_into().unwrap(),
-    );
+    headers.insert("Cookie", env::var("AOC_SESSION").unwrap().try_into().unwrap());
     ClientBuilder::new()
         .user_agent("github.com/dsemi/advent_rust")
         .default_headers(headers)
@@ -67,10 +64,7 @@ struct Answer<'a> {
 
 pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
     let url = format!("https://adventofcode.com/{year}/day/{day}/answer");
-    let data = Answer {
-        level: part,
-        answer,
-    };
+    let data = Answer { level: part, answer };
     let response = client()
         .post(url)
         .form(&data)
@@ -81,11 +75,8 @@ pub fn submit_answer(year: i64, day: i64, part: i64, answer: &str) {
         .text()
         .unwrap();
     let document = Document::from(response.as_str());
-    let text = document
-        .find(Name("main"))
-        .next()
-        .expect("Could not find submission response text")
-        .text();
+    let text =
+        document.find(Name("main")).next().expect("Could not find submission response text").text();
     println!("{}", text);
 }
 

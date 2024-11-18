@@ -60,12 +60,7 @@ where
         visited.insert(h(&start));
         frontier.push_back((0, start));
     }
-    Bfs {
-        frontier,
-        visited,
-        hash: h,
-        neighbs,
-    }
+    Bfs { frontier, visited, hash: h, neighbs }
 }
 
 pub struct Bfs<T, F, G, H> {
@@ -133,10 +128,7 @@ where
 {
     let mut open_set: AHashSet<T> = vec![start.clone()].into_iter().collect();
     let mut queue: BinaryHeap<AStarNode<T>> = BinaryHeap::new();
-    queue.push(AStarNode {
-        weight: 0,
-        elem: start.clone(),
-    });
+    queue.push(AStarNode { weight: 0, elem: start.clone() });
     let mut came_from: AHashMap<T, T> = AHashMap::new();
     let mut g_score: AHashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
     let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
@@ -155,11 +147,7 @@ where
             return Some(result);
         }
         for (dist, st2) in neighbors(&st) {
-            let tent_g_score = g_score
-                .get(&st)
-                .unwrap_or(&usize::MAX)
-                .checked_add(dist)
-                .unwrap();
+            let tent_g_score = g_score.get(&st).unwrap_or(&usize::MAX).checked_add(dist).unwrap();
             if tent_g_score < *g_score.get(&st2).unwrap_or(&usize::MAX) {
                 came_from.insert(st2.clone(), st.clone());
                 g_score.insert(st2.clone(), tent_g_score);
@@ -168,10 +156,7 @@ where
                 // getting rid of open_set. Keeps the queue smaller, but lookups might be slower?
                 // Hard to say without testing.
                 open_set.insert(st2.clone());
-                queue.push(AStarNode {
-                    weight: f_score[&st2],
-                    elem: st2,
-                });
+                queue.push(AStarNode { weight: f_score[&st2], elem: st2 });
             }
         }
     }
@@ -212,15 +197,8 @@ where
     I2: Iterator<Item = (usize, T)>,
 {
     let mut queue = BinaryHeap::new();
-    queue.push(Reverse(State {
-        dist: 0,
-        elem: start,
-    }));
-    Dijkstra {
-        queue,
-        dists: AHashMap::new(),
-        neighbors,
-    }
+    queue.push(Reverse(State { dist: 0, elem: start }));
+    Dijkstra { queue, dists: AHashMap::new(), neighbors }
 }
 
 impl<T, F, I, I2> Iterator for Dijkstra<T, F>
@@ -427,10 +405,7 @@ impl<T: Num + Copy> Mul for C<T> {
 
     #[inline]
     fn mul(self, other: Self) -> Self {
-        Self(
-            self.0 * other.0 - self.1 * other.1,
-            self.0 * other.1 + self.1 * other.0,
-        )
+        Self(self.0 * other.0 - self.1 * other.1, self.0 * other.1 + self.1 * other.0)
     }
 }
 forward_ref_binop! { impl Mul, mul for C<T>, T }
@@ -743,10 +718,7 @@ impl<I: Iterator<Item = u64>> PrimeFactors<I> {
 
 pub fn prime_factors(n: u64) -> PrimeFactors<impl Iterator<Item = u64>> {
     let sqrt = (n as f64).sqrt() as u64;
-    PrimeFactors {
-        n,
-        fs: std::iter::once(2).chain((3..=sqrt).step_by(2)),
-    }
+    PrimeFactors { n, fs: std::iter::once(2).chain((3..=sqrt).step_by(2)) }
 }
 
 pub struct Partitions {
@@ -757,11 +729,7 @@ pub struct Partitions {
 
 impl Partitions {
     pub fn new(len: usize, tot: i32) -> Self {
-        Self {
-            buf: vec![0; len + 1],
-            stack: vec![(len, 0, tot)],
-            in_progress: true,
-        }
+        Self { buf: vec![0; len + 1], stack: vec![(len, 0, tot)], in_progress: true }
     }
 }
 
@@ -955,10 +923,7 @@ pub struct Rect<T> {
 
 impl<T> Rect<T> {
     pub fn new(l_lo: T, l_hi: T, w_lo: T, w_hi: T) -> Self {
-        Self {
-            l: Interval::new(l_lo, l_hi),
-            w: Interval::new(w_lo, w_hi),
-        }
+        Self { l: Interval::new(l_lo, l_hi), w: Interval::new(w_lo, w_hi) }
     }
 }
 
@@ -997,11 +962,7 @@ impl<T: Copy + Ord + Sub<Output = T>> Cube<T> {
     }
 
     pub fn intersect(&self, o: &Self) -> Self {
-        Self {
-            l: self.l.intersect(&o.l),
-            w: self.w.intersect(&o.w),
-            h: self.h.intersect(&o.h),
-        }
+        Self { l: self.l.intersect(&o.l), w: self.w.intersect(&o.w), h: self.h.intersect(&o.h) }
     }
 }
 
@@ -1149,9 +1110,7 @@ pub fn held_karp<T: Copy + Add<Output = T>>(
             }
         }
     }
-    (1..len)
-        .map(move |k| g[&((1..len).collect(), k)] + adj[k][0])
-        .reduce(f)
+    (1..len).map(move |k| g[&((1..len).collect(), k)] + adj[k][0]).reduce(f)
 }
 
 #[derive(Clone)]
@@ -1172,11 +1131,7 @@ impl<T> UnionFind<T> {
     }
 
     pub fn push(&mut self, val: T) {
-        self.nodes.push(UnionFindNode {
-            val,
-            parent: self.nodes.len(),
-            rank: 0,
-        })
+        self.nodes.push(UnionFindNode { val, parent: self.nodes.len(), rank: 0 })
     }
 
     pub fn find(&self, mut k: usize) -> usize {
@@ -1371,10 +1326,7 @@ impl<const M: i64> Neg for Mod<M> {
 
 /// Area of polygon given a list of points.
 pub fn shoelace<T: Copy + Num + Signed + Sum>(pts: &[C<T>]) -> T {
-    pts.windows(2)
-        .map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0))
-        .sum::<T>()
-        .abs()
+    pts.windows(2).map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0)).sum::<T>().abs()
         / (T::one() + T::one())
 }
 
@@ -1432,11 +1384,7 @@ where
         }
     }
     assert!(c.is_zero() || c == cols);
-    Grid {
-        rows: (elems.len() / cols.as_()).as_(),
-        cols,
-        elems,
-    }
+    Grid { rows: (elems.len() / cols.as_()).as_(), cols, elems }
 }
 
 impl<Idx> FromIterator<u8> for Grid<u8, Idx>
@@ -1469,11 +1417,7 @@ impl<T: Clone + Default, I: AsPrimitive<usize>> Grid<T, I> {
 impl<T: Clone, I: AsPrimitive<usize>> Grid<T, I> {
     #[inline]
     pub fn new_with(rows: I, cols: I, elem: T) -> Self {
-        Grid {
-            rows,
-            cols,
-            elems: vec![elem; rows.as_() * cols.as_()],
-        }
+        Grid { rows, cols, elems: vec![elem; rows.as_() * cols.as_()] }
     }
 }
 
@@ -1493,19 +1437,11 @@ where
     std::ops::Range<I>: Iterator<Item = I>,
 {
     pub fn transform<S, F: FnMut(T) -> S>(self, f: F) -> Grid<S, I> {
-        Grid {
-            rows: self.rows,
-            cols: self.cols,
-            elems: self.elems.into_iter().map(f).collect(),
-        }
+        Grid { rows: self.rows, cols: self.cols, elems: self.elems.into_iter().map(f).collect() }
     }
 
     pub fn itransform<S, F: FnMut((C<I>, T)) -> S>(self, f: F) -> Grid<S, I> {
-        Grid {
-            rows: self.rows,
-            cols: self.cols,
-            elems: self.into_idx_iter().map(f).collect(),
-        }
+        Grid { rows: self.rows, cols: self.cols, elems: self.into_idx_iter().map(f).collect() }
     }
 
     #[inline]
@@ -1515,11 +1451,7 @@ where
 
     #[inline]
     pub fn same_size_with<E: Clone>(&self, elem: E) -> Grid<E, I> {
-        Grid {
-            rows: self.rows,
-            cols: self.cols,
-            elems: vec![elem; self.elems.len()],
-        }
+        Grid { rows: self.rows, cols: self.cols, elems: vec![elem; self.elems.len()] }
     }
 
     #[inline]

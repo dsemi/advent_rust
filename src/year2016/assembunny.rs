@@ -11,9 +11,7 @@ enum Val {
 }
 
 fn reg(i: &mut &str) -> PResult<usize> {
-    one_of(&['a', 'b', 'c', 'd'])
-        .map(|c| c as usize - 'a' as usize)
-        .parse_next(i)
+    one_of(&['a', 'b', 'c', 'd']).map(|c| c as usize - 'a' as usize).parse_next(i)
 }
 
 #[derive(Clone, Parser)]
@@ -74,11 +72,7 @@ fn optimize(instrs: &mut [Instr]) {
 pub fn parse_instrs(input: &str) -> Sim {
     let mut instrs = lines(instr).read(input);
     optimize(&mut instrs);
-    Sim {
-        regs: [0; 4],
-        line: 0,
-        instrs,
-    }
+    Sim { regs: [0; 4], line: 0, instrs }
 }
 
 impl Sim {

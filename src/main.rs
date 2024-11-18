@@ -74,11 +74,7 @@ fn main() {
         let year = args[1].i64();
         let day = args[2].i64();
         if let Some((_, a1, a2)) = run_problem(year, day) {
-            let (part, ans) = if a2.is_empty() || a2 == "0" {
-                (1, a1)
-            } else {
-                (2, a2)
-            };
+            let (part, ans) = if a2.is_empty() || a2 == "0" { (1, a1) } else { (2, a2) };
             problems::submit_answer(year, day, part, &ans);
         }
         return;

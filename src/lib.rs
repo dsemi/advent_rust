@@ -19,12 +19,8 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
     for (year, days) in map.iter() {
         let mut day_matches = proc_macro2::TokenStream::new();
         for day in days {
-            let year_ident = format!("year{year}")
-                .parse::<proc_macro2::TokenStream>()
-                .unwrap();
-            let day_ident = format!("day{day:02}")
-                .parse::<proc_macro2::TokenStream>()
-                .unwrap();
+            let year_ident = format!("year{year}").parse::<proc_macro2::TokenStream>().unwrap();
+            let day_ident = format!("day{day:02}").parse::<proc_macro2::TokenStream>().unwrap();
             day_matches.extend(quote! {
                 #day => Some(make_prob!(#year_ident, #day_ident)),
             });
@@ -105,9 +101,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn lower(item: TokenStream) -> TokenStream {
     let mut result = proc_macro2::TokenStream::new();
-    let i = syn::parse_macro_input!(item as syn::Ident)
-        .to_string()
-        .to_lowercase();
+    let i = syn::parse_macro_input!(item as syn::Ident).to_string().to_lowercase();
     result.extend(quote! { #i });
     result.into()
 }

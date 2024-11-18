@@ -53,32 +53,19 @@ fn separate_letters(input: &str, fill_opt: Option<char>) -> Vec<String> {
         prev_col = col + 1;
         if letter.contains(fill) {
             res.push(
-                letter
-                    .replace(fill, "#")
-                    .replace(|c: char| c != '#' && !c.is_whitespace(), " "),
+                letter.replace(fill, "#").replace(|c: char| c != '#' && !c.is_whitespace(), " "),
             );
         }
     }
     res
 }
 
-static SMALL_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
-    separate_letters(SMALL_K, None)
-        .into_iter()
-        .zip(SMALL_V.chars())
-        .collect()
-});
-static LARGE_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
-    separate_letters(LARGE_K, None)
-        .into_iter()
-        .zip(LARGE_V.chars())
-        .collect()
-});
+static SMALL_LETTERS: LazyLock<AHashMap<String, char>> =
+    LazyLock::new(|| separate_letters(SMALL_K, None).into_iter().zip(SMALL_V.chars()).collect());
+static LARGE_LETTERS: LazyLock<AHashMap<String, char>> =
+    LazyLock::new(|| separate_letters(LARGE_K, None).into_iter().zip(LARGE_V.chars()).collect());
 static SPECIAL_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
-    separate_letters(SPECIAL_K, None)
-        .into_iter()
-        .zip(SPECIAL_V.chars())
-        .collect()
+    separate_letters(SPECIAL_K, None).into_iter().zip(SPECIAL_V.chars()).collect()
 });
 
 pub fn parse_letters(input: &str, fill_opt: Option<char>) -> String {
