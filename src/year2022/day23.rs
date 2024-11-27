@@ -114,14 +114,8 @@ mod simd {
         unsafe {
             // (row >> u8x32(1)) | (row.rotate_lanes_left(1) << u8x32(7))
             uint8x16x2_t(
-                vorrq_u8(
-                    vshrq_n_u8(row.0, 1),
-                    vshlq_n_u8(vextq_u8(row.0, row.1, 1), 7),
-                ),
-                vorrq_u8(
-                    vshrq_n_u8(row.1, 1),
-                    vshlq_n_u8(vextq_u8(row.1, row.0, 1), 7),
-                ),
+                vorrq_u8(vshrq_n_u8(row.0, 1), vshlq_n_u8(vextq_u8(row.0, row.1, 1), 7)),
+                vorrq_u8(vshrq_n_u8(row.1, 1), vshlq_n_u8(vextq_u8(row.1, row.0, 1), 7)),
             )
         }
     }
@@ -130,14 +124,8 @@ mod simd {
         unsafe {
             // (row << u8x32(1)) | (row.rotate_lanes_right(1) >> u8x32(7))
             uint8x16x2_t(
-                vorrq_u8(
-                    vshlq_n_u8(row.0, 1),
-                    vshrq_n_u8(vextq_u8(row.1, row.0, 15), 7),
-                ),
-                vorrq_u8(
-                    vshlq_n_u8(row.1, 1),
-                    vshrq_n_u8(vextq_u8(row.0, row.1, 15), 7),
-                ),
+                vorrq_u8(vshlq_n_u8(row.0, 1), vshrq_n_u8(vextq_u8(row.1, row.0, 15), 7)),
+                vorrq_u8(vshlq_n_u8(row.1, 1), vshrq_n_u8(vextq_u8(row.0, row.1, 15), 7)),
             )
         }
     }
@@ -190,10 +178,7 @@ mod simd {
 
     pub fn or3(a: uint8x16x2_t, b: uint8x16x2_t, c: uint8x16x2_t) -> uint8x16x2_t {
         unsafe {
-            uint8x16x2_t(
-                vorrq_u8(a.0, vorrq_u8(b.0, c.0)),
-                vorrq_u8(a.1, vorrq_u8(b.1, c.1)),
-            )
+            uint8x16x2_t(vorrq_u8(a.0, vorrq_u8(b.0, c.0)), vorrq_u8(a.1, vorrq_u8(b.1, c.1)))
         }
     }
 
@@ -262,9 +247,7 @@ struct Grid {
 
 impl Grid {
     fn new(input: &str) -> Self {
-        let mut res = Self {
-            es: [simd::zero(); 160],
-        };
+        let mut res = Self { es: [simd::zero(); 160] };
         for (line, r) in input.lines().zip(24..) {
             let mut row = [0_u64; 4];
             for (v, c) in line.chars().zip(72..) {
@@ -325,10 +308,10 @@ pub fn part1(input: &str) -> u32 {
         }
         min_y = min(min_y, r as u32);
         max_y = max(max_y, r as u32 + 1);
-        let mut gen = ns.iter().rev().enumerate().filter(|p| *p.1 != 0).peekable();
-        let (i, n) = gen.peek().unwrap();
+        let mut iter = ns.iter().rev().enumerate().filter(|p| *p.1 != 0).peekable();
+        let (i, n) = iter.peek().unwrap();
         min_x = min(min_x, 64 * *i as u32 + n.leading_zeros());
-        let (i, n) = gen.last().unwrap();
+        let (i, n) = iter.last().unwrap();
         max_x = max(max_x, 64 * i as u32 + 64 - n.trailing_zeros());
         elf_cnt += ns.into_iter().map(|n| n.count_ones()).sum::<u32>();
     }

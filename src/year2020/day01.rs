@@ -3,14 +3,14 @@ use std::cmp::Ordering::*;
 const TARGET: i64 = 2020;
 
 fn two_sum(target: i64, entries: &[i64]) -> Option<i64> {
-    let mut gen = entries.iter();
-    let mut lo = gen.next();
-    let mut hi = gen.next_back();
+    let mut iter = entries.iter();
+    let mut lo = iter.next();
+    let mut hi = iter.next_back();
     while let (Some(a), Some(b)) = (lo, hi) {
         match (a + b).cmp(&target) {
             Equal => return Some(a * b),
-            Less => lo = gen.next(),
-            Greater => hi = gen.next_back(),
+            Less => lo = iter.next(),
+            Greater => hi = iter.next_back(),
         }
     }
     None

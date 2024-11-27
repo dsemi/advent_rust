@@ -91,11 +91,7 @@ fn army<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
 fn armies<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
     let (a, b) = sep2(army, "\n\n").parse_next(i)?;
     let mut result = [a, b].concat();
-    result
-        .iter_mut()
-        .filter_map(|g| g.as_mut())
-        .enumerate()
-        .for_each(|(i, g)| g.num = i);
+    result.iter_mut().filter_map(|g| g.as_mut()).enumerate().for_each(|(i, g)| g.num = i);
     Ok(result)
 }
 
@@ -149,9 +145,9 @@ fn attack(groups: &mut [Option<Group>], atks: Vec<(usize, usize)>) -> bool {
 fn battle(groups: &mut [Option<Group>]) -> bool {
     let mut changed = true;
     while changed {
-        let mut gen = groups.iter().flatten();
-        let name = gen.next().unwrap().name;
-        if gen.all(|g| g.name == name) {
+        let mut grps = groups.iter().flatten();
+        let name = grps.next().unwrap().name;
+        if grps.all(|g| g.name == name) {
             return true;
         }
         let atks = target_selection(groups);
@@ -168,17 +164,9 @@ pub fn part1(input: &str) -> i32 {
 
 fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
     let mut groups = gps.to_owned();
-    groups
-        .iter_mut()
-        .flatten()
-        .filter(|g| g.name == "Immune System")
-        .for_each(|g| g.dmg += n);
+    groups.iter_mut().flatten().filter(|g| g.name == "Immune System").for_each(|g| g.dmg += n);
     if battle(&mut groups) {
-        groups
-            .iter()
-            .flatten()
-            .filter_map(|g| (g.name == "Immune System").then_some(g.units))
-            .sum()
+        groups.iter().flatten().filter_map(|g| (g.name == "Immune System").then_some(g.units)).sum()
     } else {
         0
     }
@@ -186,10 +174,7 @@ fn immune_left(gps: &[Option<Group>], n: i32) -> i32 {
 
 pub fn part2(input: &str) -> i32 {
     let gps = armies.read(input);
-    let hi = iterate(1, |x| x * 2)
-        .map(|n| immune_left(&gps, n))
-        .find(|&left| left > 0)
-        .unwrap();
+    let hi = iterate(1, |x| x * 2).map(|n| immune_left(&gps, n)).find(|&left| left > 0).unwrap();
     let boosts = (0..hi).collect::<Vec<_>>();
     let boost = boosts.partition_point(|&n| immune_left(&gps, n) <= 0) as i32;
     immune_left(&gps, boost)

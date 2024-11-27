@@ -19,20 +19,17 @@ fn parse_scanners(input: &str) -> (Vec<Scanner>, Vec<C<i64>>) {
     for line in input.lines() {
         let (sx, sy, bx, by) = sensor.read(line);
         let dist = (sx - bx).abs() + (sy - by).abs();
-        scanners.push(Scanner {
-            pos: C(sx, sy),
-            dist,
-        });
+        scanners.push(Scanner { pos: C(sx, sy), dist });
         beacons.push(C(bx, by));
     }
     (scanners, beacons)
 }
 
 fn compress(ints: Vec<Interval<i64>>) -> Vec<Interval<i64>> {
-    let mut gen = ints.into_iter();
+    let mut ints = ints.into_iter();
     let mut comp = Vec::new();
-    let mut cur = gen.next().unwrap();
-    for int in gen {
+    let mut cur = ints.next().unwrap();
+    for int in ints {
         if let Some(u) = cur.union(&int) {
             cur = u;
         } else {
@@ -90,22 +87,10 @@ pub fn part2(input: &str) -> i64 {
     let mut urs = Vec::new();
     let mut drs = Vec::new();
     for s in sensors.iter() {
-        urs.push(Line::new(
-            C(s.pos.0 - s.dist - 1, s.pos.1),
-            C(s.pos.0, s.pos.1 + s.dist + 1),
-        ));
-        urs.push(Line::new(
-            C(s.pos.0, s.pos.1 - s.dist - 1),
-            C(s.pos.0 + s.dist + 1, s.pos.1),
-        ));
-        drs.push(Line::new(
-            C(s.pos.0, s.pos.1 + s.dist + 1),
-            C(s.pos.0 + s.dist + 1, s.pos.1),
-        ));
-        drs.push(Line::new(
-            C(s.pos.0 - s.dist - 1, s.pos.1),
-            C(s.pos.0, s.pos.1 - s.dist - 1),
-        ));
+        urs.push(Line::new(C(s.pos.0 - s.dist - 1, s.pos.1), C(s.pos.0, s.pos.1 + s.dist + 1)));
+        urs.push(Line::new(C(s.pos.0, s.pos.1 - s.dist - 1), C(s.pos.0 + s.dist + 1, s.pos.1)));
+        drs.push(Line::new(C(s.pos.0, s.pos.1 + s.dist + 1), C(s.pos.0 + s.dist + 1, s.pos.1)));
+        drs.push(Line::new(C(s.pos.0 - s.dist - 1, s.pos.1), C(s.pos.0, s.pos.1 - s.dist - 1)));
     }
     for a in urs.iter() {
         for b in drs.iter() {

@@ -35,14 +35,10 @@ pub struct Prog {
 
 impl Prog {
     pub fn parse_instrs(input: &str) -> Self {
-        let mut gen = input.lines();
-        let ip = preceded("#ip ", usize).read(gen.next().unwrap());
-        let instrs = gen.map(|line| instr.read(line)).collect();
-        Self {
-            ip,
-            instrs,
-            reg: [0; 6],
-        }
+        let mut lines = input.lines();
+        let ip = preceded("#ip ", usize).read(lines.next().unwrap());
+        let instrs = lines.map(|line| instr.read(line)).collect();
+        Self { ip, instrs, reg: [0; 6] }
     }
 
     // Not sure if there's a better way than just deconstructing the assembly

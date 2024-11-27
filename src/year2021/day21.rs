@@ -11,10 +11,10 @@ fn parse(i: &mut &str) -> PResult<(u64, u64)> {
 pub fn part1(input: &str) -> u64 {
     let (mut p1, mut p2) = parse.read(input);
     let (mut p1_score, mut p2_score) = (0, 0);
-    let gen = &mut (1..=100).cycle();
+    let die = &mut (1..=100).cycle();
     let mut n = 0;
     while p2_score < 1000 {
-        p1 = (p1 + gen.take(3).sum::<u64>()) % 10;
+        p1 = (p1 + die.take(3).sum::<u64>()) % 10;
         p1_score += p1 + 1;
         n += 3;
         std::mem::swap(&mut p1, &mut p2);
