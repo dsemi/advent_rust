@@ -1189,7 +1189,11 @@ pub trait Counter: Iterator {
         Self: Sized,
         Self::Item: Eq + Hash,
     {
-        let mut m = AHashMap::new();
+        let mut m = if let Some(size) = self.size_hint().1 {
+            AHashMap::with_capacity(size)
+        } else {
+            AHashMap::new()
+        };
         self.for_each(|item| *m.entry(item).or_default() += 1);
         m
     }
