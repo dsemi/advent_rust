@@ -15,7 +15,7 @@ fn solve(goal: u64, prime_index: i32) -> u64 {
         p_power *= p;
         p_sum += p_power;
 
-        let subgoal = (goal + p_sum - 1) / p_sum;
+        let subgoal = goal.div_ceil(p_sum);
         best = min(best, p_power * solve(subgoal, prime_index - 1));
     }
     best
