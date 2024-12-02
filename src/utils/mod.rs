@@ -771,6 +771,16 @@ impl<'a, T> Combinations<'a, T> {
     }
 }
 
+pub trait CombinationsExt<'a, T> {
+    fn combinations(&'a self, len: usize) -> Combinations<'a, T>;
+}
+
+impl<'a, T> CombinationsExt<'a, T> for [T] {
+    fn combinations(&'a self, len: usize) -> Combinations<'a, T> {
+        Combinations::new(self, len)
+    }
+}
+
 impl<'a, T> StreamingIterator for Combinations<'a, T> {
     type Item = [&'a T];
 

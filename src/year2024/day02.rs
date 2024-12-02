@@ -18,6 +18,6 @@ pub fn part2(input: &str) -> usize {
     input
         .lines()
         .map(|line| spaced(i8).read(line))
-        .filter(|ns| valid(ns) || Combinations::new(ns, ns.len() - 1).any(valid))
+        .filter(|ns| valid(ns) || ns.combinations(ns.len() - 1).any(valid))
         .count()
 }

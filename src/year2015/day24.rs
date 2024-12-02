@@ -1,11 +1,11 @@
-use crate::utils::Combinations;
+use crate::utils::*;
 use streaming_iterator::StreamingIterator;
 
 fn quantum_entanglement(n: i64, wts: Vec<i64>) -> Option<i64> {
     let group_size: i64 = wts.iter().copied().sum::<i64>() / n;
     (1..wts.len()).find_map(|i| {
         // Combinations are in order.
-        Combinations::new(&wts, i)
+        wts.combinations(i)
             .filter(|combo| combo.iter().copied().sum::<i64>() == group_size)
             .map_deref(|combo| combo.iter().copied().product())
             .next()
