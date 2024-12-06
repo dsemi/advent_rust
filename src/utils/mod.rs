@@ -1497,6 +1497,10 @@ where
         self.idxs().zip(self)
     }
 
+    pub fn position(&self, f: impl Fn(&T) -> bool) -> Option<C<I>> {
+        self.idx_iter().find(move |(_, v)| f(v)).map(|(i, _)| i)
+    }
+
     pub fn positions<'a>(&'a self, f: impl Fn(&T) -> bool + 'a) -> impl Iterator<Item = C<I>> + 'a {
         self.idx_iter().filter(move |(_, v)| f(v)).map(|(i, _)| i)
     }
