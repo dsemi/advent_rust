@@ -1,17 +1,14 @@
 use crate::utils::parsers::*;
 
 fn validate(curr: i64, ns: &[i64], p2: bool) -> bool {
+    let (&n, ns) = ns.split_last().unwrap();
     if ns.is_empty() {
-        return curr == 0;
+        return curr == n;
     }
-    if curr < 0 {
-        return false;
-    }
-    let n = ns[ns.len() - 1];
     let m = 10_i64.pow(n.ilog10() + 1);
-    (p2 && curr % m == n && validate(curr / m, &ns[..ns.len() - 1], p2))
-        || (curr % n == 0 && validate(curr / n, &ns[..ns.len() - 1], p2))
-        || validate(curr - n, &ns[..ns.len() - 1], p2)
+    (p2 && curr % m == n && validate(curr / m, ns, p2))
+        || (curr % n == 0 && validate(curr / n, ns, p2))
+        || (curr >= n && validate(curr - n, ns, p2))
 }
 
 pub fn part1(input: &str) -> i64 {
