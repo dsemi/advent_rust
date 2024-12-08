@@ -1,8 +1,7 @@
+use crate::utils::*;
 use itertools::{iterate, Itertools};
 use rayon::prelude::*;
 use std::iter::successors;
-
-use crate::utils::*;
 
 pub fn path(grid: &Grid<u8, i32>) -> impl Iterator<Item = (C<i32>, C<i32>)> + use<'_> {
     let mut seen = grid.same_size_with(false);

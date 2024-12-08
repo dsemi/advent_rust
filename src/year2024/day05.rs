@@ -1,6 +1,5 @@
-use std::cmp::Ordering::{self, *};
-
 use crate::utils::parsers::*;
+use std::cmp::Ordering::{self, *};
 
 fn parse(input: &str) -> ([[Ordering; 100]; 100], impl Iterator<Item = Vec<usize>> + use<'_>) {
     let (rules, pages) = input.split_once("\n\n").unwrap();
