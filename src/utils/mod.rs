@@ -989,6 +989,18 @@ impl<T: Eq + Hash> UniqueIdx<T> {
         let c = self.m.len();
         *self.m.entry(k).or_insert(c)
     }
+
+    pub fn idx_with<F: FnMut()>(&mut self, k: T, mut f: F) -> usize {
+        let c = self.m.len();
+        *self.m.entry(k).or_insert_with(|| {
+            f();
+            c
+        })
+    }
+
+    pub fn len(&self) -> usize {
+        self.m.len()
+    }
 }
 
 impl<T: Eq + Hash> FromIterator<T> for UniqueIdx<T> {
