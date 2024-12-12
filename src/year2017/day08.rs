@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
-fn parse<'a>(reg: &AHashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {
+fn parse<'a>(reg: &HashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {
     let mut p = |i: &mut &'a str| {
         let (mut_r, sgn, mut_n, _, cmp_r) = (
             alpha1,
@@ -26,7 +26,7 @@ fn parse<'a>(reg: &AHashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {
     p.read(i)
 }
 
-fn run_cmd<'a>(reg: &mut AHashMap<&'a str, i64>, line: &'a str) -> i64 {
+fn run_cmd<'a>(reg: &mut HashMap<&'a str, i64>, line: &'a str) -> i64 {
     let (cond, mut_r, mut_n) = parse(reg, line);
     if cond {
         *reg.entry(mut_r).or_insert(0) += mut_n;
@@ -35,7 +35,7 @@ fn run_cmd<'a>(reg: &mut AHashMap<&'a str, i64>, line: &'a str) -> i64 {
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     input.lines().for_each(|line| {
         run_cmd(&mut tbl, line);
     });
@@ -43,6 +43,6 @@ pub fn part1(input: &str) -> Option<i64> {
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     input.lines().map(|line| run_cmd(&mut tbl, line)).max()
 }

@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 type Grid = Vec<Vec<bool>>;
 
@@ -10,7 +10,7 @@ fn parse_img(input: &str) -> Grid {
         .collect()
 }
 
-fn parse_expansions(input: &str) -> AHashMap<Grid, Grid> {
+fn parse_expansions(input: &str) -> HashMap<Grid, Grid> {
     input
         .lines()
         .flat_map(|line| {
@@ -35,7 +35,7 @@ fn sqr(grid: &[Vec<bool>], i: usize, j: usize, span: usize) -> Grid {
         .collect()
 }
 
-fn expand_image(img: &[Vec<bool>], m: &AHashMap<Grid, Grid>) -> Grid {
+fn expand_image(img: &[Vec<bool>], m: &HashMap<Grid, Grid>) -> Grid {
     let size = img.len();
     let span = if size % 2 == 0 { 2 } else { 3 };
     let sq_size = size / span;

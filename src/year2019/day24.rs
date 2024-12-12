@@ -1,4 +1,4 @@
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn parse(input: &str) -> u64 {
     input
@@ -41,7 +41,7 @@ fn next(grid: u64) -> u64 {
 
 pub fn part1(input: &str) -> u32 {
     let mut planet = parse(input);
-    let mut s = AHashSet::new();
+    let mut s = HashSet::new();
     while s.insert(planet) {
         planet = next(planet)
     }

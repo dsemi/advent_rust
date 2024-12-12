@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn parse_mappings(input: &str) -> (Vec<(&str, &str)>, &str) {
     separated_pair(lines(sep2(alpha1, " => ")), "\n\n", alpha1).read(input)
@@ -22,7 +22,7 @@ pub fn part1(input: &str) -> usize {
     mappings
         .into_iter()
         .flat_map(|(k, v)| single_repls(s, k, v))
-        .collect::<AHashSet<_>>()
+        .collect::<HashSet<_>>()
         .len()
 }
 

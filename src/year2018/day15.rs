@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 use itertools::iterate;
 use std::collections::VecDeque;
 use Outcome::*;
@@ -26,8 +26,8 @@ fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
 }
 
 fn find_next_move(grid: &Grid<(char, i32), i32>, enemy: char, coord: C<i32>) -> Option<C<i32>> {
-    let mut path = AHashMap::new();
-    let mut visited = AHashSet::new();
+    let mut path = HashMap::new();
+    let mut visited = HashSet::new();
     visited.insert(coord);
     let mut frontier = VecDeque::new();
     frontier.push_back(coord);

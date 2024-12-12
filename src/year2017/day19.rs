@@ -1,7 +1,7 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
-fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
+fn parse_grid(input: &str) -> HashMap<C<i32>, char> {
     input
         .lines()
         .enumerate()
@@ -16,7 +16,7 @@ fn parse_grid(input: &str) -> AHashMap<C<i32>, char> {
 const LEFT: C<i32> = C(0, 1);
 const RIGHT: C<i32> = C(0, -1);
 
-fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
+fn turn(grid: &HashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
     if grid.contains_key(&(LEFT * dir + pos)) {
         LEFT * dir
     } else {
@@ -24,7 +24,7 @@ fn turn(grid: &AHashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
     }
 }
 
-fn follow_path(grid: AHashMap<C<i32>, char>) -> Vec<char> {
+fn follow_path(grid: HashMap<C<i32>, char>) -> Vec<char> {
     let mut coord = *grid.keys().min_by_key(|p| p.0).unwrap();
     let mut dir = C(1, 0);
     let mut result = Vec::new();
@@ -40,10 +40,7 @@ fn follow_path(grid: AHashMap<C<i32>, char>) -> Vec<char> {
 }
 
 pub fn part1(input: &str) -> String {
-    follow_path(parse_grid(input))
-        .into_iter()
-        .filter(|x| !"|-+".contains(*x))
-        .collect()
+    follow_path(parse_grid(input)).into_iter().filter(|x| !"|-+".contains(*x)).collect()
 }
 
 pub fn part2(input: &str) -> usize {

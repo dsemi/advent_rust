@@ -1,6 +1,6 @@
 use crate::utils::ocr::*;
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::{max, min};
 use Fold::*;
 
@@ -17,12 +17,12 @@ fn parse_fold(i: &mut &str) -> PResult<Fold> {
     .parse_next(i)
 }
 
-fn parse(input: &str) -> (AHashSet<(usize, usize)>, &str) {
+fn parse(input: &str) -> (HashSet<(usize, usize)>, &str) {
     let (dots, instrs) = input.split_once("\n\n").unwrap();
     (lines_iter(dots, coord(usize)).collect(), instrs)
 }
 
-fn fold(paper: AHashSet<(usize, usize)>, instr: &str) -> AHashSet<(usize, usize)> {
+fn fold(paper: HashSet<(usize, usize)>, instr: &str) -> HashSet<(usize, usize)> {
     match parse_fold.read(instr) {
         X(n) => paper
             .into_iter()

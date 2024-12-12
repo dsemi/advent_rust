@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use num_complex::Complex;
 use num_rational::Ratio;
 use std::ops::{Add, Div, Mul, Sub};
@@ -11,7 +11,7 @@ enum Monkey<'a> {
     Math(fn(N, N) -> N, &'a str, &'a str),
 }
 
-fn eval(m: &AHashMap<&str, Monkey>, k: &str) -> N {
+fn eval(m: &HashMap<&str, Monkey>, k: &str) -> N {
     match &m[k] {
         Monkey::Num(n) => *n,
         Monkey::Math(op, l, r) => op(eval(m, l), eval(m, r)),
@@ -40,7 +40,7 @@ fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, Monkey<'a>)> {
     separated_pair(alpha1, ": ", alt((num, math))).parse_next(i)
 }
 
-fn monkeys(input: &str) -> AHashMap<&str, Monkey> {
+fn monkeys(input: &str) -> HashMap<&str, Monkey> {
     lines_iter(input, parse).collect()
 }
 

@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, (), ContextError> {
     move |i: &mut &'a str| {
@@ -39,7 +39,7 @@ fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, (), ContextError> {
 
 fn parse<'a>(validate: bool) -> impl Parser<&'a str, (), ContextError> {
     move |i: &mut &'a str| {
-        let mut req_fields: AHashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
+        let mut req_fields: HashSet<&str> = vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
             .into_iter()
             .collect();
         while !req_fields.is_empty() {

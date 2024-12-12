@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::Itertools;
 use Record::*;
 
@@ -24,12 +24,12 @@ fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
     })
 }
 
-fn guard_sleep_freqs<I>(records: I) -> AHashMap<usize, Vec<usize>>
+fn guard_sleep_freqs<I>(records: I) -> HashMap<usize, Vec<usize>>
 where
     I: IntoIterator<Item = Record>,
 {
     let (mut guard, mut last_m, mut st) = (0, 0, 0);
-    let mut result: AHashMap<usize, Vec<usize>> = AHashMap::new();
+    let mut result: HashMap<usize, Vec<usize>> = HashMap::new();
     for record in records {
         match record {
             GuardChange(guard_num) => {

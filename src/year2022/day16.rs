@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::Itertools;
 use std::cmp::{max, Reverse};
 
@@ -28,7 +28,7 @@ impl Graph {
     fn new(input: &str) -> Self {
         let mut valves = lines(valve).read(input);
         valves.sort_unstable_by(|a, b| b.flow.cmp(&a.flow).then(a.name.cmp(b.name)));
-        let ui: AHashMap<&str, usize> = valves.iter().map(|v| v.name).zip(0..).collect();
+        let ui: HashMap<&str, usize> = valves.iter().map(|v| v.name).zip(0..).collect();
         let mut dist = vec![vec![u8::MAX; valves.len()]; valves.len()];
         let mut flow = vec![0; valves.len()];
         for valve in valves {

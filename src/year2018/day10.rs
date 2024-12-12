@@ -1,7 +1,7 @@
 use crate::utils::ocr::*;
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::{max, min};
 
 struct Obj {
@@ -40,7 +40,7 @@ fn find_message(objs: &mut [Obj]) -> usize {
 }
 
 fn show_objects(objs: &[Obj]) -> String {
-    let lights = objs.iter().map(|obj| obj.pos).collect::<AHashSet<_>>();
+    let lights = objs.iter().map(|obj| obj.pos).collect::<HashSet<_>>();
     let (x0, y0, x1, y1) = bounding_box(objs);
     let mut result = String::new();
     for y in y0..=y1 {

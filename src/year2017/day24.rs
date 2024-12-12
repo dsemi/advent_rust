@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::max_by_key;
 
 #[derive(Clone, Copy, Debug)]
@@ -42,7 +42,7 @@ impl Bridge {
         key: fn(&Bridge) -> T,
         neighbs: &[Vec<Pipe>],
         unused_singles: &mut [usize],
-        visited: &mut AHashSet<u64>,
+        visited: &mut HashSet<u64>,
     ) -> Bridge {
         if !visited.insert(self.used) {
             return self;
@@ -81,7 +81,7 @@ fn solve<T: Ord>(input: &str, key: fn(&Bridge) -> T) -> u32 {
         }
     }
     Bridge::default()
-        .build(key, &neighbs, &mut singles, &mut AHashSet::new())
+        .build(key, &neighbs, &mut singles, &mut HashSet::new())
         .strength
 }
 

@@ -1,11 +1,11 @@
 use crate::utils::C;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::min;
 
-fn parse_edges(input: &str) -> AHashMap<C<i32>, usize> {
+fn parse_edges(input: &str) -> HashMap<C<i32>, usize> {
     let mut stack = Vec::new();
     let mut pos = C(0, 0);
-    let mut result = AHashMap::new();
+    let mut result = HashMap::new();
     for c in input[1..input.len() - 1].chars() {
         match c {
             '(' => stack.push(pos),

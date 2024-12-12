@@ -1,10 +1,10 @@
 use super::intcode;
 use crate::utils::ocr::*;
 use crate::utils::C;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::{max, min};
 
-fn run_robot(mut prog: intcode::Program, t: &mut AHashMap<C<i64>, i64>) {
+fn run_robot(mut prog: intcode::Program, t: &mut HashMap<C<i64>, i64>) {
     let mut pos = C(0, 0);
     let mut dir = C(0, -1);
     while !prog.done {
@@ -19,12 +19,12 @@ fn run_robot(mut prog: intcode::Program, t: &mut AHashMap<C<i64>, i64>) {
 }
 
 pub fn part1(input: &str) -> usize {
-    let mut m = AHashMap::new();
+    let mut m = HashMap::new();
     run_robot(intcode::new(input), &mut m);
     m.len()
 }
 
-fn draw(points: &AHashMap<C<i64>, i64>) -> String {
+fn draw(points: &HashMap<C<i64>, i64>) -> String {
     let (mut min_x, mut min_y, mut max_x, mut max_y) = (i64::MAX, i64::MAX, i64::MIN, i64::MIN);
     for &C(x, y) in points.keys() {
         min_x = min(min_x, x);
@@ -47,7 +47,7 @@ fn draw(points: &AHashMap<C<i64>, i64>) -> String {
 }
 
 pub fn part2(input: &str) -> String {
-    let mut m = AHashMap::new();
+    let mut m = HashMap::new();
     m.insert(C(0, 0), 1);
     run_robot(intcode::new(input), &mut m);
     draw(&m)

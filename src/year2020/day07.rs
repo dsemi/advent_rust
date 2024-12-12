@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 
 fn bag<'a>(i: &mut &'a str) -> PResult<&'a str> {
     terminated(
@@ -17,20 +17,20 @@ fn bags<'a>(i: &mut &'a str) -> PResult<Vec<(u32, &'a str)>> {
     Ok(res)
 }
 
-fn parse_bags(input: &str) -> AHashMap<&str, Vec<(u32, &str)>> {
+fn parse_bags(input: &str) -> HashMap<&str, Vec<(u32, &str)>> {
     lines_iter(input, separated_pair(bag, " contain ", bags)).collect()
 }
 
 pub fn part1(input: &str) -> usize {
     let m = parse_bags(input);
-    let mut rev = AHashMap::new();
+    let mut rev = HashMap::new();
     for (k, v) in m {
         for (_, k2) in v {
             rev.entry(k2).or_insert_with(Vec::new).push(k);
         }
     }
     let mut stack = rev[&"shiny gold"].clone();
-    let mut visited = AHashSet::new();
+    let mut visited = HashSet::new();
     let mut ans = 0;
     while let Some(v) = stack.pop() {
         if visited.insert(v) {
@@ -43,7 +43,7 @@ pub fn part1(input: &str) -> usize {
     ans
 }
 
-fn count_bags(m: &AHashMap<&str, Vec<(u32, &str)>>, k: &str) -> u32 {
+fn count_bags(m: &HashMap<&str, Vec<(u32, &str)>>, k: &str) -> u32 {
     m[k].iter().map(|(n, k2)| n + n * count_bags(m, k2)).sum()
 }
 

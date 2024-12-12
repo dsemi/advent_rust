@@ -1,11 +1,11 @@
 use crate::utils::mod_exp;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 pub fn part1(parts: Vec<i64>) -> Option<i64> {
     let (card, door) = (parts[0], parts[1]);
     let md = 20201227;
     let m = (md as f64).sqrt().ceil() as i64;
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     let mut n = 1;
     for i in 0..m {
         tbl.insert(n, i);

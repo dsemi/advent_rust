@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use num::integer::lcm;
 use std::collections::VecDeque;
 use ModuleType::*;
@@ -113,7 +113,7 @@ pub fn part2(input: &str) -> usize {
             _ => None,
         })
         .unwrap();
-    let mut cycles = AHashMap::new();
+    let mut cycles = HashMap::new();
     let mut i: usize = 0;
     while cycles.len() < len {
         i += 1;

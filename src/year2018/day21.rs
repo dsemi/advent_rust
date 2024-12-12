@@ -1,7 +1,7 @@
 use super::day19::Instr;
 use super::day19::Op::*;
 use super::day19::Prog;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::max;
 
 impl Iterator for Prog {
@@ -62,7 +62,7 @@ pub fn part1(input: &str) -> Option<i64> {
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    let mut s = AHashSet::new();
+    let mut s = HashSet::new();
     Prog::parse_instrs(input)
         .take_while(|&x| s.insert(x))
         .last()

@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::{Grid, C};
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 use phf::phf_map;
 
 const DIRS: phf::Map<&str, C<i32>> = phf_map! {
@@ -12,8 +12,8 @@ const DIRS: phf::Map<&str, C<i32>> = phf_map! {
     "ne" => C(1, 0),
 };
 
-fn flip_tiles(s: &str) -> AHashSet<C<i32>> {
-    let mut tiles = AHashMap::new();
+fn flip_tiles(s: &str) -> HashSet<C<i32>> {
+    let mut tiles = HashMap::new();
     for line in s.lines() {
         let tile = repeat(0.., alt(("e", "w", "se", "sw", "nw", "ne")))
             .fold(|| C(0, 0), |a, b| a + DIRS[b])

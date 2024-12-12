@@ -1,4 +1,4 @@
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
@@ -54,7 +54,7 @@ where
     I: IntoIterator<Item = T, IntoIter = I2>,
     I2: Iterator<Item = T>,
 {
-    let mut visited = AHashSet::new();
+    let mut visited = HashSet::new();
     let mut frontier = VecDeque::new();
     for start in starts {
         visited.insert(h(&start));
@@ -65,7 +65,7 @@ where
 
 pub struct Bfs<T, F, G, H> {
     pub frontier: VecDeque<(usize, T)>,
-    pub visited: AHashSet<H>,
+    pub visited: HashSet<H>,
     pub hash: G,
     pub neighbs: F,
 }
@@ -126,12 +126,12 @@ where
     F2: Fn(&T) -> usize,
     F3: Fn(&T) -> bool,
 {
-    let mut open_set: AHashSet<T> = vec![start.clone()].into_iter().collect();
+    let mut open_set: HashSet<T> = vec![start.clone()].into_iter().collect();
     let mut queue: BinaryHeap<AStarNode<T>> = BinaryHeap::new();
     queue.push(AStarNode { weight: 0, elem: start.clone() });
-    let mut came_from: AHashMap<T, T> = AHashMap::new();
-    let mut g_score: AHashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
-    let mut f_score: AHashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
+    let mut came_from: HashMap<T, T> = HashMap::new();
+    let mut g_score: HashMap<T, usize> = vec![(start.clone(), 0)].into_iter().collect();
+    let mut f_score: HashMap<T, usize> = vec![(start.clone(), heur(&start))].into_iter().collect();
     while let Some(AStarNode { elem: st, .. }) = queue.pop() {
         if !open_set.remove(&st) {
             continue;
@@ -183,7 +183,7 @@ impl<T: Eq> PartialOrd for State<T> {
 
 pub struct Dijkstra<T, F> {
     queue: BinaryHeap<Reverse<State<T>>>,
-    dists: AHashMap<T, usize>,
+    dists: HashMap<T, usize>,
     neighbors: F,
 }
 
@@ -198,7 +198,7 @@ where
 {
     let mut queue = BinaryHeap::new();
     queue.push(Reverse(State { dist: 0, elem: start }));
-    Dijkstra { queue, dists: AHashMap::new(), neighbors }
+    Dijkstra { queue, dists: HashMap::new(), neighbors }
 }
 
 impl<T, F, I, I2> Iterator for Dijkstra<T, F>
@@ -977,12 +977,12 @@ impl<T: Copy + Ord + Sub<Output = T>> Cube<T> {
 }
 
 pub struct UniqueIdx<T> {
-    m: AHashMap<T, usize>,
+    m: HashMap<T, usize>,
 }
 
 impl<T: Eq + Hash> UniqueIdx<T> {
     pub fn new() -> Self {
-        UniqueIdx { m: AHashMap::new() }
+        UniqueIdx { m: HashMap::new() }
     }
 
     pub fn idx(&mut self, k: T) -> usize {
@@ -1110,7 +1110,7 @@ pub fn held_karp<T: Copy + Add<Output = T>>(
     f: fn(T, T) -> T,
 ) -> Option<T> {
     let len = adj.len();
-    let mut g = AHashMap::new();
+    let mut g = HashMap::new();
     for k in 1..len {
         g.insert((vec![k], k), adj[0][k]);
     }
@@ -1206,15 +1206,15 @@ pub fn replace_with<T, F: FnOnce(&T) -> T>(r: &mut T, f: F) -> T {
 }
 
 pub trait Counter: Iterator {
-    fn counts(self) -> AHashMap<Self::Item, usize>
+    fn counts(self) -> HashMap<Self::Item, usize>
     where
         Self: Sized,
         Self::Item: Eq + Hash,
     {
         let mut m = if let Some(size) = self.size_hint().1 {
-            AHashMap::with_capacity(size)
+            HashMap::with_capacity(size)
         } else {
-            AHashMap::new()
+            HashMap::new()
         };
         self.for_each(|item| *m.entry(item).or_default() += 1);
         m

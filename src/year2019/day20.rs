@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use Portal::*;
 
 type Pos = (usize, usize);
@@ -21,12 +21,12 @@ enum Tile {
 
 struct Maze {
     grid: Vec<Vec<Tile>>,
-    moves: AHashMap<Pos, Vec<(usize, Pos)>>,
+    moves: HashMap<Pos, Vec<(usize, Pos)>>,
 }
 
 fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
     let grid: Vec<Vec<char>> = input.lines().map(|row| row.chars().collect()).collect();
-    let mut portals: AHashMap<String, Vec<Portal>> = AHashMap::new();
+    let mut portals: HashMap<String, Vec<Portal>> = HashMap::new();
     for r in 0..grid.len() {
         for c in 0..grid[r].len() {
             if grid[r][c].is_ascii_uppercase() {
@@ -57,7 +57,7 @@ fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
             }
         }
     }
-    let mut bi: AHashMap<Portal, Portal> = AHashMap::new();
+    let mut bi: HashMap<Portal, Portal> = HashMap::new();
     let mut start = None;
     let mut end = None;
     for (k, ps) in portals.iter() {
@@ -101,7 +101,7 @@ fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
     (
         Maze {
             grid: grid2,
-            moves: AHashMap::new(),
+            moves: HashMap::new(),
         },
         start.unwrap(),
         end.unwrap(),

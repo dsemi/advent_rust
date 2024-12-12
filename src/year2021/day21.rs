@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::{max, min};
 
 fn parse(i: &mut &str) -> PResult<(u64, u64)> {
@@ -25,7 +25,7 @@ pub fn part1(input: &str) -> u64 {
 
 const PROBS: &[(u64, u64)] = &[(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
 
-type Cache = AHashMap<(u64, u64, u64, u64), (u64, u64)>;
+type Cache = HashMap<(u64, u64, u64, u64), (u64, u64)>;
 
 fn solve(cache: &mut Cache, p1: u64, p2: u64, s1: u64, s2: u64) -> (u64, u64) {
     if s1 >= 21 {
@@ -49,6 +49,6 @@ fn solve(cache: &mut Cache, p1: u64, p2: u64, s1: u64, s2: u64) -> (u64, u64) {
 
 pub fn part2(input: &str) -> u64 {
     let (p1, p2) = parse.read(input);
-    let (x, y) = solve(&mut AHashMap::new(), p1, p2, 0, 0);
+    let (x, y) = solve(&mut HashMap::new(), p1, p2, 0, 0);
     max(x, y)
 }

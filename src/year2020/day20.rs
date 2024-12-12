@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 type Row = Vec<bool>;
 type Grid = Vec<Row>;
@@ -44,8 +44,8 @@ fn orientations(tile: &[Row]) -> Vec<Grid> {
     v
 }
 
-fn find_corners(tiles: &[Tile]) -> (Vec<u64>, AHashMap<Row, Vec<Tile>>) {
-    let mut m = AHashMap::new();
+fn find_corners(tiles: &[Tile]) -> (Vec<u64>, HashMap<Row, Vec<Tile>>) {
+    let mut m = HashMap::new();
     for tile in tiles {
         for t in orientations(&tile.grid) {
             let hash: Row = t.iter().map(|row| row[0]).collect();
@@ -53,7 +53,7 @@ fn find_corners(tiles: &[Tile]) -> (Vec<u64>, AHashMap<Row, Vec<Tile>>) {
             e.push(Tile { num: tile.num, grid: t });
         }
     }
-    let mut m2 = AHashMap::new();
+    let mut m2 = HashMap::new();
     for v in m.values() {
         assert!(v.len() <= 2);
         if v.len() == 1 {

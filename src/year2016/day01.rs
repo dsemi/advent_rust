@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::C;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::iter::{once, repeat};
 
 fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
@@ -27,6 +27,6 @@ pub fn part1(input: &str) -> Option<i32> {
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    let mut s = AHashSet::new();
+    let mut s = HashSet::new();
     path(input).find_map(|pos| (!s.insert(pos)).then(|| pos.abs().sum()))
 }

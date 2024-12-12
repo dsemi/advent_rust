@@ -1,8 +1,8 @@
 use crate::utils::C;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 fn run(input: &str, pad: &str) -> String {
-    let d: AHashMap<C<i32>, &str> = pad
+    let d: HashMap<C<i32>, &str> = pad
         .lines()
         .enumerate()
         .flat_map(|(y, line)| {
@@ -13,7 +13,7 @@ fn run(input: &str, pad: &str) -> String {
                 .collect::<Vec<_>>()
         })
         .collect();
-    let mut xy = *d.keys().find(|k| d[k] == "5").unwrap();
+    let mut xy = *d.keys().find(|&k| d[k] == "5").unwrap();
     let mut result = String::new();
     for line in input.lines() {
         xy = line.chars().fold(xy, |a, b| {

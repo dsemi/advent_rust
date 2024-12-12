@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::{max, min};
 use std::collections::VecDeque;
 use Tile::*;
@@ -110,7 +110,7 @@ pub fn part2(input: &str) -> usize {
     );
     let mut region_size = 0;
     let mut frontier = vec![avg_coord].into_iter().collect::<VecDeque<_>>();
-    let mut visited = AHashSet::new();
+    let mut visited = HashSet::new();
     while let Some(p) = frontier.pop_front() {
         if !visited.insert(p) {
             continue;

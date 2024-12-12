@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 type Pt = (i64, i64, i64, i64);
 
@@ -25,7 +25,7 @@ fn constellations(mut pts: UnionFind<Pt>) -> usize {
     }
     (0..pts.len())
         .map(|p| pts.find(p))
-        .collect::<AHashSet<_>>()
+        .collect::<HashSet<_>>()
         .len()
 }
 

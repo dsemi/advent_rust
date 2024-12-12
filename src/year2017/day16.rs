@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::fmt::{Display, Error, Formatter, Write};
 use Action::*;
 
@@ -67,7 +67,7 @@ fn dance(n: usize, actions: Vec<Action>) -> String {
         offset: 0,
         s: "abcdefghijklmnop".to_string(),
     };
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     for c in 0..n {
         if let Some(v) = tbl.insert(result.to_string(), c) {
             for _ in 0..((n - c) % (c - v)) {

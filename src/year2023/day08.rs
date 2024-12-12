@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::UniqueIdx;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use num::integer::lcm;
 use std::cmp::max;
 
@@ -8,9 +8,9 @@ fn network(
     input: &str,
     is_start: fn(&str) -> bool,
     is_end: fn(&str) -> bool,
-) -> (Vec<usize>, AHashSet<usize>, Vec<usize>, Vec<usize>) {
+) -> (Vec<usize>, HashSet<usize>, Vec<usize>, Vec<usize>) {
     let mut starts = Vec::new();
-    let mut ends = AHashSet::new();
+    let mut ends = HashSet::new();
     let mut lefts = Vec::new();
     let mut rights = Vec::new();
     let mut ui = UniqueIdx::new();

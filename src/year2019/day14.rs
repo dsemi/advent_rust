@@ -1,6 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::partition_point;
 use ahash::AHashMap;
+use genawaiter;
 
 struct Reactions<'a> {
     #[expect(clippy::type_complexity)]
@@ -23,8 +24,7 @@ fn parse_reactions(input: &str) -> Reactions {
     let graph = lines_iter(input, parse).collect::<AHashMap<_, _>>();
     let mut incoming = AHashMap::new();
     graph.values().for_each(|(_, srcs)| {
-        srcs.iter()
-            .for_each(|(_, src)| *incoming.entry(src).or_insert(0) += 1)
+        srcs.iter().for_each(|(_, src)| *incoming.entry(src).or_insert(0) += 1)
     });
     let mut topo = Vec::new();
     let mut no_incoming = vec!["FUEL"];
@@ -49,8 +49,7 @@ fn num_ore(reactions: &Reactions, n: i64) -> i64 {
         let (n, srcs) = &reactions.graph[e];
         // Num reactions required to produce n of e.
         let k = (cnts[e] + n - 1) / n;
-        srcs.iter()
-            .for_each(|(n, m)| *cnts.entry(m).or_insert(0) += k * n);
+        srcs.iter().for_each(|(n, m)| *cnts.entry(m).or_insert(0) += k * n);
     });
     cnts["ORE"]
 }

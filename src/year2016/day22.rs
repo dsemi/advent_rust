@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::max;
 
 #[derive(Clone)]
@@ -38,7 +38,7 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-fn neighbors(grid: &AHashMap<C<i32>, Node>, st: &(C<i32>, C<i32>)) -> Vec<(C<i32>, C<i32>)> {
+fn neighbors(grid: &HashMap<C<i32>, Node>, st: &(C<i32>, C<i32>)) -> Vec<(C<i32>, C<i32>)> {
     vec![C(0, 1), C(0, -1), C(1, 0), C(-1, 0)]
         .into_iter()
         .filter_map(move |d| {
@@ -51,7 +51,7 @@ fn neighbors(grid: &AHashMap<C<i32>, Node>, st: &(C<i32>, C<i32>)) -> Vec<(C<i32
 
 pub fn part2(input: &str) -> Option<usize> {
     let nodes = parse_nodes(input);
-    let mut grid = AHashMap::new();
+    let mut grid = HashMap::new();
     let mut opn = C(0, 0);
     let mut mx = 0;
     for node in nodes {

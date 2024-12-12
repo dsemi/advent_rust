@@ -1,6 +1,6 @@
 use crate::utils::bits;
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use std::cmp::{max, min};
 
 type Pt = [i32; 3];
@@ -120,7 +120,7 @@ pub fn part1(input: &str) -> usize {
     scanners
         .iter()
         .flat_map(|s| s.ps.iter().map(hash))
-        .collect::<AHashSet<_>>()
+        .collect::<HashSet<_>>()
         .len()
 }
 

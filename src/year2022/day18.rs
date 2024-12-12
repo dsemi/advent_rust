@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn adj(&C3(x, y, z): &C3<i32>) -> Vec<C3<i32>> {
     vec![
@@ -13,7 +13,7 @@ fn adj(&C3(x, y, z): &C3<i32>) -> Vec<C3<i32>> {
     ]
 }
 
-fn cubes(input: &str) -> AHashSet<C3<i32>> {
+fn cubes(input: &str) -> HashSet<C3<i32>> {
     lines_iter(input, c3(i32)).collect()
 }
 
@@ -42,7 +42,7 @@ pub fn part2(input: &str) -> usize {
         })
     })
     .map(|(_, p)| p)
-    .collect::<AHashSet<_>>();
+    .collect::<HashSet<_>>();
     lava.iter()
         .flat_map(adj)
         .filter(|a| air.contains(a))

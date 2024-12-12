@@ -1,12 +1,12 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 fn parse_orbits(input: &str) -> impl Iterator<Item = (&str, &str)> {
     lines_iter(input, sep2(alphanumeric1, ')'))
 }
 
 pub fn part1(input: &str) -> usize {
-    let mut t = AHashMap::new();
+    let mut t = HashMap::new();
     for (k, v) in parse_orbits(input) {
         let e = t.entry(k.to_string()).or_insert_with(Vec::new);
         (*e).push(v);
@@ -25,7 +25,7 @@ pub fn part1(input: &str) -> usize {
     result
 }
 
-fn path_from_com<'a>(t: &'a AHashMap<&str, &str>, key: &'a str) -> Vec<&'a str> {
+fn path_from_com<'a>(t: &'a HashMap<&str, &str>, key: &'a str) -> Vec<&'a str> {
     let mut result = Vec::new();
     let mut v = t.get(key);
     while let Some(&k) = v {
@@ -39,7 +39,7 @@ fn path_from_com<'a>(t: &'a AHashMap<&str, &str>, key: &'a str) -> Vec<&'a str> 
 pub fn part2(input: &str) -> Option<usize> {
     let t = parse_orbits(input)
         .map(|(k, v)| (v, k))
-        .collect::<AHashMap<_, _>>();
+        .collect::<HashMap<_, _>>();
     let xs = path_from_com(&t, "YOU");
     let ys = path_from_com(&t, "SAN");
     xs.iter()

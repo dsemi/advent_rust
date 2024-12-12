@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 struct Input<'a> {
     rules: Vec<(&'a str, i64, i64, i64, i64)>,
@@ -67,12 +67,12 @@ pub fn part2(input: &str) -> i64 {
             })
             .collect();
     }
-    let mut poss_set: Vec<AHashSet<&str>> = poss
+    let mut poss_set: Vec<HashSet<&str>> = poss
         .into_iter()
         .map(|p| p.into_iter().map(|x| x.0).collect())
         .collect();
     while !poss_set.iter().all(|p| p.len() == 1) {
-        let ones: AHashSet<&str> = poss_set
+        let ones: HashSet<&str> = poss_set
             .iter()
             .filter(|p| p.len() == 1)
             .flatten()

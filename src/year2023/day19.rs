@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
 use Label::*;
@@ -42,7 +42,7 @@ fn part(i: &mut &str) -> PResult<Vec<u64>> {
     delimited('{', list(preceded((any, '='), u64)), '}').parse_next(i)
 }
 
-fn accepted<'a>(workflows: &AHashMap<&'a str, Vec<Rule<'a>>>, part: &[u64]) -> bool {
+fn accepted<'a>(workflows: &HashMap<&'a str, Vec<Rule<'a>>>, part: &[u64]) -> bool {
     let mut label = Named("in");
     while let Named(k) = label {
         for rule in workflows[k].iter() {
@@ -60,7 +60,7 @@ fn accepted<'a>(workflows: &AHashMap<&'a str, Vec<Rule<'a>>>, part: &[u64]) -> b
 
 pub fn part1(input: &str) -> u64 {
     let (workflows, parts) = input.split_once("\n\n").unwrap();
-    let workflows: AHashMap<_, _> = workflows.lines().map(|line| workflow.read(line)).collect();
+    let workflows: HashMap<_, _> = workflows.lines().map(|line| workflow.read(line)).collect();
     parts
         .lines()
         .map(|line| part.read(line))
@@ -70,7 +70,7 @@ pub fn part1(input: &str) -> u64 {
 }
 
 fn valid_parts<'a>(
-    workflows: &AHashMap<&'a str, Vec<Rule<'a>>>,
+    workflows: &HashMap<&'a str, Vec<Rule<'a>>>,
     workflow: &[Rule],
 ) -> Vec<[Interval<u64>; 4]> {
     let rule = &workflow[0];
@@ -106,7 +106,7 @@ fn valid_parts<'a>(
 
 pub fn part2(input: &str) -> u64 {
     let workflows = input.split_once("\n\n").unwrap().0;
-    let workflows: AHashMap<_, _> = workflows.lines().map(|line| workflow.read(line)).collect();
+    let workflows: HashMap<_, _> = workflows.lines().map(|line| workflow.read(line)).collect();
     valid_parts(&workflows, &workflows["in"])
         .into_iter()
         .map(|part| part.into_iter().map(|int| int.len()).product::<u64>())

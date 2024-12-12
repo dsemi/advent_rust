@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
-fn run(mut r: AHashMap<&str, i64>, input: &str) -> i64 {
+fn run(mut r: HashMap<&str, i64>, input: &str) -> i64 {
     let s = input.replace(',', "");
     let instrs: Vec<Vec<&str>> = s.lines().map(|line| line.split(' ').collect()).collect();
     let mut i: i64 = 0;

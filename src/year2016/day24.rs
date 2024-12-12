@@ -1,8 +1,8 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::Itertools;
 
-type Adj = AHashMap<(char, char), usize>;
+type Adj = HashMap<(char, char), usize>;
 
 fn neighbors(grid: &Grid<char, i32>, xy: &C<i32>) -> Vec<C<i32>> {
     [C(1, 0), C(-1, 0), C(0, 1), C(0, -1)]
@@ -15,7 +15,7 @@ fn neighbors(grid: &Grid<char, i32>, xy: &C<i32>) -> Vec<C<i32>> {
 }
 
 fn find_all_distances(grid: &Grid<char, i32>, ns: &[(C<i32>, char)]) -> Adj {
-    let mut result = AHashMap::new();
+    let mut result = HashMap::new();
     for (p1, n1) in ns {
         for (p2, n2) in ns {
             if p1 == p2 {

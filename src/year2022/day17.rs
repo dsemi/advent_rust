@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::cmp::min;
 
 const ROCKS: &[&[u8]] = &[
@@ -53,7 +53,7 @@ fn solve(input: &str, lim: usize) -> usize {
     let mut grid = vec![0b1111111];
     let mut k = 0;
     let mut i = 0;
-    let mut seen = AHashMap::new();
+    let mut seen = HashMap::new();
     let mut extra = 0;
     while i < lim {
         let mut rock = ROCKS[i % 5].to_owned();

@@ -1,10 +1,10 @@
 use crate::utils::parsers::*;
 use crate::utils::C;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn sim_rope(input: &str, rope_len: usize) -> usize {
     let mut knots = vec![C(0_i32, 0_i32); rope_len];
-    let mut tail_pos = AHashSet::new();
+    let mut tail_pos = HashSet::new();
     tail_pos.insert(knots[0]);
     for line in input.lines() {
         let (dir, n) = separated_pair(any, ' ', usize).read(line);

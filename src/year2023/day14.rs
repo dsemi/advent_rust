@@ -1,5 +1,4 @@
-use ahash::AHashMap;
-use std::collections::hash_map::Entry::*;
+use hashbrown::{hash_map::Entry::*, HashMap};
 use std::ops::{Shl, Shr};
 
 enum Dir {
@@ -39,12 +38,7 @@ impl Grid {
             round.push(rs);
         }
         assert!(cols <= 128);
-        Self {
-            rows: cube.len(),
-            cols,
-            cube,
-            round,
-        }
+        Self { rows: cube.len(), cols, cube, round }
     }
 
     fn tilt_ns(&mut self, d: i32) {
@@ -107,7 +101,7 @@ fn cycle(grid: &mut Grid) {
 
 pub fn part2(input: &str) -> usize {
     let mut grid = Grid::parse(input);
-    let mut visited = AHashMap::new();
+    let mut visited = HashMap::new();
     for i in 1..=CYCLES {
         cycle(&mut grid);
         match visited.entry(grid.clone()) {

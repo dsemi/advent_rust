@@ -1,7 +1,6 @@
 use crate::utils::C;
-use ahash::AHashMap;
 use genawaiter::stack::{let_gen_using, Co};
-use std::collections::hash_map::Entry::Occupied;
+use hashbrown::{hash_map::Entry::Occupied, HashMap};
 use Turn::*;
 
 #[derive(Clone, Copy)]
@@ -45,14 +44,11 @@ fn move_cart(cart: &mut Cart, grid: &[Vec<char>]) {
 
 struct Tracks {
     grid: Vec<Vec<char>>,
-    carts: AHashMap<C<i32>, Cart>,
+    carts: HashMap<C<i32>, Cart>,
 }
 
 fn parse_tracks(input: &str) -> Tracks {
-    let mut result = Tracks {
-        grid: Vec::new(),
-        carts: AHashMap::new(),
-    };
+    let mut result = Tracks { grid: Vec::new(), carts: HashMap::new() };
     for (r, line) in input.lines().enumerate() {
         result.grid.push(Vec::new());
         for (c, v) in line.chars().enumerate() {
@@ -65,14 +61,7 @@ fn parse_tracks(input: &str) -> Tracks {
                     '<' => C(0, -1),
                     _ => panic!("Invalid direction: {}", v),
                 };
-                result.carts.insert(
-                    pos,
-                    Cart {
-                        pos,
-                        dir,
-                        turn: Left,
-                    },
-                );
+                result.carts.insert(pos, Cart { pos, dir, turn: Left });
             }
             result.grid[r].push(v);
         }

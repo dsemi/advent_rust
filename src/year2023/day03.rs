@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use itertools::Itertools;
 
 struct Engine {
@@ -35,7 +35,7 @@ fn parse(input: &str) -> Engine {
 
 pub fn part1(input: &str) -> u32 {
     let Engine { nums, mask, parts } = parse(input);
-    let idxs: AHashSet<usize> = parts
+    let idxs: HashSet<usize> = parts
         .into_iter()
         .flat_map(|(_, pos)| adjacents(pos).map(|p| mask[p]))
         .collect();
@@ -48,7 +48,7 @@ pub fn part2(input: &str) -> u32 {
         .into_iter()
         .filter(|&(p, _)| p == b'*')
         .filter_map(|(_, pos)| {
-            let adjs: AHashSet<_> = adjacents(pos)
+            let adjs: HashSet<_> = adjacents(pos)
                 .map(|p| mask[p])
                 .filter(|&i| i != 0)
                 .collect();

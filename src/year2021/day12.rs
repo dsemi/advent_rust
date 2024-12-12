@@ -1,7 +1,7 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 fn parse(input: &str) -> (Vec<Vec<usize>>, Vec<bool>) {
-    let mut m = AHashMap::new();
+    let mut m = HashMap::new();
     m.insert("start", 0);
     m.insert("end", 1);
     let mut v = vec![vec![], vec![]];

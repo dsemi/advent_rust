@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::iterate;
 use num::integer::gcd;
 use Face::*;
@@ -145,12 +145,12 @@ impl Board {
         1000 * row + 4 * col + facing
     }
 
-    fn cube_edges(&self) -> AHashMap<Pt, Pt> {
+    fn cube_edges(&self) -> HashMap<Pt, Pt> {
         let cube_size = gcd(
             self.grid.len(),
             self.grid.iter().map(|r| r.len()).max().unwrap(),
         ) as i32;
-        let mut edges = AHashMap::new();
+        let mut edges = HashMap::new();
         let mut pos = self.top_left;
         let mut dir = C(-1, 0);
         let mut pos3d = C3(0, cube_size - 1, cube_size - 1);
@@ -190,7 +190,7 @@ impl Board {
             dir = d2;
             pos += dir;
         }
-        let mut edge_map = AHashMap::new();
+        let mut edge_map = HashMap::new();
         for pts in edges.values() {
             for (i, a) in pts.iter().enumerate() {
                 for b in pts.iter().skip(i + 1) {

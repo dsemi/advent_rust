@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 fn acre(c: char) -> u128 {
     match c {
@@ -76,7 +76,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     const N: usize = 1_000_000_000;
-    let mut t: AHashMap<Vec<u128>, usize> = AHashMap::new();
+    let mut t: HashMap<Vec<u128>, usize> = HashMap::new();
     let mut grid = parse_landscape(input);
     let mut rs = Vec::new();
     for c in 0..=N {

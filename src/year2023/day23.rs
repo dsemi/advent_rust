@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 const DIM: i32 = 6;
 
@@ -85,7 +85,7 @@ fn matching_paren(key: &[u8], mut col: i32, step: i32) -> i32 {
 
 fn transition(
     graph: &Graph,
-    dp: &mut AHashMap<[u8; 7], u32>,
+    dp: &mut HashMap<[u8; 7], u32>,
     mut key: [u8; 7],
     cost: u32,
     row: i32,
@@ -138,10 +138,10 @@ fn transition(
 
 pub fn part2(input: &str) -> u32 {
     let graph = Graph::parse(input);
-    let mut dp = AHashMap::new();
+    let mut dp = HashMap::new();
     dp.insert([b'(', b'.', b'.', b'.', b'.', b'.', b')'], graph.base_cost);
     for row in 0..DIM {
-        let mut tmp = AHashMap::new();
+        let mut tmp = HashMap::new();
         dp.into_iter()
             .for_each(|(key, cost)| transition(&graph, &mut tmp, key, cost, row, 0, b'.'));
         dp = tmp;

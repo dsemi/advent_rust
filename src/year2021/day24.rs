@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use advent::Parser;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use Instr::*;
 use Val::*;
 
@@ -78,7 +78,7 @@ impl Prog {
 
     fn dfs(
         &self,
-        vis: &mut AHashSet<(i64, usize)>,
+        vis: &mut HashSet<(i64, usize)>,
         instrs: &[Instr],
         n: i64,
         d: usize,
@@ -104,9 +104,9 @@ impl Prog {
 }
 
 pub fn part1(input: &str) -> Option<i64> {
-    Prog::new().dfs(&mut AHashSet::new(), &parse(input), 0, 14, false)
+    Prog::new().dfs(&mut HashSet::new(), &parse(input), 0, 14, false)
 }
 
 pub fn part2(input: &str) -> Option<i64> {
-    Prog::new().dfs(&mut AHashSet::new(), &parse(input), 0, 14, true)
+    Prog::new().dfs(&mut HashSet::new(), &parse(input), 0, 14, true)
 }

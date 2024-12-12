@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 
 fn unit_dir(c: char) -> C<i64> {
     match c {
@@ -11,8 +11,8 @@ fn unit_dir(c: char) -> C<i64> {
     }
 }
 
-fn locations(inp: impl Iterator<Item = char>) -> AHashSet<C<i64>> {
-    let mut s: AHashSet<C<i64>> = [C(0, 0)].into();
+fn locations(inp: impl Iterator<Item = char>) -> HashSet<C<i64>> {
+    let mut s: HashSet<C<i64>> = [C(0, 0)].into();
     s.extend(inp.scan(C(0, 0), |loc, c| {
         *loc += unit_dir(c);
         Some(*loc)

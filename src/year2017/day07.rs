@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::{AHashMap, AHashSet};
+use hashbrown::{HashMap, HashSet};
 
 pub fn part1(input: &str) -> &str {
     let inp: Vec<Vec<&str>> = transpose(
@@ -12,11 +12,11 @@ pub fn part1(input: &str) -> &str {
     let c = inp[1]
         .iter()
         .flat_map(|x| x.split(", "))
-        .collect::<AHashSet<_>>();
+        .collect::<HashSet<_>>();
     let s = inp[0]
         .iter()
         .map(|x| x.split_whitespace().next().unwrap())
-        .collect::<AHashSet<_>>();
+        .collect::<HashSet<_>>();
     (&s - &c).into_iter().next().unwrap()
 }
 
@@ -25,7 +25,7 @@ struct Node<'a> {
     children: Vec<&'a str>,
 }
 
-fn find_imbalance(m: &AHashMap<&str, Node>, curr: &str) -> (i64, bool) {
+fn find_imbalance(m: &HashMap<&str, Node>, curr: &str) -> (i64, bool) {
     let node = &m[curr];
     if node.children.is_empty() {
         return (node.weight, false);

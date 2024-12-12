@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use std::sync::LazyLock;
 
 const SMALL_K: &str = "
@@ -60,11 +60,11 @@ fn separate_letters(input: &str, fill_opt: Option<char>) -> Vec<String> {
     res
 }
 
-static SMALL_LETTERS: LazyLock<AHashMap<String, char>> =
+static SMALL_LETTERS: LazyLock<HashMap<String, char>> =
     LazyLock::new(|| separate_letters(SMALL_K, None).into_iter().zip(SMALL_V.chars()).collect());
-static LARGE_LETTERS: LazyLock<AHashMap<String, char>> =
+static LARGE_LETTERS: LazyLock<HashMap<String, char>> =
     LazyLock::new(|| separate_letters(LARGE_K, None).into_iter().zip(LARGE_V.chars()).collect());
-static SPECIAL_LETTERS: LazyLock<AHashMap<String, char>> = LazyLock::new(|| {
+static SPECIAL_LETTERS: LazyLock<HashMap<String, char>> = LazyLock::new(|| {
     separate_letters(SPECIAL_K, None).into_iter().zip(SPECIAL_V.chars()).collect()
 });
 

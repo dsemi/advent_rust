@@ -1,6 +1,6 @@
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
-type Map = AHashMap<(char, char, char, char, char), char>;
+type Map = HashMap<(char, char, char, char, char), char>;
 
 fn parse(input: &str) -> (Map, Vec<(i64, char)>) {
     let (initial, rest) = input.split_once("\n\n").unwrap();

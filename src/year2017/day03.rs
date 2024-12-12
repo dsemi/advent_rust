@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use itertools::Itertools;
 
 fn mid_pt(x: i64, y: i64) -> i64 {
@@ -21,7 +21,7 @@ pub fn part1(n: i64) -> i64 {
 }
 
 fn spiral_path() -> impl Iterator<Item = i64> {
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     tbl.insert(C(0, 0), 1);
     (1..)
         .flat_map(|i| vec![i; 2])

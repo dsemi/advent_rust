@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use ahash::AHashMap;
-use ahash::AHashSet;
+use hashbrown::HashMap;
+use hashbrown::HashSet;
 use itertools::Itertools;
 use std::ops::BitOrAssign;
 
@@ -50,7 +50,7 @@ fn parse<'a>(flr: i32) -> impl Parser<&'a str, (&'a str, Pair), ContextError> {
 }
 
 fn parse_floors(input: &str) -> Floors {
-    let mut tbl = AHashMap::new();
+    let mut tbl = HashMap::new();
     for (i, line) in input.lines().enumerate() {
         if let Some(idx) = line.find("a ") {
             terminated(list(parse(i as i32 + 1)), '.')
@@ -84,7 +84,7 @@ fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
 
 fn neighbors(floors: &Floors) -> Vec<Floors> {
     let mut result = Vec::new();
-    let mut neighbs = AHashSet::new();
+    let mut neighbs = HashSet::new();
     for e in [floors.elev + 1, floors.elev - 1] {
         if e > 0 && e <= 4 {
             for mut floors2 in all_moves(floors, e) {

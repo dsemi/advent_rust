@@ -4,7 +4,7 @@ use std::iter::from_fn;
 pub fn part1(input: &str) -> String {
     const IN: &str = "=-012";
     const OUT: [char; 5] = ['0', '1', '2', '=', '-'];
-    let d: ahash::AHashMap<char, i64> =
+    let d: hashbrown::HashMap<char, i64> =
         IN.chars().enumerate().map(|(i, c)| (c, i as i64)).collect();
     let mut n: i64 = input
         .lines()

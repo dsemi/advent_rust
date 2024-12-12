@@ -1,6 +1,6 @@
 use crate::utils::ocr::*;
 use crate::utils::parsers::*;
-use ahash::AHashSet;
+use hashbrown::HashSet;
 use Instr::*;
 
 const W: usize = 50;
@@ -21,7 +21,7 @@ fn parse(i: &mut &str) -> PResult<Instr> {
     .parse_next(i)
 }
 
-fn process_instr(grid: &mut AHashSet<(usize, usize)>, instr: Instr) {
+fn process_instr(grid: &mut HashSet<(usize, usize)>, instr: Instr) {
     match instr {
         Rect((a, b)) => {
             for c in 0..a {
@@ -45,8 +45,8 @@ fn process_instr(grid: &mut AHashSet<(usize, usize)>, instr: Instr) {
     }
 }
 
-fn lit_pixels(input: &str) -> AHashSet<(usize, usize)> {
-    let mut result = AHashSet::new();
+fn lit_pixels(input: &str) -> HashSet<(usize, usize)> {
+    let mut result = HashSet::new();
     lines_iter(input, parse).for_each(|instr| process_instr(&mut result, instr));
     result
 }

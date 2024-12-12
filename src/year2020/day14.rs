@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 
 struct Cmd {
     mask: Vec<(char, u64)>,
@@ -27,7 +27,7 @@ fn parse_cmds(s: &str) -> Vec<Cmd> {
 
 pub fn part1(input: &str) -> u64 {
     let cmds = parse_cmds(input);
-    let mut m = AHashMap::new();
+    let mut m = HashMap::new();
     for Cmd { mask, r, v } in cmds {
         let mut v = v;
         for (c, i) in mask {
@@ -42,7 +42,7 @@ pub fn part1(input: &str) -> u64 {
     m.values().sum()
 }
 
-fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(char, u64)], r: u64, v: u64) {
+fn set_vals(m: &mut HashMap<u64, u64>, xs: &[(char, u64)], r: u64, v: u64) {
     if xs.is_empty() {
         m.insert(r, v);
         return;
@@ -61,7 +61,7 @@ fn set_vals(m: &mut AHashMap<u64, u64>, xs: &[(char, u64)], r: u64, v: u64) {
 
 pub fn part2(input: &str) -> u64 {
     let cmds = parse_cmds(input);
-    let mut m = AHashMap::new();
+    let mut m = HashMap::new();
     for Cmd { mask, r, v } in cmds {
         set_vals(&mut m, &mask[..], r, v);
     }

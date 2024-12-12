@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ahash::AHashMap;
+use hashbrown::HashMap;
 use Tile::*;
 
 fn conv(c: char) -> u32 {
@@ -35,7 +35,7 @@ fn tile(c: char) -> Tile {
 struct Maze {
     grid: Vec<Tile>,
     cols: usize,
-    moves: AHashMap<usize, Vec<(usize, Edge)>>,
+    moves: HashMap<usize, Vec<(usize, Edge)>>,
 }
 
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -53,7 +53,7 @@ impl Maze {
                 .flat_map(|line| line.chars().map(tile))
                 .collect(),
             cols,
-            moves: AHashMap::new(),
+            moves: HashMap::new(),
         }
     }
 
