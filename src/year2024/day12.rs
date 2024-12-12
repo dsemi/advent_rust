@@ -39,6 +39,7 @@ pub fn part1(input: &str) -> usize {
 const DIAG: [C<i32>; 8] =
     [C(-1, -1), C(-1, 0), C(-1, 1), C(0, -1), C(0, 1), C(1, -1), C(1, 0), C(1, 1)];
 
+// Make const when const from_fn: https://github.com/rust-lang/rust/issues/109341
 fn corners() -> [usize; 256] {
     from_fn(|adjs| {
         let [ul, u, ur, l, r, dl, d, dr] = from_fn(|i| adjs & (1 << i) != 0);
