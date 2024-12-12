@@ -1,14 +1,10 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use hashbrown::HashSet;
 
 type Pt = (i64, i64, i64, i64);
 
 fn parse_points(input: &str) -> UnionFind<Pt> {
-    input
-        .lines()
-        .map(|line| sep4(i64, ',').read(line))
-        .collect()
+    input.lines().map(|line| sep4(i64, ',').read(line)).collect()
 }
 
 fn dist((w0, x0, y0, z0): Pt, (w1, x1, y1, z1): Pt) -> i64 {
@@ -23,10 +19,7 @@ fn constellations(mut pts: UnionFind<Pt>) -> usize {
             }
         }
     }
-    (0..pts.len())
-        .map(|p| pts.find(p))
-        .collect::<HashSet<_>>()
-        .len()
+    pts.ncomponents()
 }
 
 pub fn part1(input: &str) -> usize {

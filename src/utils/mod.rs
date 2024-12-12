@@ -1147,20 +1147,13 @@ pub struct UnionFind<T> {
     nodes: Vec<UnionFindNode<T>>,
 }
 
-impl<T> UnionFind<T> {
+impl<T: Eq + Hash> UnionFind<T> {
     pub fn new() -> Self {
         UnionFind { nodes: Vec::new() }
     }
 
     pub fn push(&mut self, val: T) {
         self.nodes.push(UnionFindNode { val, parent: self.nodes.len(), rank: 0 })
-    }
-
-    pub fn find(&self, mut k: usize) -> usize {
-        while k != self.nodes[k].parent {
-            k = self.nodes[k].parent;
-        }
-        k
     }
 
     pub fn union(&mut self, x: usize, y: usize) {
@@ -1179,6 +1172,18 @@ impl<T> UnionFind<T> {
         }
     }
 
+    pub fn find(&mut self, k: usize) -> usize {
+        if self.nodes[k].parent != k {
+            self.nodes[k].parent = self.find(self.nodes[k].parent);
+            return self.nodes[k].parent;
+        }
+        k
+    }
+
+    pub fn ncomponents(&mut self) -> usize {
+        (0..self.nodes.len()).map(|p| self.find(p)).collect::<HashSet<_>>().len()
+    }
+
     pub fn len(&self) -> usize {
         self.nodes.len()
     }
@@ -1192,7 +1197,7 @@ impl<T> Index<usize> for UnionFind<T> {
     }
 }
 
-impl<T> FromIterator<T> for UnionFind<T> {
+impl<T: Eq + Hash> FromIterator<T> for UnionFind<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let mut uf = Self::new();
         iter.into_iter().for_each(|elem| uf.push(elem));
