@@ -1,68 +1,63 @@
 use crate::utils::*;
-use hashbrown::HashSet;
+use std::array::from_fn;
 
-fn expand(seen: &mut HashSet<C<i32>>, grid: &Grid<u8, i32>, C(r, c): C<i32>, v: u8) -> usize {
-    if !seen.insert(C(r, c)) {
-        return 0;
+const ADJ: [C<i32>; 4] = [C(-1, 0), C(0, -1), C(0, 1), C(1, 0)];
+
+fn fill(comps: &mut Grid<usize, i32>, n: usize, grid: &Grid<u8, i32>, p: C<i32>, v: u8) {
+    if std::mem::replace(&mut comps[p], n) == n {
+        return;
     }
-    let mut perimeter = 4;
-    for adj in [C(r + 1, c), C(r - 1, c), C(r, c + 1), C(r, c - 1)] {
-        if *grid.get(adj).unwrap_or(&b'.') == v {
-            perimeter += expand(seen, grid, adj, v) - 1;
+    ADJ.iter()
+        .map(|d| p + d)
+        .filter(|&adj| *grid.get(adj).unwrap_or(&b'.') == v)
+        .for_each(|adj| fill(comps, n, grid, adj, v));
+}
+
+fn solve(input: &str, f: impl Fn(&Grid<usize, i32>, C<i32>, usize) -> usize) -> usize {
+    let grid: Grid<u8, i32> = input.bytes().collect();
+    let mut components = grid.same_size_with(0);
+    let mut n = 1;
+    for (i, &v) in grid.idx_iter() {
+        if components[i] == 0 {
+            fill(&mut components, replace_with(&mut n, |n| n + 1), &grid, i, v);
         }
     }
-    perimeter
+    let mut avs = vec![(0, 0); n];
+    for (i, &v) in components.idx_iter() {
+        avs[v].0 += 1;
+        avs[v].1 += f(&components, i, v);
+    }
+    avs.into_iter().map(|(a, v)| a * v).sum()
 }
 
 pub fn part1(input: &str) -> usize {
-    let grid: Grid<u8, i32> = input.bytes().collect();
-    let mut visited = HashSet::new();
-    let mut total = 0;
-    for (i, &v) in grid.idx_iter() {
-        if visited.insert(i) {
-            let mut seen = HashSet::new();
-            let p = expand(&mut seen, &grid, i, v);
-            total += seen.len() * p;
-            visited.extend(seen);
-        }
-    }
-    total
+    solve(input, |components, i, v| {
+        ADJ.iter().map(|d| i + d).filter(|&adj| *components.get(adj).unwrap_or(&0) != v).count()
+    })
 }
 
-fn sides(region: &HashSet<C<i32>>) -> usize {
-    let mut sides = 0;
-    for d in [C(1, 0), C(-1, 0), C(0, 1), C(0, -1)] {
-        let boundary: HashSet<_> =
-            region.iter().cloned().filter(|p| !region.contains(&(p + d))).collect();
-        let b_vec: Vec<_> = boundary.iter().cloned().collect();
-        let mut ui: UniqueIdx<_> = b_vec.iter().cloned().collect();
-        let mut uf: UnionFind<_> = b_vec.iter().cloned().collect();
-        for p in b_vec {
-            let a = p + d * C(0, 1);
-            if boundary.contains(&a) {
-                uf.union(ui.idx(p), ui.idx(a));
-            }
-            let a = p + d * C(0, -1);
-            if boundary.contains(&a) {
-                uf.union(ui.idx(p), ui.idx(a));
-            }
-        }
-        sides += uf.ncomponents();
-    }
-    sides
+const DIAG: [C<i32>; 8] =
+    [C(-1, -1), C(-1, 0), C(-1, 1), C(0, -1), C(0, 1), C(1, -1), C(1, 0), C(1, 1)];
+
+fn corners() -> [usize; 256] {
+    from_fn(|adjs| {
+        let [ul, u, ur, l, r, dl, d, dr] = from_fn(|i| adjs & (1 << i) != 0);
+        let ul = (!u && !l || u && l && !ul) as usize;
+        let ur = (!u && !r || u && r && !ur) as usize;
+        let dl = (!d && !l || d && l && !dl) as usize;
+        let dr = (!d && !r || d && r && !dr) as usize;
+        ul + ur + dl + dr
+    })
 }
 
 pub fn part2(input: &str) -> usize {
-    let grid: Grid<u8, i32> = input.bytes().collect();
-    let mut visited = HashSet::new();
-    let mut total = 0;
-    for (i, &v) in grid.idx_iter() {
-        if visited.insert(i) {
-            let mut seen = HashSet::new();
-            expand(&mut seen, &grid, i, v);
-            total += seen.len() * sides(&seen);
-            visited.extend(seen);
-        }
-    }
-    total
+    let corners = corners();
+    solve(input, |components, i, v| {
+        corners[DIAG
+            .iter()
+            .map(|d| i + d)
+            .enumerate()
+            .filter_map(|(i, adj)| (*components.get(adj).unwrap_or(&0) == v).then_some(1 << i))
+            .fold(0, |acc, b| acc | b)]
+    })
 }
