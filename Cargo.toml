@@ -15,7 +15,7 @@ bit-set = "0.5.3"
 derive_more = { version = "1.0.0", features = ["add", "add_assign", "constructor"]}
 enum-map = "2.7.3"
 genawaiter = "0.99.1"
-hashbrown = "0.15.2"
+hashbrown = { version = "0.15.2", features = ["rayon"] }
 hex = "0.4.3"
 hybrid-array = "0.2.0-rc.10"
 impl_ops = "0.1.1"
