@@ -14,7 +14,7 @@ use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::Deref;
 use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Shr,
+    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Rem, Shr,
     ShrAssign, Sub, SubAssign,
 };
 use streaming_iterator::StreamingIterator;
@@ -432,6 +432,15 @@ impl<T: Num + Copy> Div<T> for C<T> {
     #[inline]
     fn div(self, n: T) -> Self {
         Self(self.0 / n, self.1 / n)
+    }
+}
+
+impl<T: Num + Copy> Rem<T> for C<T> {
+    type Output = Self;
+
+    #[inline]
+    fn rem(self, n: T) -> Self {
+        Self(self.0 % n, self.1 % n)
     }
 }
 
