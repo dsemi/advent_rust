@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use num_rational::Ratio;
 
 fn machine(i: &mut &str) -> PResult<[C<i64>; 3]> {
     let (_, ax, _, ay) = ("Button A: X+", i64, ", Y+", i64).parse_next(i)?;
@@ -9,8 +10,10 @@ fn machine(i: &mut &str) -> PResult<[C<i64>; 3]> {
 }
 
 fn solve([C(ax, ay), C(bx, by), C(tx, ty)]: [C<i64>; 3]) -> Option<i64> {
-    let nb = (ay * tx - ax * ty) / (ay * bx - ax * by);
-    let na = (tx - nb * bx) / ax;
+    let nb = Ratio::new(ay * tx - ax * ty, ay * bx - ax * by);
+    let nb = nb.is_integer().then(|| nb.to_integer())?;
+    let na = Ratio::new(tx - nb * bx, ax);
+    let na = na.is_integer().then(|| na.to_integer())?;
     (na * ax + nb * bx == tx && na * ay + nb * by == ty).then_some(3 * na + nb)
 }
 
