@@ -4,9 +4,7 @@ use crate::utils::*;
 const ROWS: i64 = 103;
 const COLS: i64 = 101;
 
-type Pos = C<Mod<ROWS>, Mod<COLS>>;
-
-fn robot(i: &mut &str) -> PResult<(Pos, Pos)> {
+fn robot(i: &mut &str) -> PResult<(C<Mod<ROWS>, Mod<COLS>>, C<Mod<ROWS>, Mod<COLS>>)> {
     let ((px, py), (vx, vy)) = preceded("p=", sep2(coord(i64), "v=")).parse_next(i)?;
     Ok((C(Mod(py), Mod(px)), C(Mod(vy), Mod(vx))))
 }
@@ -26,10 +24,10 @@ pub fn part1(input: &str) -> usize {
     qs.into_iter().product()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> Option<usize> {
     let (mut robots, vels): (Vec<_>, Vec<_>) = input.lines().map(|line| robot.read(line)).unzip();
     let mut grid: Grid<usize, i64> = Grid::new(ROWS, COLS);
-    for t in 1.. {
+    (1..).find(|_| {
         let mut unique = true;
         grid.elems.fill(0);
         robots.iter_mut().zip(&vels).for_each(|(r, &v)| {
@@ -37,9 +35,6 @@ pub fn part2(input: &str) -> usize {
             grid[*r] += 1;
             unique &= grid[*r] == 1;
         });
-        if unique {
-            return t;
-        }
-    }
-    unreachable!()
+        unique
+    })
 }
