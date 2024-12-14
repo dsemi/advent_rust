@@ -9,12 +9,12 @@ fn machine(i: &mut &str) -> PResult<[C<i64>; 3]> {
     Ok([C(ax, ay), C(bx, by), C(tx, ty)])
 }
 
-fn solve([C(ax, ay), C(bx, by), C(tx, ty)]: [C<i64>; 3]) -> Option<i64> {
-    let nb = Ratio::new(ay * tx - ax * ty, ay * bx - ax * by);
+fn solve([C(ax, ay), C(bx, by), C(px, py)]: [C<i64>; 3]) -> Option<i64> {
+    let nb = Ratio::new(ay * px - ax * py, ay * bx - ax * by);
     let nb = nb.is_integer().then(|| nb.to_integer())?;
-    let na = Ratio::new(tx - nb * bx, ax);
+    let na = Ratio::new(px - nb * bx, ax);
     let na = na.is_integer().then(|| na.to_integer())?;
-    (na * ax + nb * bx == tx && na * ay + nb * by == ty).then_some(3 * na + nb)
+    (na * ax + nb * bx == px && na * ay + nb * by == py).then_some(3 * na + nb)
 }
 
 pub fn part1(input: &str) -> i64 {
