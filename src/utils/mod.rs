@@ -1368,6 +1368,15 @@ impl<const M: i64> Mul for Mod<M> {
     }
 }
 
+impl<const M: i64> Mul<i64> for Mod<M> {
+    type Output = Self;
+
+    #[inline]
+    fn mul(self, n: i64) -> Self {
+        Mod((self.0 * n).rem_euclid(M))
+    }
+}
+
 impl<const M: i64> Pow<i64> for Mod<M> {
     type Output = Mod<M>;
 
