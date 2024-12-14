@@ -293,7 +293,7 @@ macro_rules! impl_abs_diff {
 impl_abs_diff!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct C<T>(pub T, pub T);
+pub struct C<T, U = T>(pub T, pub U);
 
 mod cparse {
     use winnow::error::ParserError;
@@ -313,14 +313,17 @@ mod cparse {
 }
 pub use cparse::*;
 
-impl<T> C<T> {
-    pub fn as_<U: Copy + 'static>(self) -> C<U>
+impl<A, B> C<A, B> {
+    pub fn as_<U: Copy + 'static, V: Copy + 'static>(self) -> C<U, V>
     where
-        T: AsPrimitive<U>,
+        A: AsPrimitive<U>,
+        B: AsPrimitive<V>,
     {
         C(self.0.as_(), self.1.as_())
     }
+}
 
+impl<T> C<T> {
     pub fn vec(self) -> Vector2<T> {
         Vector2::new(self.0, self.1)
     }
@@ -350,13 +353,13 @@ impl<T: Num + AbsDiff<T> + Copy> C<T> {
     }
 }
 
-impl<T: Signed + Copy> C<T> {
+impl<A: Signed + Copy, B: Signed + Copy> C<A, B> {
     pub fn signum(&self) -> Self {
         Self(self.0.signum(), self.1.signum())
     }
 }
 
-impl<T: Ord + Copy> C<T> {
+impl<A: Ord + Copy, B: Ord + Copy> C<A, B> {
     pub fn smol(self, o: Self) -> Self {
         Self(min(self.0, o.0), min(self.1, o.1))
     }
@@ -366,7 +369,7 @@ impl<T: Ord + Copy> C<T> {
     }
 }
 
-impl<T: Num> Add for C<T> {
+impl<A: Num, B: Num> Add for C<A, B> {
     type Output = Self;
 
     #[inline]
@@ -376,14 +379,14 @@ impl<T: Num> Add for C<T> {
 }
 forward_ref_binop! { impl Add, add for C<T>, T }
 
-impl<T: Num + Copy> AddAssign for C<T> {
+impl<A: Num + Copy, B: Num + Copy> AddAssign for C<A, B> {
     #[inline]
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
     }
 }
 
-impl<T: Num> Sub for C<T> {
+impl<A: Num, B: Num> Sub for C<A, B> {
     type Output = Self;
 
     #[inline]
@@ -393,7 +396,7 @@ impl<T: Num> Sub for C<T> {
 }
 forward_ref_binop! { impl Sub, sub for C<T>, T }
 
-impl<T: Num + Copy> SubAssign for C<T> {
+impl<A: Num + Copy, B: Num + Copy> SubAssign for C<A, B> {
     #[inline]
     fn sub_assign(&mut self, other: Self) {
         *self = *self - other;
@@ -444,7 +447,7 @@ impl<T: Num + Copy> Rem<T> for C<T> {
     }
 }
 
-impl<T: Neg<Output = T>> Neg for C<T> {
+impl<A: Neg<Output = A>, B: Neg<Output = B>> Neg for C<A, B> {
     type Output = Self;
 
     #[inline]
@@ -1301,7 +1304,7 @@ where
     result
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Mod<const M: i64>(pub i64);
 
 impl<const M: i64> Mod<M> {
@@ -1327,14 +1330,31 @@ impl<const M: i64> Mod<M> {
 impl<const M: i64> Add for Mod<M> {
     type Output = Mod<M>;
 
+    #[inline]
     fn add(self, other: Mod<M>) -> Self::Output {
         Mod((self.0 + other.0).rem_euclid(M))
+    }
+}
+
+impl<const M: i64> AddAssign for Mod<M> {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
+    }
+}
+
+impl<const M: i64> Sub for Mod<M> {
+    type Output = Mod<M>;
+
+    #[inline]
+    fn sub(self, other: Mod<M>) -> Self::Output {
+        Mod((self.0 - other.0).rem_euclid(M))
     }
 }
 
 impl<const M: i64> Mul for Mod<M> {
     type Output = Mod<M>;
 
+    #[inline]
     fn mul(mut self, mut other: Mod<M>) -> Self::Output {
         let mut result = 0;
         while other.0 > 0 {
@@ -1351,6 +1371,7 @@ impl<const M: i64> Mul for Mod<M> {
 impl<const M: i64> Pow<i64> for Mod<M> {
     type Output = Mod<M>;
 
+    #[inline]
     fn pow(self, rhs: i64) -> Self::Output {
         Mod(mod_exp(self.0, rhs, M))
     }
@@ -1359,8 +1380,62 @@ impl<const M: i64> Pow<i64> for Mod<M> {
 impl<const M: i64> Neg for Mod<M> {
     type Output = Mod<M>;
 
+    #[inline]
     fn neg(self) -> Self::Output {
         Mod((-self.0).rem_euclid(M))
+    }
+}
+
+impl<const M: i64> Div for Mod<M> {
+    type Output = Self;
+
+    #[inline]
+    fn div(self, rhs: Self) -> Self {
+        Mod((self.0 / rhs.0).rem_euclid(M))
+    }
+}
+
+impl<const M: i64> Rem for Mod<M> {
+    type Output = Self;
+
+    #[inline]
+    fn rem(self, rhs: Self) -> Self {
+        Mod((self.0 % rhs.0).rem_euclid(M))
+    }
+}
+
+impl<const M: i64> Zero for Mod<M> {
+    #[inline]
+    fn zero() -> Self {
+        Mod(0)
+    }
+
+    #[inline]
+    fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
+}
+
+impl<const M: i64> One for Mod<M> {
+    #[inline]
+    fn one() -> Self {
+        Mod(1_i64.rem_euclid(M))
+    }
+}
+
+impl<const M: i64> Num for Mod<M> {
+    type FromStrRadixErr = core::num::ParseIntError;
+
+    #[inline]
+    fn from_str_radix(s: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
+        Ok(Mod(i64::from_str_radix(s, radix)?.rem_euclid(M)))
+    }
+}
+
+impl<const M: i64> AsPrimitive<usize> for Mod<M> {
+    #[inline]
+    fn as_(self) -> usize {
+        self.0.as_()
     }
 }
 
@@ -1558,16 +1633,26 @@ where
     }
 }
 
-impl<T, I: AsPrimitive<usize>> Index<C<I>> for Grid<T, I> {
+impl<T, I, A, B> Index<C<A, B>> for Grid<T, I>
+where
+    I: AsPrimitive<usize>,
+    A: AsPrimitive<usize>,
+    B: AsPrimitive<usize>,
+{
     type Output = T;
 
-    fn index(&self, C(r, c): C<I>) -> &Self::Output {
+    fn index(&self, C(r, c): C<A, B>) -> &Self::Output {
         &self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
 
-impl<T, I: AsPrimitive<usize>> IndexMut<C<I>> for Grid<T, I> {
-    fn index_mut(&mut self, C(r, c): C<I>) -> &mut T {
+impl<T, I, A, B> IndexMut<C<A, B>> for Grid<T, I>
+where
+    I: AsPrimitive<usize>,
+    A: AsPrimitive<usize>,
+    B: AsPrimitive<usize>,
+{
+    fn index_mut(&mut self, C(r, c): C<A, B>) -> &mut T {
         &mut self.elems[r.as_() * self.cols.as_() + c.as_()]
     }
 }
