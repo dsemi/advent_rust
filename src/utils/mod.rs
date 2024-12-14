@@ -420,7 +420,12 @@ impl<T: Num + Copy> MulAssign for C<T> {
     }
 }
 
-impl<T: Num + Copy> Mul<T> for C<T> {
+impl<T, A, B> Mul<T> for C<A, B>
+where
+    T: Num + Copy,
+    A: Mul<T, Output = A>,
+    B: Mul<T, Output = B>,
+{
     type Output = Self;
 
     #[inline]

@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use std::iter::zip;
 
 const ROWS: i64 = 103;
 const COLS: i64 = 101;
@@ -15,7 +16,7 @@ fn cmp(a: i64, b: i64) -> Option<usize> {
 
 pub fn part1(input: &str) -> usize {
     let (mut robots, vels): (Vec<_>, Vec<_>) = input.lines().map(|line| robot.read(line)).unzip();
-    (0..100).for_each(|_| robots.iter_mut().zip(&vels).for_each(|(r, &v)| *r += v));
+    zip(&mut robots, &vels).for_each(|(r, &v)| *r += v * 100);
     let mut qs = [0; 4];
     robots
         .into_iter()
@@ -24,17 +25,16 @@ pub fn part1(input: &str) -> usize {
     qs.into_iter().product()
 }
 
+fn ivar(i: impl Iterator<Item = i64>) -> i64 {
+    let (n, sum, sum_of_squares) = i.fold((0, 0, 0), |(n, s, sos), v| (n + 1, s + v, sos + v * v));
+    sum_of_squares / n - (sum * sum) / (n * n)
+}
+
 pub fn part2(input: &str) -> Option<i64> {
-    let (robots, vels): (Vec<_>, Vec<_>) = input.lines().map(|line| robot.read(line)).unzip();
-    let rt = (1..).find(|&t| {
-        let mut rs = [0; ROWS as usize];
-        robots.iter().zip(&vels).for_each(|(r, v)| rs[(r.0 + v.0 * t).0 as usize] += 1);
-        rs.into_iter().filter(|&r| r >= 30).count() >= 2
-    })?;
-    let ct = (1..).find(|&t| {
-        let mut cs = [0; COLS as usize];
-        robots.iter().zip(&vels).for_each(|(r, v)| cs[(r.1 + v.1 * t).0 as usize] += 1);
-        cs.into_iter().filter(|&c| c >= 30).count() >= 2
-    })?;
+    let (rbs, vels): (Vec<_>, Vec<_>) = input.lines().map(|line| robot.read(line)).unzip();
+    let rvar = ivar(rbs.iter().map(|r| r.0 .0));
+    let rt = (1..).find(|&t| rvar / 2 > ivar(zip(&rbs, &vels).map(|(r, v)| (r.0 + v.0 * t).0)))?;
+    let cvar = ivar(rbs.iter().map(|r| r.1 .0));
+    let ct = (1..).find(|&t| cvar / 2 > ivar(zip(&rbs, &vels).map(|(r, v)| (r.1 + v.1 * t).0)))?;
     Some((Mod::<ROWS>(COLS).mod_inv() * (rt - ct)).0 * COLS + ct)
 }
