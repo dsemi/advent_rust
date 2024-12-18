@@ -1077,17 +1077,18 @@ pub trait MapWindowsIterator: Iterator {
 
 impl<I: Iterator> MapWindowsIterator for I {}
 
-pub fn binary_search_by<F>(lo: i64, hi: i64, mut f: F) -> Result<i64, i64>
+pub fn binary_search_by<T, F>(lo: T, hi: T, mut f: F) -> Result<T, T>
 where
-    F: FnMut(&i64) -> Ordering,
+    T: Num + Copy + Ord,
+    F: FnMut(&T) -> Ordering,
 {
     let mut size = hi - lo;
     let mut left = lo;
     let mut right = hi;
     while left < right {
-        let mid = left + size / 2;
+        let mid = left + size / (T::one() + T::one());
         match f(&mid) {
-            Less => left = mid + 1,
+            Less => left = mid + T::one(),
             Greater => right = mid,
             Equal => return Ok(mid),
         }
@@ -1096,9 +1097,10 @@ where
     Err(left)
 }
 
-pub fn partition_point<P>(lo: i64, hi: i64, mut pred: P) -> i64
+pub fn partition_point<T, P>(lo: T, hi: T, mut pred: P) -> T
 where
-    P: FnMut(&i64) -> bool,
+    T: Num + Copy + Ord,
+    P: FnMut(&T) -> bool,
 {
     binary_search_by(lo, hi, |x| if pred(x) { Less } else { Greater }).unwrap_or_else(|i| i)
 }
