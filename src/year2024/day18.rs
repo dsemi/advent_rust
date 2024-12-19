@@ -20,6 +20,7 @@ pub fn part1(input: &str) -> Option<usize> {
 }
 
 pub fn part2(input: &str) -> (i32, i32) {
+    // Might be able to speed up with union-find connecting top-right border to bottom-left.
     let mut grid = Grid::new_with(71, 71, usize::MAX);
     let bytes = lines(coord(i32)).read(input);
     bytes.iter().enumerate().for_each(|(t, &(c, r))| grid[(r, c)] = t);

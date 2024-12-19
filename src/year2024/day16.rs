@@ -10,6 +10,8 @@ fn neighbors(grid: &Grid<u8, i32>, (pos, dir): PosDir) -> Vec<(usize, PosDir)> {
         .collect()
 }
 
+// Could switch to faster dijkstra, instead of heap, array of max diff + 1 len, holds vecs for each element.
+
 pub fn part1(input: &str) -> Option<usize> {
     let grid: Grid<u8, i32> = input.bytes().collect();
     let start = (grid.position(|&v| v == b'S').unwrap(), C(0, 1));
