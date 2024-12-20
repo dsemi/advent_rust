@@ -1,7 +1,7 @@
 use crate::utils::*;
 use rayon::prelude::*;
 
-fn solve(input: &str, cheat_time: usize) -> usize {
+fn solve(input: &str, cheat_time: i32) -> usize {
     let grid: Grid<u8, i32> = input.bytes().collect();
     let mut prev = grid.position(|&v| v == b'S').unwrap();
     let mut times = grid.same_size_with(0);
@@ -13,16 +13,16 @@ fn solve(input: &str, cheat_time: usize) -> usize {
     })
     .collect();
     path.iter().zip(1..).for_each(|(&p, time)| times[p] = time);
-    path[..path.len() - cheat_time - 1]
+    path[..path.len() - 101]
         .par_iter()
         .enumerate()
         .map(|(t, p)| {
             let t = t as i32 + 1;
             let f = |d| (*times.get(p + d).unwrap_or(&0) >= t + C(0, 0).dist(&d) + 100) as usize;
-            (1..=cheat_time as i32)
+            (1..=cheat_time)
                 .map(|r| {
                     let n = f(C(r, 0)) + f(C(-r, 0)) + f(C(0, r)) + f(C(0, -r));
-                    n + (1..=cheat_time as i32 - r)
+                    n + (1..=cheat_time - r)
                         .map(|c| f(C(r, c)) + f(C(r, -c)) + f(C(-r, c)) + f(C(-r, -c)))
                         .sum::<usize>()
                 })
