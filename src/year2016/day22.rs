@@ -42,5 +42,5 @@ pub fn part2(input: &str) -> Option<usize> {
     input.lines().skip(2).map(|line| node.read(line)).for_each(|(i, node)| grid[i] = node.used);
     let opn = grid.position(|&used| used == 0).unwrap();
     let mx = C(grid.rows - 1, 0);
-    bfs2((opn, mx), move |st| neighbors(&grid, st)).find_map(|(d, v)| (v.1 == C(0, 0)).then_some(d))
+    bfs((opn, mx), move |st| neighbors(&grid, st)).find_map(|(d, v)| (v.1 == C(0, 0)).then_some(d))
 }
