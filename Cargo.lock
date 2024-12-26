@@ -50,6 +50,7 @@ dependencies = [
  "streaming-iterator",
  "syn 2.0.90",
  "toml",
+ "wide",
  "winnow",
 ]
 
