@@ -32,7 +32,6 @@ pub fn part1(input: &str) -> usize {
             }
         }
     }
-    println!("{}", ui.len());
     seen.into_iter().filter(|&(a, b, c)| ts[a] || ts[b] || ts[c]).count()
 }
 
@@ -63,7 +62,6 @@ pub fn part2(input: &str) -> String {
             curr = next;
         }
     }
-    println!("{}", curr.len());
     let mut comps: Vec<_> = curr.into_iter().map(|k| ks[k]).collect();
     comps.sort_unstable();
     comps.join(",")
