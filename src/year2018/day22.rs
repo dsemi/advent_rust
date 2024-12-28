@@ -1,114 +1,69 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
-use std::cmp::max;
-use Tool::*;
 
-#[derive(Clone, Copy, Eq, FromPrimitive, Hash, PartialEq, ToPrimitive)]
-enum Tool {
-    Neither,
-    Torch,
-    ClimbingGear,
+fn parse(i: &mut &str) -> PResult<(u32, C<usize>)> {
+    (preceded("depth: ", u32), preceded("\ntarget: ", c(usize))).parse_next(i)
 }
 
-#[derive(Clone, Copy, Eq, Hash, PartialEq)]
-struct Node {
-    pos: C<i32>,
-    tool: Tool,
-}
-
-fn next(t: &Tool) -> Tool {
-    match t {
-        Neither => Torch,
-        Torch => ClimbingGear,
-        ClimbingGear => Neither,
-    }
-}
-
-fn parse(i: &mut &str) -> PResult<(i32, C<i32>)> {
-    (preceded("depth: ", i32), preceded("\ntarget: ", c(i32))).parse_next(i)
-}
-
-fn erosion_levels(depth: i32, target: C<i32>) -> Grid<Tool, i32> {
-    let mx = max(target.0, target.1) + 3; // Arbitrary buffer size for search
-    let mut arr: Grid<usize, i32> = Grid::new(mx, mx);
-    for x in 0..mx {
-        for y in 0..mx {
+fn erosion_levels(depth: u32, target: C<usize>, pad: C<usize>) -> Grid<u32> {
+    let mut arr: Grid<u32> = Grid::new(target.0 + pad.0 + 1, target.1 + pad.1 + 1);
+    for x in 0..arr.rows {
+        for y in 0..arr.cols {
             let geologic_index = if C(x, y) == target {
                 0
             } else if x == 0 {
-                y as usize * 48271
+                y * 48271
             } else if y == 0 {
-                x as usize * 16807
+                x * 16807
             } else {
-                arr[(x - 1, y)] * arr[(x, y - 1)]
+                (arr[(x - 1, y)] * arr[(x, y - 1)]) as usize
             };
-            arr[(x, y)] = (geologic_index + depth as usize) % 20183;
+            arr[(x, y)] = (geologic_index as u32 + depth) % 20183;
         }
     }
-    arr.transform(|v| FromPrimitive::from_usize(v % 3).unwrap())
+    arr
 }
 
 pub fn part1(input: &str) -> u32 {
     let (depth, target) = parse.read(input);
-    erosion_levels(depth, target)
-        .into_idx_iter()
-        .filter(|&(C(x, y), _)| x <= target.0 && y <= target.1)
-        .map(|(_, v)| ToPrimitive::to_u32(&v).unwrap())
-        .sum()
+    erosion_levels(depth, target, C(0, 0)).iter().map(|&v| v % 3).sum()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u32 {
+    const N: usize = 8;
+    const TORCH: usize = 1;
     let (depth, target) = parse.read(input);
-    let els = erosion_levels(depth, target);
+    let mut cave = erosion_levels(depth, target, C(50, 10)).transform(|el| {
+        let mut arr = [u32::MAX; 3];
+        arr[el as usize % 3] = 0;
+        arr
+    });
+    let mut q: [_; N] = std::array::from_fn(|_| vec![]);
+    q[0].push((C(0, 0), TORCH));
+    cave[C(0, 0)][TORCH] = 0;
 
-    fn neighbors(els: &Grid<Tool, i32>, node: &Node) -> Vec<(usize, Node)> {
-        vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
-            .into_iter()
-            .filter_map(move |d| {
-                let n_node = Node {
-                    pos: node.pos + C(d.0, d.1),
-                    tool: node.tool,
-                };
-                els.get(n_node.pos)
-                    .filter(|&tool| *tool != n_node.tool)
-                    .map(|_| (1, n_node))
-            })
-            .chain(
-                vec![next(&node.tool), next(&next(&node.tool))]
-                    .into_iter()
-                    .filter_map(move |t| {
-                        let n_node = Node {
-                            pos: node.pos,
-                            tool: t,
-                        };
-                        (n_node.tool != els[n_node.pos]).then_some((7, n_node))
-                    }),
-            )
-            .collect()
-    }
-
-    fn heur(target: &C<i32>, node: &Node) -> usize {
-        target.dist(&node.pos) as usize
-    }
-
-    a_star(
-        |n| neighbors(&els, n),
-        |n| heur(&target, n),
-        |n| {
-            n == &Node {
-                pos: target,
-                tool: Torch,
+    for i in 0.. {
+        while let Some((pos, tool)) = q[i % N].pop() {
+            let time = cave[pos][tool];
+            if pos == target && tool == TORCH {
+                return time;
             }
-        },
-        Node {
-            pos: C(0, 0),
-            tool: Torch,
-        },
-    )
-    .unwrap()
-    .last()
-    .unwrap()
-    .0
+
+            for pos in [pos - C(1, 0), pos + C(1, 0), pos - C(0, 1), pos + C(0, 1)] {
+                if cave.in_bounds(pos) && time + 1 < cave[pos][tool] {
+                    cave[pos][tool] = time + 1;
+                    let f_score = time as usize + 1 + pos.dist(&target);
+                    q[f_score % N].push((pos, tool));
+                }
+            }
+            for tool in 0..3 {
+                if time + 7 < cave[pos][tool] {
+                    cave[pos][tool] = time + 7;
+                    let f_score = time as usize + 7 + pos.dist(&target);
+                    q[f_score % N].push((pos, tool));
+                }
+            }
+        }
+    }
+    unreachable!()
 }
