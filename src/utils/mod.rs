@@ -352,12 +352,7 @@ impl<T: Num + Copy> Mul for C<T> {
     }
 }
 
-impl<T: Num + Copy> MulAssign for C<T> {
-    #[inline]
-    fn mul_assign(&mut self, other: Self) {
-        *self = *self * other;
-    }
-}
+num_assign!(impl MulAssign::mul_assign via Sub::sub for C<A, B>, (A, B));
 
 impl<T, A, B> Mul<T> for C<A, B>
 where
