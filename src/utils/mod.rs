@@ -236,11 +236,11 @@ macro_rules! forward_ref_num_op {
 }
 
 macro_rules! num_assign {
-    (impl $imp:ident::$method:ident via $delegate:ident::$method_delegate:ident for $t:ty, ($($ins:tt),*)) => {
-        impl<$($ins: Copy + $delegate<Output = $ins>),*> $imp<$t> for $t {
+    (impl $imp:ident::$method:ident via $delegate:ident::$method_delegate:ident for $t:ty, ($($ins:tt$(: $bound:tt $(+ $rest:tt)*)?),*)) => {
+        impl<$($ins: Copy + $delegate<Output = $ins> $(+ $bound $(+ $rest)*)?),*> $imp<$t> for $t {
             #[inline]
             fn $method(&mut self, other: $t) {
-                *self = self.$method_delegate(other);
+                *self = (*self).$method_delegate(other);
             }
         }
     };
@@ -352,7 +352,7 @@ impl<T: Num + Copy> Mul for C<T> {
     }
 }
 
-num_assign!(impl MulAssign::mul_assign via Sub::sub for C<A, B>, (A, B));
+num_assign!(impl MulAssign::mul_assign via Mul::mul for C<A>, (A: Num));
 
 impl<T, A, B> Mul<T> for C<A, B>
 where
