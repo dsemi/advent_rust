@@ -1,8 +1,8 @@
 use super::intcode;
 use genawaiter::stack::{let_gen_using, Co};
 use genawaiter::GeneratorState;
+use num::FromPrimitive;
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 #[derive(FromPrimitive)]
 enum Tile {

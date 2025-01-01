@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
+use num::FromPrimitive;
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 use Op::*;
 
 #[derive(Clone, Copy, Eq, FromPrimitive, Hash, PartialEq)]
@@ -53,14 +53,10 @@ fn test_sample(sample: &str) -> (usize, u16) {
     let (before, instr, after) = (pts[0], pts[1], pts[2]);
     let ns: Vec<_> = instr.split_whitespace().map(usize::read).collect();
     let (op, a, b, c) = (ns[0], ns[1], ns[2], ns[3]);
-    let mem1: Vec<_> = before.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
-        .split(", ")
-        .map(usize::read)
-        .collect();
-    let mem2: Vec<usize> = after.split(&['[', ']'][..]).collect::<Vec<_>>()[1]
-        .split(", ")
-        .map(usize::read)
-        .collect();
+    let mem1: Vec<_> =
+        before.split(&['[', ']'][..]).collect::<Vec<_>>()[1].split(", ").map(usize::read).collect();
+    let mem2: Vec<usize> =
+        after.split(&['[', ']'][..]).collect::<Vec<_>>()[1].split(", ").map(usize::read).collect();
     let mut result = (op, 0);
     for cmd in OPS {
         let mut mem = mem1.clone();
@@ -73,20 +69,12 @@ fn test_sample(sample: &str) -> (usize, u16) {
 }
 
 pub fn part1(input: &str) -> usize {
-    input
-        .rsplit("\n\n")
-        .skip(2)
-        .filter(|&sample| test_sample(sample).1.count_ones() >= 3)
-        .count()
+    input.rsplit("\n\n").skip(2).filter(|&sample| test_sample(sample).1.count_ones() >= 3).count()
 }
 
 fn determine_op_codes(mut m: Vec<u16>) -> Vec<Op> {
     while m.iter().any(|v| v.count_ones() != 1) {
-        let uniques = m
-            .iter()
-            .filter(|v| v.count_ones() == 1)
-            .copied()
-            .collect::<Vec<_>>();
+        let uniques = m.iter().filter(|v| v.count_ones() == 1).copied().collect::<Vec<_>>();
         for p in uniques {
             for v in m.iter_mut() {
                 if *v != p {
@@ -95,9 +83,7 @@ fn determine_op_codes(mut m: Vec<u16>) -> Vec<Op> {
             }
         }
     }
-    m.into_iter()
-        .map(|v| FromPrimitive::from_u16(v).unwrap())
-        .collect()
+    m.into_iter().map(|v| FromPrimitive::from_u16(v).unwrap()).collect()
 }
 
 pub fn part2(input: &str) -> usize {

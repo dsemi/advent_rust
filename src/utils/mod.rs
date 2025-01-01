@@ -2,9 +2,10 @@ use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
 use nalgebra::Vector2;
 use nalgebra::Vector3;
-use num::{Num, PrimInt, Signed};
-use num_traits::ops::saturating::SaturatingAdd;
-use num_traits::{AsPrimitive, Bounded, FromPrimitive, One, Pow, Zero};
+use num::cast::AsPrimitive;
+use num::pow::Pow;
+use num::traits::SaturatingAdd;
+use num::{Bounded, FromPrimitive, Num, One, PrimInt, Signed, Zero};
 use smallvec::SmallVec;
 use std::cmp::Ordering::*;
 use std::cmp::{max, min, Ordering, Reverse};
@@ -173,37 +174,6 @@ pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     out
 }
 
-macro_rules! forward_ref_binop {
-    (impl $imp:ident, $method:ident for $t:ty, $g:tt) => {
-        impl<'a, $g: Num + Copy> $imp<$t> for &'a $t {
-            type Output = <$t as $imp<$t>>::Output;
-
-            #[inline]
-            fn $method(self, other: $t) -> <$t as $imp<$t>>::Output {
-                $imp::$method(*self, other)
-            }
-        }
-
-        impl<$g: Num + Copy> $imp<&$t> for $t {
-            type Output = <$t as $imp<$t>>::Output;
-
-            #[inline]
-            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
-                $imp::$method(self, *other)
-            }
-        }
-
-        impl<$g: Num + Copy> $imp<&$t> for &$t {
-            type Output = <$t as $imp<$t>>::Output;
-
-            #[inline]
-            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
-                $imp::$method(*self, *other)
-            }
-        }
-    };
-}
-
 pub trait AbsDiff<T> {
     fn abs_diff(self, other: T) -> T;
 }
@@ -220,6 +190,72 @@ macro_rules! impl_abs_diff {
 }
 
 impl_abs_diff!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
+
+macro_rules! impl_num_op {
+    (impl $imp:ident::$method:ident for $t:ty, ($($acc:tt is $ins:tt),*)) => {
+        impl<$($ins: $imp<Output = $ins>),*> $imp<$t> for $t {
+            type Output = $t;
+
+            #[inline]
+            fn $method(self, other: $t) -> Self::Output {
+                Self($($ins::$method(self.$acc, other.$acc)),*)
+            }
+        }
+    };
+}
+
+macro_rules! forward_ref_num_op {
+    (impl $imp:ident::$method:ident for $t:ty, ($($ins:tt),*)) => {
+        impl<'a, $($ins: Copy + $imp<Output = $ins>),*> $imp<$t> for &'a $t {
+            type Output = <$t as $imp<$t>>::Output;
+
+            #[inline]
+            fn $method(self, other: $t) -> <$t as $imp<$t>>::Output {
+                $imp::$method(*self, other)
+            }
+        }
+
+        impl<$($ins: Copy + $imp<Output = $ins>),*> $imp<&$t> for $t {
+            type Output = <$t as $imp<$t>>::Output;
+
+            #[inline]
+            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
+                $imp::$method(self, *other)
+            }
+        }
+
+        impl<$($ins: Copy + $imp<Output = $ins>),*> $imp<&$t> for &$t {
+            type Output = <$t as $imp<$t>>::Output;
+
+            #[inline]
+            fn $method(self, other: &$t) -> <$t as $imp<$t>>::Output {
+                $imp::$method(*self, *other)
+            }
+        }
+    };
+}
+
+macro_rules! num_assign {
+    (impl $imp:ident::$method:ident via $delegate:ident::$method_delegate:ident for $t:ty, ($($ins:tt),*)) => {
+        impl<$($ins: Copy + $delegate<Output = $ins>),*> $imp<$t> for $t {
+            #[inline]
+            fn $method(&mut self, other: $t) {
+                *self = self.$method_delegate(other);
+            }
+        }
+    };
+}
+
+macro_rules! broadcast {
+    ($method:ident, $t:ty, $rt:ty, ($($acc:tt is $ins:tt$(: $bound:tt $(+ $rest:tt)*)?),*)) => {
+        impl<$($ins$(: $bound $(+ $rest)*)?),*> $t {
+            #[inline]
+            pub fn $method(&self) -> $rt {
+                Self($(self.$acc.$method()),*)
+            }
+        }
+    };
+}
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct C<T, U = T>(pub T, pub U);
@@ -262,19 +298,24 @@ impl<T: Num + Copy> C<T> {
     pub fn sum(&self) -> T {
         self.0 + self.1
     }
-}
 
-impl<T: Num + Copy> C<T> {
     pub fn product(&self) -> T {
         self.0 * self.1
     }
-}
 
-impl<T: Num + Signed> C<T> {
-    pub fn abs(&self) -> Self {
-        Self(self.0.abs(), self.1.abs())
+    pub fn pow<N: Num + BitAnd<Output = N> + Shr<Output = N> + Copy>(self, n: N) -> Self {
+        if n.is_zero() {
+            Self(T::one(), T::zero())
+        } else if (n & N::one()).is_zero() {
+            (self * self).pow(n >> N::one())
+        } else {
+            self * self.pow(n - N::one())
+        }
     }
 }
+
+broadcast!(abs, C<A, B>, C<A, B>, (0 is A: Signed, 1 is B: Signed));
+broadcast!(signum, C<A, B>, C<A, B>, (0 is A: Signed, 1 is B: Signed));
 
 impl<T: Num + AbsDiff<T> + Copy> C<T> {
     pub fn dist(&self, other: &Self) -> T {
@@ -282,55 +323,25 @@ impl<T: Num + AbsDiff<T> + Copy> C<T> {
     }
 }
 
-impl<A: Signed + Copy, B: Signed + Copy> C<A, B> {
-    pub fn signum(&self) -> Self {
-        Self(self.0.signum(), self.1.signum())
+impl<A: Ord, B: Ord> C<A, B> {
+    pub fn smol(self, Self(c, d): Self) -> Self {
+        let Self(a, b) = self;
+        Self(min(a, c), min(b, d))
+    }
+
+    pub fn swol(self, Self(c, d): Self) -> Self {
+        let Self(a, b) = self;
+        Self(max(a, c), max(b, d))
     }
 }
 
-impl<A: Ord + Copy, B: Ord + Copy> C<A, B> {
-    pub fn smol(self, o: Self) -> Self {
-        Self(min(self.0, o.0), min(self.1, o.1))
-    }
+impl_num_op!(impl Add::add for C<A, B>, (0 is A, 1 is B));
+forward_ref_num_op!(impl Add::add for C<A, B>, (A, B));
+impl_num_op!(impl Sub::sub for C<A, B>, (0 is A, 1 is B));
+forward_ref_num_op!(impl Sub::sub for C<A, B>, (A, B));
 
-    pub fn swol(self, o: Self) -> Self {
-        Self(max(self.0, o.0), max(self.1, o.1))
-    }
-}
-
-impl<A: Num, B: Num> Add for C<A, B> {
-    type Output = Self;
-
-    #[inline]
-    fn add(self, other: Self) -> Self {
-        Self(self.0 + other.0, self.1 + other.1)
-    }
-}
-forward_ref_binop! { impl Add, add for C<T>, T }
-
-impl<A: Num + Copy, B: Num + Copy> AddAssign for C<A, B> {
-    #[inline]
-    fn add_assign(&mut self, other: Self) {
-        *self = *self + other;
-    }
-}
-
-impl<A: Num, B: Num> Sub for C<A, B> {
-    type Output = Self;
-
-    #[inline]
-    fn sub(self, other: Self) -> Self {
-        Self(self.0 - other.0, self.1 - other.1)
-    }
-}
-forward_ref_binop! { impl Sub, sub for C<T>, T }
-
-impl<A: Num + Copy, B: Num + Copy> SubAssign for C<A, B> {
-    #[inline]
-    fn sub_assign(&mut self, other: Self) {
-        *self = *self - other;
-    }
-}
+num_assign!(impl AddAssign::add_assign via Add::add for C<A, B>, (A, B));
+num_assign!(impl SubAssign::sub_assign via Sub::sub for C<A, B>, (A, B));
 
 impl<T: Num + Copy> Mul for C<T> {
     type Output = Self;
@@ -340,7 +351,6 @@ impl<T: Num + Copy> Mul for C<T> {
         Self(self.0 * other.0 - self.1 * other.1, self.0 * other.1 + self.1 * other.0)
     }
 }
-forward_ref_binop! { impl Mul, mul for C<T>, T }
 
 impl<T: Num + Copy> MulAssign for C<T> {
     #[inline]
@@ -390,18 +400,6 @@ impl<A: Neg<Output = A>, B: Neg<Output = B>> Neg for C<A, B> {
     }
 }
 
-impl<T: Num + Copy> C<T> {
-    pub fn pow<N: Num + BitAnd<Output = N> + Shr<Output = N> + Copy>(self, n: N) -> Self {
-        if n.is_zero() {
-            Self(T::one(), T::zero())
-        } else if (n & N::one()).is_zero() {
-            (self * self).pow(n >> N::one())
-        } else {
-            self * self.pow(n - N::one())
-        }
-    }
-}
-
 impl<T: Num + Copy> Sum for C<T> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Self(T::zero(), T::zero()), |a, b| a + b)
@@ -409,12 +407,14 @@ impl<T: Num + Copy> Sum for C<T> {
 }
 
 impl<T> From<(T, T)> for C<T> {
+    #[inline]
     fn from((a, b): (T, T)) -> Self {
         C(a, b)
     }
 }
 
 impl<T> From<C<T>> for (T, T) {
+    #[inline]
     fn from(C(a, b): C<T>) -> Self {
         (a, b)
     }
@@ -438,7 +438,7 @@ where
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub struct C3<T>(pub T, pub T, pub T);
+pub struct C3<A, B = A, C = A>(pub A, pub B, pub C);
 
 mod c3parse {
     use winnow::error::ParserError;
@@ -479,29 +479,18 @@ impl<T: Num + Copy> C3<T> {
     pub fn sum(&self) -> T {
         self.0 + self.1 + self.2
     }
-}
 
-impl<T: Num + Copy> C3<T> {
     pub fn product(&self) -> T {
         self.0 * self.1 * self.2
     }
 }
 
-impl<T: Num + Signed> C3<T> {
-    pub fn abs(&self) -> Self {
-        Self(self.0.abs(), self.1.abs(), self.2.abs())
-    }
-}
+broadcast!(abs, C3<A, B, C>, C3<A, B, C>, (0 is A: Signed, 1 is B: Signed, 2 is C: Signed));
+broadcast!(signum, C3<A, B, C>, C3<A, B, C>, (0 is A: Signed, 1 is B: Signed, 2 is C: Signed));
 
 impl<T: Num + AbsDiff<T> + Copy> C3<T> {
     pub fn dist(&self, other: &Self) -> T {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1) + self.2.abs_diff(other.2)
-    }
-}
-
-impl<T: Signed + Copy> C3<T> {
-    pub fn signum(&self) -> Self {
-        Self(self.0.signum(), self.1.signum(), self.2.signum())
     }
 }
 
@@ -515,39 +504,13 @@ impl<T: Ord + Copy> C3<T> {
     }
 }
 
-impl<T: Num> Add for C3<T> {
-    type Output = Self;
+impl_num_op!(impl Add::add for C3<A, B, C>, (0 is A, 1 is B, 2 is C));
+forward_ref_num_op!(impl Add::add for C3<A, B, C>, (A, B, C));
+impl_num_op!(impl Sub::sub for C3<A, B, C>, (0 is A, 1 is B, 2 is C));
+forward_ref_num_op!(impl Sub::sub for C3<A, B, C>, (A, B, C));
 
-    #[inline]
-    fn add(self, other: Self) -> Self {
-        Self(self.0 + other.0, self.1 + other.1, self.2 + other.2)
-    }
-}
-forward_ref_binop! { impl Add, add for C3<T>, T }
-
-impl<T: Num + Copy> AddAssign for C3<T> {
-    #[inline]
-    fn add_assign(&mut self, other: Self) {
-        *self = *self + other;
-    }
-}
-
-impl<T: Num> Sub for C3<T> {
-    type Output = Self;
-
-    #[inline]
-    fn sub(self, other: Self) -> Self {
-        Self(self.0 - other.0, self.1 - other.1, self.2 - other.2)
-    }
-}
-forward_ref_binop! { impl Sub, sub for C3<T>, T }
-
-impl<T: Num + Copy> SubAssign for C3<T> {
-    #[inline]
-    fn sub_assign(&mut self, other: Self) {
-        *self = *self - other;
-    }
-}
+num_assign!(impl AddAssign::add_assign via Add::add for C3<A, B, C>, (A, B, C));
+num_assign!(impl SubAssign::sub_assign via Sub::sub for C3<A, B, C>, (A, B, C));
 
 impl<T: Num + Copy> Mul<T> for C3<T> {
     type Output = Self;
@@ -1203,14 +1166,6 @@ pub trait Counter: Iterator {
 }
 
 impl<T: ?Sized> Counter for T where T: Iterator {}
-
-pub fn tails(s: &str) -> impl Iterator<Item = &'_ str> {
-    std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[1..]))
-}
-
-pub fn inits(s: &str) -> impl Iterator<Item = &'_ str> {
-    std::iter::successors(Some(s), |s| (s.len() > 1).then(|| &s[..s.len() - 1]))
-}
 
 pub fn mod_exp<T>(mut base: T, mut exp: T, modulus: T) -> T
 where

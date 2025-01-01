@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use num_traits::Pow;
+use num::pow::Pow;
 
 pub fn part1(input: &str) -> i64 {
     let input = input.replace(|c: char| !c.is_ascii_digit(), " ");

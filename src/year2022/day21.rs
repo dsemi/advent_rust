@@ -19,8 +19,7 @@ fn eval(m: &HashMap<&str, Monkey>, k: &str) -> N {
 }
 
 fn num<'a>(i: &mut &'a str) -> PResult<Monkey<'a>> {
-    i64.map(|n| Monkey::Num(Ratio::from_integer(n).into()))
-        .parse_next(i)
+    i64.map(|n| Monkey::Num(Ratio::from_integer(n).into())).parse_next(i)
 }
 
 fn math<'a>(i: &mut &'a str) -> PResult<Monkey<'a>> {

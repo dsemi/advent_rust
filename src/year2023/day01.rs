@@ -1,5 +1,3 @@
-use crate::utils::*;
-
 pub fn part1(input: &str) -> usize {
     input
         .lines()
@@ -12,9 +10,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 const DIGITS: [&str; 9] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const WORDS: [&str; 9] = [
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-];
+const WORDS: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
 pub fn part2(input: &str) -> usize {
     let digs = DIGITS.iter().enumerate();
@@ -22,10 +18,13 @@ pub fn part2(input: &str) -> usize {
     input
         .lines()
         .map(|line| {
-            let tens = tails(line)
+            let tens = (0..line.len())
+                .map(|i| &line[i..])
                 .find_map(|s| repls.iter().find(|x| s.starts_with(x.1)).map(|x| x.0 + 1))
                 .unwrap();
-            let ones = inits(line)
+            let ones = (1..line.len() + 1)
+                .rev()
+                .map(|i| &line[..i])
                 .find_map(|s| repls.iter().find(|x| s.ends_with(x.1)).map(|x| x.0 + 1))
                 .unwrap();
             10 * tens + ones

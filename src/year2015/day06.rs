@@ -16,18 +16,14 @@ struct Instr {
 }
 
 fn instr(i: &mut &str) -> PResult<Instr> {
-    let cmd = alt((
-        "turn on ".value(On),
-        "toggle ".value(Toggle),
-        "turn off ".value(Off),
-    ))
-    .parse_next(i)?;
+    let cmd = alt(("turn on ".value(On), "toggle ".value(Toggle), "turn off ".value(Off)))
+        .parse_next(i)?;
     let ((x0, y0), (x1, y1)) = sep2(coord(usize), "through").parse_next(i)?;
     let rect = Rect::new(x0, x1 + 1, y0, y1 + 1);
     Ok(Instr { cmd, rect })
 }
 
-// Use Saturating<u32> if it gets included in num_traits::Zero.
+// Use Saturating<u32> if it gets included in num::Zero.
 fn run_commands(input: &str, f: fn(Cmd, ArrayViewMut2<u32>)) -> u32 {
     let instrs: Vec<_> = input.lines().map(|line| instr.read(line)).collect();
     let (mut ls, mut ws) = (vec![], vec![]);
@@ -66,9 +62,7 @@ fn run_commands(input: &str, f: fn(Cmd, ArrayViewMut2<u32>)) -> u32 {
         let slice = grid.slice_mut(s![ls.range(), ws.range()]);
         f(instr.cmd, slice);
     }
-    Zip::from(&rects)
-        .and(&grid)
-        .fold(0, |acc, rect, v| acc + rect.area() as u32 * v)
+    Zip::from(&rects).and(&grid).fold(0, |acc, rect, v| acc + rect.area() as u32 * v)
 }
 
 pub fn part1(input: &str) -> u32 {

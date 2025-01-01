@@ -6,7 +6,7 @@ use std::iter::successors;
 pub fn path(grid: &Grid<u8, i32>) -> impl Iterator<Item = (C<i32>, C<i32>)> + use<'_> {
     let mut seen = grid.same_size_with(false);
     successors(Some((grid.position(|&v| v == b'^').unwrap(), C(-1, 0))), |(mut pos, mut dir)| {
-        dir = iterate(dir, |dir| dir * C(0, -1))
+        dir = iterate(dir, |&dir| dir * C(0, -1))
             .find(|dir| !matches!(grid.get(pos + dir), Some(b'#')))?;
         pos += dir;
         grid.in_bounds(pos).then_some((pos, dir))
