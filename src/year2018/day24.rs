@@ -98,7 +98,7 @@ fn armies<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
 fn select_target(groups: &[Option<Group>], attacked: &mut u32, grp: &Group) -> Option<usize> {
     let mut mx = (0, 0, 0, 0);
     for g in groups.iter().flatten() {
-        if grp.name != g.name && *attacked & 1 << g.num == 0 {
+        if grp.name != g.name && *attacked & (1 << g.num) == 0 {
             let mx2 = (g.num, grp.calc_dmg(g), g.eff_pwr(), g.initiative);
             if (mx2.1, mx2.2, mx2.3) > (mx.1, mx.2, mx.3) {
                 mx = mx2;

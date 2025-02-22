@@ -36,8 +36,8 @@ async fn run(mut prog: intcode::Program, co: Co<'_, Draw, Option<i64>>) -> i64 {
 
 pub fn part1(input: &str) -> usize {
     let mut result = 0;
-    let_gen_using!(gen, |co| run(intcode::new(input), co));
-    while let GeneratorState::Yielded(instr) = gen.resume_with(None) {
+    let_gen_using!(g, |co| run(intcode::new(input), co));
+    while let GeneratorState::Yielded(instr) = g.resume_with(None) {
         result += matches!(instr, Draw(_, Tile::Block)) as usize;
     }
     result
@@ -48,9 +48,9 @@ pub fn part2(input: &str) -> i64 {
     prog[0] = 2;
     let mut paddle_x = 0;
     let mut inp = None;
-    let_gen_using!(gen, |co| run(prog, co));
+    let_gen_using!(g, |co| run(prog, co));
     loop {
-        match gen.resume_with(inp.take()) {
+        match g.resume_with(inp.take()) {
             GeneratorState::Yielded(Draw((ball_x, _), Tile::Ball)) => {
                 inp = Some(ball_x.cmp(&paddle_x) as i64)
             }

@@ -45,7 +45,7 @@ fn go(grid: &Grid<char, i64>, pos: C<i64>, C(x, y): C<i64>) -> Vec<String> {
 }
 
 fn find_path(grid: &Grid<char, i64>) -> Vec<String> {
-    let (pos, dir) = grid.idx_iter().find(|(_, &v)| "^><v".contains(v)).unwrap();
+    let (pos, dir) = grid.idx_iter().find(|&(_, &v)| "^><v".contains(v)).unwrap();
     let res = go(
         grid,
         pos,
@@ -97,14 +97,10 @@ fn go2(xs: Vec<Vec<String>>, fns: i64) -> Option<Vec<Vec<String>>> {
 }
 
 fn compress(instrs: Vec<String>) -> Vec<Vec<String>> {
-    let repl_map = vec![
-        vec!["A".to_string()],
-        vec!["B".to_string()],
-        vec!["C".to_string()],
-    ]
-    .into_iter()
-    .zip(go2(vec![instrs.clone()], 3).unwrap())
-    .collect::<Vec<_>>();
+    let repl_map = vec![vec!["A".to_string()], vec!["B".to_string()], vec!["C".to_string()]]
+        .into_iter()
+        .zip(go2(vec![instrs.clone()], 3).unwrap())
+        .collect::<Vec<_>>();
     std::iter::once(repl_map.iter().fold(instrs, |a, b| {
         itertools::Itertools::intersperse(splits(&a, &b.1).into_iter(), b.0.clone())
             .flatten()

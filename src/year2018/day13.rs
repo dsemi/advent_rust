@@ -94,12 +94,12 @@ impl Tracks {
 
 pub fn part1(input: &str) -> Option<(i32, i32)> {
     let mut tracks = parse_tracks(input);
-    let_gen_using!(gen, |co| tracks.tick(co));
-    gen.into_iter().next()
+    let_gen_using!(g, |co| tracks.tick(co));
+    g.into_iter().next()
 }
 
 pub fn part2(input: &str) -> Option<(i32, i32)> {
     let mut tracks = parse_tracks(input);
-    let_gen_using!(gen, |co| tracks.tick(co));
-    gen.into_iter().last()
+    let_gen_using!(g, |co| tracks.tick(co));
+    g.into_iter().last()
 }

@@ -27,11 +27,7 @@ impl Network {
             prog.input.push_back(i);
             computers.push(prog);
         }
-        Self {
-            computers,
-            x: 0,
-            y: 0,
-        }
+        Self { computers, x: 0, y: 0 }
     }
 
     async fn run(&mut self, co: Co<'_, Signal>) {
@@ -41,11 +37,7 @@ impl Network {
                 .iter_mut()
                 .filter_map(|comp| {
                     comp.run();
-                    comp.recv::<3>().map(|ns| Packet {
-                        address: ns[0],
-                        x: ns[1],
-                        y: ns[2],
-                    })
+                    comp.recv::<3>().map(|ns| Packet { address: ns[0], x: ns[1], y: ns[2] })
                 })
                 .collect::<Vec<_>>();
             if !packets.is_empty() {
@@ -55,12 +47,8 @@ impl Network {
                         self.x = packet.x;
                         self.y = packet.y;
                     } else {
-                        self.computers[packet.address as usize]
-                            .input
-                            .push_back(packet.x);
-                        self.computers[packet.address as usize]
-                            .input
-                            .push_back(packet.y);
+                        self.computers[packet.address as usize].input.push_back(packet.x);
+                        self.computers[packet.address as usize].input.push_back(packet.y);
                     }
                 }
             } else {
@@ -82,8 +70,8 @@ impl Network {
 
 pub fn part1(input: &str) -> Option<i64> {
     let mut network = Network::new(input);
-    let_gen_using!(gen, |co| network.run(co));
-    gen.into_iter().find_map(|p| match p {
+    let_gen_using!(g, |co| network.run(co));
+    g.into_iter().find_map(|p| match p {
         Signal::ToNat(v) => Some(v),
         _ => None,
     })
@@ -91,8 +79,8 @@ pub fn part1(input: &str) -> Option<i64> {
 
 pub fn part2(input: &str) -> i64 {
     let mut network = Network::new(input);
-    let_gen_using!(gen, |co| network.run(co));
-    gen.into_iter()
+    let_gen_using!(g, |co| network.run(co));
+    g.into_iter()
         .filter_map(|p| match p {
             Signal::FromNat(v) => Some(v),
             _ => None,

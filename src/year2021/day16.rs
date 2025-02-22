@@ -2,7 +2,7 @@ use crate::utils::replace_with;
 use std::iter::from_fn;
 
 fn bin(bs: &mut dyn Iterator<Item = u64>, n: usize) -> u64 {
-    bs.take(n).fold(0, |a, b| a << 1 | b)
+    bs.take(n).fold(0, |a, b| (a << 1) | b)
 }
 
 fn packet(bs: &mut dyn Iterator<Item = u64>, vsum: &mut u64) -> u64 {
@@ -13,7 +13,7 @@ fn packet(bs: &mut dyn Iterator<Item = u64>, vsum: &mut u64) -> u64 {
         return from_fn(|| {
             replace_with(&mut b, |b| *b && bs.next() == Some(1)).then(|| bin(bs, 4))
         })
-        .fold(0, |a, b| a << 4 | b);
+        .fold(0, |a, b| (a << 4) | b);
     }
     let ns: Vec<u64> = if let Some(0) = bs.next() {
         let n = bin(bs, 15);
@@ -38,7 +38,7 @@ fn solve(input: &str) -> (u64, u64) {
     let mut bits = input
         .chars()
         .map(|c| c.to_digit(16).unwrap() as u64)
-        .flat_map(|n| vec![n >> 3 & 1, n >> 2 & 1, n >> 1 & 1, n & 1]);
+        .flat_map(|n| vec![(n >> 3) & 1, (n >> 2) & 1, (n >> 1) & 1, n & 1]);
     let mut version = 0;
     let n = packet(&mut bits, &mut version);
     (version, n)

@@ -55,19 +55,16 @@ pub fn make_mods(item: TokenStream) -> TokenStream {
     let mut map = PROBS.lock().unwrap();
     for entry in fs::read_dir(d.value()).unwrap().map(|x| x.unwrap().path()) {
         let path = entry.to_str().unwrap();
-        match ("src/year", i64, "/day", i64, ".rs").parse(path) {
-            Ok((_, year, _, day, _)) => {
-                let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
-                let mstr = m.to_string();
-                let day = preceded("day", i64).parse(mstr.as_str()).unwrap();
-                map.entry(year).or_default().insert(day);
-                mods.extend(quote! {
-                    pub mod #m;
-                });
-            }
-            Err(_) => {
-                // Add prints here if debugging is necessary.
-            }
+        if let Ok((_, year, _, day, _)) = ("src/year", i64, "/day", i64, ".rs").parse(path) {
+            let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
+            let mstr = m.to_string();
+            let day = preceded("day", i64).parse(mstr.as_str()).unwrap();
+            map.entry(year).or_default().insert(day);
+            mods.extend(quote! {
+                pub mod #m;
+            });
+        } else {
+            // Add prints here if debugging is necessary.
         }
     }
     mods.into()
@@ -110,7 +107,7 @@ const PARSER_IDENT: &str = "parser";
 
 fn parse_fields(
     fields: &syn::Fields,
-    cons: proc_macro2::TokenStream,
+    cons: &proc_macro2::TokenStream,
     name_matcher: proc_macro2::TokenStream,
     parse_name: bool,
 ) -> proc_macro2::TokenStream {
@@ -159,7 +156,7 @@ fn parse_fields(
             }
         }
         syn::Fields::Unit => quote! { #name_matcher.value(#cons) },
-        _ => unimplemented!(),
+        syn::Fields::Named(_) => unimplemented!(),
     }
 }
 
@@ -194,7 +191,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
                                 }
                                 Ok(())
                             })
-                            .unwrap()
+                            .unwrap();
                         }
                         val
                     })
@@ -203,7 +200,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
                     let variant_ident = &val.ident;
                     let cons = quote! { #data_ident::#variant_ident };
                     let name_matcher = quote! { advent::lower!(#variant_ident) };
-                    parse_fields(&val.fields, cons, name_matcher, parse_name)
+                    parse_fields(&val.fields, &cons, name_matcher, parse_name)
                 })
                 .collect::<Vec<_>>();
             quote! { alt((#(#parser_alts),*)) }
@@ -211,9 +208,9 @@ pub fn parser(input: TokenStream) -> TokenStream {
         syn::Data::Struct(struct_data) => {
             let cons = quote! { #data_ident };
             let name_matcher = quote! { advent::lower!(#data_ident) };
-            parse_fields(&struct_data.fields, cons, name_matcher, parse_name)
+            parse_fields(&struct_data.fields, &cons, name_matcher, parse_name)
         }
-        _ => unimplemented!(),
+        syn::Data::Union(_) => unimplemented!(),
     };
     let lower_ident = data_ident.to_string().to_lowercase();
     let fn_name = syn::Ident::new(&lower_ident, Span::call_site());

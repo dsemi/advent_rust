@@ -44,7 +44,7 @@ fn get(graph: &[Option<Gate<Wire>>], cache: &mut [Option<u8>], sig: usize) -> Op
 }
 
 fn id(k: &str) -> usize {
-    k.bytes().fold(0, |acc, v| acc << 5 | ((v - b'0') as usize & 31))
+    k.bytes().fold(0, |acc, v| (acc << 5) | ((v - b'0') as usize & 31))
 }
 
 fn gate<'a>(i: &mut &'a str) -> PResult<Gate<&'a str>> {
@@ -70,7 +70,7 @@ pub fn part1(input: &str) -> u64 {
     (id("z00")..id("z64"))
         .rev()
         .filter_map(|k| get(&network, cache, k))
-        .fold(0, |acc, b| acc << 1 | b as u64)
+        .fold(0, |acc, b| (acc << 1) | b as u64)
 }
 
 pub fn part2(input: &str) -> String {

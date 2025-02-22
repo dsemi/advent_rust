@@ -1475,7 +1475,7 @@ where
     }
 
     #[inline]
-    pub fn idxs(&self) -> impl Iterator<Item = C<I>> {
+    pub fn idxs(&self) -> impl Iterator<Item = C<I>> + use<T, I> {
         let rows = self.rows;
         let cols = self.cols;
         (I::zero()..rows).flat_map(move |r| (I::zero()..cols).map(move |c| C(r, c)))

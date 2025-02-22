@@ -72,7 +72,7 @@ pub fn part1(input: &str) -> String {
 
 fn dfs(c: &mut Computer, idx: usize, a: i64) -> Option<i64> {
     (0..8).find_map(|i| {
-        let a = a << 3 | i;
+        let a = (a << 3) | i;
         c.reset(a);
         (c.next().unwrap() == c.instrs[idx])
             .then(|| (idx == 0).then_some(a).or_else(|| dfs(c, idx - 1, a)))

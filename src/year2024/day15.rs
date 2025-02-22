@@ -23,7 +23,7 @@ fn go_v(wall: &[u128], l: &mut [u128], r: &mut [u128], orig: u128, from: usize, 
         return false;
     }
     let mut next = orig & (l[to] | r[to]);
-    next |= (next & l[to]) << 1 & r[to] | (next & r[to]) >> 1 & l[to];
+    next |= ((next & l[to]) << 1) & r[to] | ((next & r[to]) >> 1) & l[to];
     if next == 0 || go_v(wall, l, r, next, to, to + to - from) {
         l[to] |= l[from] & orig;
         r[to] |= r[from] & orig;

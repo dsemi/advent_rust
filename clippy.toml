@@ -1,4 +1,4 @@
-msrv = "1.83"
+msrv = "1.85"
 
 disallowed-types = [
     "std::collections::HashMap",

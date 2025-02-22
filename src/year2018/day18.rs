@@ -10,10 +10,7 @@ fn acre(c: char) -> u128 {
 }
 
 fn parse_landscape(input: &str) -> Vec<u128> {
-    input
-        .lines()
-        .map(|line| line.chars().map(acre).reduce(|a, b| a << 2 | b).unwrap())
-        .collect()
+    input.lines().map(|line| line.chars().map(acre).reduce(|a, b| (a << 2) | b).unwrap()).collect()
 }
 
 fn step(grid: &mut [u128]) {

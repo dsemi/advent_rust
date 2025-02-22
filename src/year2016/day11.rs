@@ -8,13 +8,13 @@ use std::ops::BitOrAssign;
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pair {
     chip: i32,
-    gen: i32,
+    generator: i32,
 }
 
 impl BitOrAssign for Pair {
     fn bitor_assign(&mut self, rhs: Pair) {
         self.chip |= rhs.chip;
-        self.gen |= rhs.gen;
+        self.generator |= rhs.generator;
     }
 }
 
@@ -28,11 +28,11 @@ impl Floors {
     fn is_valid(&self) -> bool {
         self.flrs
             .iter()
-            .all(|p| p.chip == p.gen || self.flrs.iter().all(|x| x.gen != p.chip))
+            .all(|p| p.chip == p.generator || self.flrs.iter().all(|x| x.generator != p.chip))
     }
 
     fn is_done(&self) -> bool {
-        self.flrs.iter().all(|x| x.chip == 4 && x.gen == 4)
+        self.flrs.iter().all(|x| x.chip == 4 && x.generator == 4)
     }
 }
 
@@ -41,8 +41,8 @@ fn parse<'a>(flr: i32) -> impl Parser<&'a str, (&'a str, Pair), ContextError> {
         let elem =
             delimited((opt("and "), "a "), alpha1, (opt("-compatible"), space1)).parse_next(i)?;
         let pair = alt((
-            "microchip".value(Pair { chip: flr, gen: 0 }),
-            "generator".value(Pair { chip: 0, gen: flr }),
+            "microchip".value(Pair { chip: flr, generator: 0 }),
+            "generator".value(Pair { chip: 0, generator: flr }),
         ))
         .parse_next(i)?;
         Ok((elem, pair))
@@ -59,10 +59,7 @@ fn parse_floors(input: &str) -> Floors {
                 .for_each(|(k, pair)| *tbl.entry(k).or_default() |= pair);
         }
     }
-    Floors {
-        elev: 1,
-        flrs: tbl.values().copied().sorted().collect(),
-    }
+    Floors { elev: 1, flrs: tbl.values().copied().sorted().collect() }
 }
 
 fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
@@ -73,9 +70,9 @@ fn all_moves(floors: &Floors, e: i32) -> Vec<Floors> {
             floors2.flrs[i].chip = e;
             result.push(floors2);
         }
-        if floors.flrs[i].gen == floors.elev {
+        if floors.flrs[i].generator == floors.elev {
             let mut floors2 = floors.clone();
-            floors2.flrs[i].gen = e;
+            floors2.flrs[i].generator = e;
             result.push(floors2);
         }
     }
@@ -90,10 +87,7 @@ fn neighbors(floors: &Floors) -> Vec<Floors> {
             for mut floors2 in all_moves(floors, e) {
                 if floors2.is_valid() {
                     floors2.flrs.sort();
-                    let neighb = Floors {
-                        elev: e,
-                        flrs: floors2.flrs.clone(),
-                    };
+                    let neighb = Floors { elev: e, flrs: floors2.flrs.clone() };
                     if !neighbs.contains(&neighb) {
                         neighbs.insert(neighb.clone());
                         result.push(neighb);
@@ -102,10 +96,7 @@ fn neighbors(floors: &Floors) -> Vec<Floors> {
                 for mut floors3 in all_moves(&floors2, e) {
                     if floors3.is_valid() {
                         floors3.flrs.sort();
-                        let neighb = Floors {
-                            elev: e,
-                            flrs: floors3.flrs,
-                        };
+                        let neighb = Floors { elev: e, flrs: floors3.flrs };
                         if !neighbs.contains(&neighb) {
                             neighbs.insert(neighb.clone());
                             result.push(neighb);
@@ -124,7 +115,7 @@ pub fn part1(input: &str) -> Option<usize> {
 
 pub fn part2(input: &str) -> Option<usize> {
     let mut floors = parse_floors(input);
-    floors.flrs.insert(0, Pair { chip: 1, gen: 1 });
-    floors.flrs.insert(0, Pair { chip: 1, gen: 1 });
+    floors.flrs.insert(0, Pair { chip: 1, generator: 1 });
+    floors.flrs.insert(0, Pair { chip: 1, generator: 1 });
     bfs(floors, neighbors).find_map(|(d, st)| st.is_done().then_some(d))
 }

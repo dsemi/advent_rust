@@ -7,7 +7,7 @@ const D: u8 = 0b0010;
 const R: u8 = 0b0001;
 
 fn turn(dir: u8, pipe: char) -> u8 {
-    let dir = (dir & 3) << 2 | (dir & 12) >> 2;
+    let dir = ((dir & 3) << 2) | ((dir & 12) >> 2);
     let pipe = match pipe {
         '|' => U | D,
         '-' => L | R,
@@ -32,16 +32,11 @@ fn coord(dir: u8) -> C<i32> {
 
 fn parse(input: &str) -> (C<i32>, u8, Grid<char, i32>) {
     let grid: Grid<_, i32> = input.chars().collect();
-    let start = grid
-        .idx_iter()
-        .find_map(|(C(r, c), &v)| (v == 'S').then_some(C(r, c)))
-        .unwrap();
+    let start = grid.idx_iter().find_map(|(C(r, c), &v)| (v == 'S').then_some(C(r, c))).unwrap();
     let dir = [U, L, D, R]
         .into_iter()
         .find(|&d| {
-            grid.get(start + coord(d))
-                .filter(|&&v| (turn(d, v)).count_ones() == 1)
-                .is_some()
+            grid.get(start + coord(d)).filter(|&&v| (turn(d, v)).count_ones() == 1).is_some()
         })
         .unwrap();
     (start, dir, grid)
