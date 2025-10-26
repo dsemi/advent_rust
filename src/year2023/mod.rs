@@ -1,3 +1,3 @@
 use advent::make_mods;
 
-make_mods!("src/year2023");
+make_mods!();

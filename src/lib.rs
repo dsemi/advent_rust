@@ -48,12 +48,12 @@ fn i64(input: &mut &str) -> PResult<i64> {
 }
 
 #[proc_macro]
-pub fn make_mods(item: TokenStream) -> TokenStream {
-    // Use Span::source_file() when it becomes stable.
+pub fn make_mods(_item: TokenStream) -> TokenStream {
+    let mod_file = Span::call_site().file();
+    let d = mod_file.rsplit_once('/').unwrap().0;
     let mut mods = proc_macro2::TokenStream::new();
-    let d = syn::parse_macro_input!(item as syn::LitStr);
     let mut map = PROBS.lock().unwrap();
-    for entry in fs::read_dir(d.value()).unwrap().map(|x| x.unwrap().path()) {
+    for entry in fs::read_dir(d).unwrap().map(|x| x.unwrap().path()) {
         let path = entry.to_str().unwrap();
         if let Ok((_, year, _, day, _)) = ("src/year", i64, "/day", i64, ".rs").parse(path) {
             let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
