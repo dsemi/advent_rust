@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use std::cmp::max;
 use std::iter::from_fn;
 
-fn parse(i: &mut &str) -> ModalResult<(i64, i64, i64, i64)> {
+fn parse(i: &mut &str) -> Result<(i64, i64, i64, i64)> {
     let (_, x0, _, x1, _, y0, _, y1) =
         ("target area: x=", i64, "..", i64, ", y=", i64, "..", i64).parse_next(i)?;
     Ok((x0, x1, y0, y1))

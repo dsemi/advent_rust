@@ -7,7 +7,7 @@ struct Input<'a> {
     tix: Vec<Vec<i64>>,
 }
 
-fn rule<'a>(i: &mut &'a str) -> ModalResult<(&'a str, i64, i64, i64, i64)> {
+fn rule<'a>(i: &mut &'a str) -> Result<(&'a str, i64, i64, i64, i64)> {
     let loc = terminated(take_till(0.., |c| c == ':'), ": ").parse_next(i)?;
     let (a1, _, a2, _, b1, _, b2) = (i64, '-', i64, " or ", i64, '-', i64).parse_next(i)?;
     Ok((loc, a1, a2, b1, b2))

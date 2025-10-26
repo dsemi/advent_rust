@@ -10,7 +10,7 @@ enum Val {
     Reg(#[parser(impl = reg)] usize),
 }
 
-fn reg(i: &mut &str) -> ModalResult<usize> {
+fn reg(i: &mut &str) -> Result<usize> {
     any.map(|c| c as usize - 'a' as usize).parse_next(i)
 }
 

@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 
-fn marker(i: &str) -> ModalResult<(&str, (usize, usize))> {
+fn marker(i: &str) -> Result<(&str, (usize, usize))> {
     delimited('(', sep2(usize, 'x'), ')').parse_peek(i)
 }
 

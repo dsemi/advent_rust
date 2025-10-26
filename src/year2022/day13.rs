@@ -9,7 +9,7 @@ enum Packet {
     List(Vec<Packet>),
 }
 
-fn parse(i: &mut &str) -> ModalResult<Packet> {
+fn parse(i: &mut &str) -> Result<Packet> {
     alt((i32.map(Lit), delimited('[', list(parse), ']').map(List))).parse_next(i)
 }
 

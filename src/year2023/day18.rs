@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 
-fn instr1(i: &mut &str) -> ModalResult<(C<i64>, i64)> {
+fn instr1(i: &mut &str) -> Result<(C<i64>, i64)> {
     (
         alt(('U'.value(C(-1, 0)), 'D'.value(C(1, 0)), 'L'.value(C(0, -1)), 'R'.value(C(0, 1)))),
         delimited(' ', i64, delimited(" (#", hex_digit1, ')')),
@@ -28,7 +28,7 @@ pub fn part1(input: &str) -> i64 {
     solve(input, instr1)
 }
 
-fn instr2(i: &mut &str) -> ModalResult<(C<i64>, i64)> {
+fn instr2(i: &mut &str) -> Result<(C<i64>, i64)> {
     (alt(('U', 'D', 'L', 'R')), ' ', i64, " (#").parse_next(i)?;
     let amt: u64 = take(5u8).and_then(hex_uint).parse_next(i)?;
     let dir =

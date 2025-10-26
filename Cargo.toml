@@ -41,7 +41,7 @@ streaming-iterator = "0.1.9"
 syn = { version = "2.0.108", features = ["extra-traits"] }
 toml = "0.9.8"
 wide = "0.8.1"
-winnow = "0.6.26"
+winnow = "0.7.13"
 
 [lints.clippy]
 disallowed_types = "deny"

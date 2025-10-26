@@ -4,7 +4,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 use std::cmp::Ordering::*;
 
-fn parse_seeds(i: &mut &str) -> ModalResult<Vec<u32>> {
+fn parse_seeds(i: &mut &str) -> Result<Vec<u32>> {
     preceded("seeds: ", separated(1.., u32, space1)).parse_next(i)
 }
 

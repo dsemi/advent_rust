@@ -1,11 +1,11 @@
 use crate::utils::parsers::*;
 use hashbrown::{HashMap, HashSet};
 
-fn bag<'a>(i: &mut &'a str) -> ModalResult<&'a str> {
+fn bag<'a>(i: &mut &'a str) -> Result<&'a str> {
     terminated((alpha1, space1, alpha1).take(), (alt((" bags", " bag")), opt('.'))).parse_next(i)
 }
 
-fn bags<'a>(i: &mut &'a str) -> ModalResult<Vec<(u32, &'a str)>> {
+fn bags<'a>(i: &mut &'a str) -> Result<Vec<(u32, &'a str)>> {
     let res = list(separated_pair(u32, space1, bag)).parse_next(i).unwrap_or_default();
     winnow::token::rest.parse_next(i)?;
     Ok(res)

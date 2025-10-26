@@ -8,7 +8,7 @@ struct Moon {
     vel: SmallVec<[i64; 3]>,
 }
 
-fn moon(i: &mut &str) -> ModalResult<Moon> {
+fn moon(i: &mut &str) -> Result<Moon> {
     let (x, y, z) = delimited('<', coord3(preceded((any, '='), i64)), '>').parse_next(i)?;
     let pos = sv![x, y, z];
     let vel = sv![0, 0, 0];

@@ -8,12 +8,12 @@ struct Reactions<'a> {
     topo: Vec<&'a str>,
 }
 
-fn chemical<'a>(i: &mut &'a str) -> ModalResult<(i64, &'a str)> {
+fn chemical<'a>(i: &mut &'a str) -> Result<(i64, &'a str)> {
     separated_pair(i64, space1, alpha1).parse_next(i)
 }
 
 #[expect(clippy::type_complexity)]
-fn parse<'a>(i: &mut &'a str) -> ModalResult<(&'a str, (i64, Vec<(i64, &'a str)>))> {
+fn parse<'a>(i: &mut &'a str) -> Result<(&'a str, (i64, Vec<(i64, &'a str)>))> {
     separated_pair(list(chemical), " => ", chemical)
         .map(|(srcs, (n, out))| (out, (n, srcs)))
         .parse_next(i)

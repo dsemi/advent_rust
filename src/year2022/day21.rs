@@ -18,11 +18,11 @@ fn eval(m: &HashMap<&str, Monkey>, k: &str) -> N {
     }
 }
 
-fn num<'a>(i: &mut &'a str) -> ModalResult<Monkey<'a>> {
+fn num<'a>(i: &mut &'a str) -> Result<Monkey<'a>> {
     i64.map(|n| Monkey::Num(Ratio::from_integer(n).into())).parse_next(i)
 }
 
-fn math<'a>(i: &mut &'a str) -> ModalResult<Monkey<'a>> {
+fn math<'a>(i: &mut &'a str) -> Result<Monkey<'a>> {
     let a = alpha1.parse_next(i)?;
     let f = alt((
         " + ".value(Add::add as fn(N, N) -> N),
@@ -35,7 +35,7 @@ fn math<'a>(i: &mut &'a str) -> ModalResult<Monkey<'a>> {
     Ok(Monkey::Math(f, a, b))
 }
 
-fn parse<'a>(i: &mut &'a str) -> ModalResult<(&'a str, Monkey<'a>)> {
+fn parse<'a>(i: &mut &'a str) -> Result<(&'a str, Monkey<'a>)> {
     separated_pair(alpha1, ": ", alt((num, math))).parse_next(i)
 }
 

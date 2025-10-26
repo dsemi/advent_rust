@@ -9,7 +9,7 @@ enum Instr {
     Ignore,
 }
 
-fn memory(i: &mut &str) -> ModalResult<Instr> {
+fn memory(i: &mut &str) -> Result<Instr> {
     alt((
         "do()".value(Enable),
         "don't()".value(Disable),

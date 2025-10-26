@@ -7,7 +7,7 @@ struct Scanner {
     dist: i64,
 }
 
-fn sensor(i: &mut &str) -> ModalResult<(i64, i64, i64, i64)> {
+fn sensor(i: &mut &str) -> Result<(i64, i64, i64, i64)> {
     let (_, sx, _, sy) = ("Sensor at x=", i64, ", y=", i64).parse_next(i)?;
     let (_, bx, _, by) = (": closest beacon is at x=", i64, ", y=", i64).parse_next(i)?;
     Ok((sx, sy, bx, by))

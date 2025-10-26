@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 
-fn parse(i: &mut &str) -> ModalResult<(u32, C<usize>)> {
+fn parse(i: &mut &str) -> Result<(u32, C<usize>)> {
     (preceded("depth: ", u32), preceded("\ntarget: ", c(usize))).parse_next(i)
 }
 

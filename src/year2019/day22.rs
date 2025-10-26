@@ -46,7 +46,7 @@ enum Tech {
     Deal(i64),
 }
 
-fn tech(i: &mut &str) -> ModalResult<Tech> {
+fn tech(i: &mut &str) -> Result<Tech> {
     alt((
         "deal into new stack".value(New),
         preceded("cut ", i64).map(Cut),

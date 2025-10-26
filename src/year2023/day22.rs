@@ -20,7 +20,7 @@ struct Cubes {
     z: Interval<usize>,
 }
 
-fn cubes(i: &mut &str) -> ModalResult<Cubes> {
+fn cubes(i: &mut &str) -> Result<Cubes> {
     let ((x0, y0, z0), (x1, y1, z1)) = sep2(coord3(usize), '~').parse_next(i)?;
     Ok(Cubes {
         x: Interval::new(x0, x1 + 1),

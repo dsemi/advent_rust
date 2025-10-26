@@ -47,7 +47,7 @@ fn id(k: &str) -> usize {
     k.bytes().fold(0, |acc, v| (acc << 5) | ((v - b'0') as usize & 31))
 }
 
-fn gate<'a>(i: &mut &'a str) -> ModalResult<Gate<&'a str>> {
+fn gate<'a>(i: &mut &'a str) -> Result<Gate<&'a str>> {
     let (a, op, b) = (
         alphanumeric1,
         alt((" AND ".value(And), " OR ".value(Or), " XOR ".value(Xor))),

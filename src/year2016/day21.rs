@@ -26,7 +26,7 @@ enum Instr {
     Move((usize, usize)),
 }
 
-fn parse(i: &mut &str) -> ModalResult<Instr> {
+fn parse(i: &mut &str) -> Result<Instr> {
     alt((
         (preceded("swap position ", usize), preceded(" with position ", usize)).map(SwapPos),
         (preceded("swap letter ", any), preceded(" with letter ", any)).map(SwapChr),

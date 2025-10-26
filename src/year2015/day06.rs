@@ -15,7 +15,7 @@ struct Instr {
     rect: Rect<usize>,
 }
 
-fn instr(i: &mut &str) -> ModalResult<Instr> {
+fn instr(i: &mut &str) -> Result<Instr> {
     let cmd = alt(("turn on ".value(On), "toggle ".value(Toggle), "turn off ".value(Off)))
         .parse_next(i)?;
     let ((x0, y0), (x1, y1)) = sep2(coord(usize), "through").parse_next(i)?;

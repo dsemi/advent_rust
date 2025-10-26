@@ -7,6 +7,7 @@ use std::fs;
 use std::sync::Mutex;
 use winnow::ascii::digit1;
 use winnow::combinator::preceded;
+use winnow::error::Result;
 use winnow::prelude::*;
 
 static PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
@@ -43,7 +44,7 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
     result.into()
 }
 
-fn i64(input: &mut &str) -> ModalResult<i64> {
+fn i64(input: &mut &str) -> Result<i64> {
     digit1.parse_to().parse_next(input)
 }
 
@@ -215,7 +216,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
     let lower_ident = data_ident.to_string().to_lowercase();
     let fn_name = syn::Ident::new(&lower_ident, Span::call_site());
     quote! {
-        fn #fn_name(i: &mut &str) -> ModalResult<#data_ident> {
+        fn #fn_name(i: &mut &str) -> Result<#data_ident> {
             #inner.parse_next(i)
         }
     }

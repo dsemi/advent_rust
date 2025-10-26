@@ -79,7 +79,7 @@ struct Board {
     top_left: C<i32>,
 }
 
-fn instr(i: &mut &str) -> ModalResult<Instr> {
+fn instr(i: &mut &str) -> Result<Instr> {
     alt(('L'.value(Instr::Turn(false)), 'R'.value(Instr::Turn(true)), usize.map(Instr::Step)))
         .parse_next(i)
 }

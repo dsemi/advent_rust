@@ -25,7 +25,7 @@ where
 macro_rules! impl_signed {
     ($($i:ident),*) => ($(
         #[allow(dead_code)]
-        pub fn $i<I>(input: &mut I) -> ModalResult<$i>
+        pub fn $i<I>(input: &mut I) -> Result<$i>
         where
             I: StreamIsPartial + Stream,
             <I as Stream>::Slice: AsBStr + ParseSlice<$i>,
@@ -40,7 +40,7 @@ impl_signed!(i8, i16, i32, i64, i128, isize);
 macro_rules! impl_unsigned {
     ($($i:ident),*) => ($(
         #[allow(dead_code)]
-        pub fn $i<I>(input: &mut I) -> ModalResult<$i>
+        pub fn $i<I>(input: &mut I) -> Result<$i>
         where
             I: StreamIsPartial + Stream,
             <I as Stream>::Slice: AsBStr + ParseSlice<$i>,
@@ -55,7 +55,7 @@ impl_unsigned!(u8, u16, u32, u64, u128, usize);
 macro_rules! impl_float {
     ($($i:ident),*) => ($(
         #[allow(dead_code)]
-        pub fn $i<I>(input: &mut I) -> ModalResult<$i>
+        pub fn $i<I>(input: &mut I) -> Result<$i>
         where
             I: StreamIsPartial + Stream + Compare<Caseless<&'static str>> + Compare<char> + AsBStr,
             <I as Stream>::Slice: ParseSlice<$i>,

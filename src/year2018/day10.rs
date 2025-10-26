@@ -9,7 +9,7 @@ struct Obj {
     vel: C<i32>,
 }
 
-fn object(i: &mut &str) -> ModalResult<Obj> {
+fn object(i: &mut &str) -> Result<Obj> {
     let pos = delimited("position=<", c(i32), "> ").parse_next(i)?;
     let vel = delimited("velocity=<", c(i32), '>').parse_next(i)?;
     Ok(Obj { pos, vel })

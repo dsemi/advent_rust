@@ -18,7 +18,7 @@ enum Rule<'a> {
     Cond(usize, Ordering, u64, Label<'a>),
 }
 
-fn rule<'a>(i: &mut &'a str) -> ModalResult<Rule<'a>> {
+fn rule<'a>(i: &mut &'a str) -> Result<Rule<'a>> {
     alt((
         (
             alt(('x'.value(0), 'm'.value(1), 'a'.value(2), 's'.value(3))),
@@ -34,11 +34,11 @@ fn rule<'a>(i: &mut &'a str) -> ModalResult<Rule<'a>> {
     .parse_next(i)
 }
 
-fn workflow<'a>(i: &mut &'a str) -> ModalResult<(&'a str, Vec<Rule<'a>>)> {
+fn workflow<'a>(i: &mut &'a str) -> Result<(&'a str, Vec<Rule<'a>>)> {
     (alpha1, delimited('{', list(rule), '}')).parse_next(i)
 }
 
-fn part(i: &mut &str) -> ModalResult<Vec<u64>> {
+fn part(i: &mut &str) -> Result<Vec<u64>> {
     delimited('{', list(preceded((any, '='), u64)), '}').parse_next(i)
 }
 

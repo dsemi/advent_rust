@@ -13,11 +13,11 @@ struct Rule {
     state: usize,
 }
 
-fn parse_dir(i: &mut &str) -> ModalResult<Dir> {
+fn parse_dir(i: &mut &str) -> Result<Dir> {
     alt(("left".value(Dir::L), "right".value(Dir::R))).parse_next(i)
 }
 
-fn branch(i: &mut &str) -> ModalResult<Rule> {
+fn branch(i: &mut &str) -> Result<Rule> {
     ("  If the current value is ", usize, ":\n").parse_next(i)?;
     let write = delimited("    - Write the value ", usize, ".\n").parse_next(i)?;
     let dir = delimited("    - Move one slot to the ", parse_dir, ".\n").parse_next(i)?;
@@ -25,13 +25,13 @@ fn branch(i: &mut &str) -> ModalResult<Rule> {
     Ok(Rule { write, dir, state: state as usize - 'A' as usize })
 }
 
-fn state(i: &mut &str) -> ModalResult<[Rule; 2]> {
+fn state(i: &mut &str) -> Result<[Rule; 2]> {
     ("In state ", any, ":\n").parse_next(i)?;
     let (rule1, rule2) = separated_pair(branch, '\n', branch).parse_next(i)?;
     Ok([rule1, rule2])
 }
 
-fn parse_rules(i: &mut &str) -> ModalResult<(usize, usize, Vec<[Rule; 2]>)> {
+fn parse_rules(i: &mut &str) -> Result<(usize, usize, Vec<[Rule; 2]>)> {
     let start = delimited("Begin in state ", any, ".\n").parse_next(i)?;
     let n =
         delimited("Perform a diagnostic checksum after ", usize, " steps.\n\n").parse_next(i)?;
