@@ -10,10 +10,7 @@ struct Loc {
 
 impl Default for Loc {
     fn default() -> Self {
-        Loc {
-            max_z: 1,
-            brick_idx: None,
-        }
+        Loc { max_z: 1, brick_idx: None }
     }
 }
 
@@ -23,7 +20,7 @@ struct Cubes {
     z: Interval<usize>,
 }
 
-fn cubes(i: &mut &str) -> PResult<Cubes> {
+fn cubes(i: &mut &str) -> ModalResult<Cubes> {
     let ((x0, y0, z0), (x1, y1, z1)) = sep2(coord3(usize), '~').parse_next(i)?;
     Ok(Cubes {
         x: Interval::new(x0, x1 + 1),
@@ -55,20 +52,17 @@ fn fall(input: &str) -> Vec<Brick> {
     let mut bricks = Vec::new();
     let mut grid: Grid<Loc> = Grid::new(x1, y1);
     for (i, mut cubes) in cubes.into_iter().enumerate() {
-        let idxs = cubes
-            .x
-            .range()
-            .flat_map(|x| cubes.y.range().map(move |y| (x, y)));
+        let idxs = cubes.x.range().flat_map(|x| cubes.y.range().map(move |y| (x, y)));
         let z = idxs.clone().map(|p| grid[p].max_z).max().unwrap();
         cubes.z -= cubes.z.lo - z;
         bricks.push(Brick::default());
         idxs.for_each(|p| {
             let loc = &mut grid[p];
-            if let Some(j) = loc.brick_idx.replace(i) {
-                if loc.max_z == z {
-                    bricks[j].above.insert(i);
-                    bricks[i].below.insert(j);
-                }
+            if let Some(j) = loc.brick_idx.replace(i)
+                && loc.max_z == z
+            {
+                bricks[j].above.insert(i);
+                bricks[i].below.insert(j);
             }
             loc.max_z = cubes.z.hi;
         });

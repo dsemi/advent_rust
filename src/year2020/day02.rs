@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 
-fn parse_line<'a>(i: &mut &'a [u8]) -> PResult<(usize, usize, u8, &'a [u8])> {
+fn parse_line<'a>(i: &mut &'a [u8]) -> ModalResult<(usize, usize, u8, &'a [u8])> {
     let (a, _, b, _, c, _, d) = (usize, '-', usize, ' ', any, ": ", alpha1).parse_next(i)?;
     Ok((a, b, c, d))
 }

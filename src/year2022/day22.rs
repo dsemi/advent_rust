@@ -1,9 +1,9 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use Face::*;
 use hashbrown::HashMap;
 use itertools::iterate;
 use num::integer::gcd;
-use Face::*;
 
 const X: C3<i32> = C3(1, 0, 0);
 const Y: C3<i32> = C3(0, 1, 0);
@@ -79,28 +79,17 @@ struct Board {
     top_left: C<i32>,
 }
 
-fn instr(i: &mut &str) -> PResult<Instr> {
-    alt((
-        'L'.value(Instr::Turn(false)),
-        'R'.value(Instr::Turn(true)),
-        usize.map(Instr::Step),
-    ))
-    .parse_next(i)
+fn instr(i: &mut &str) -> ModalResult<Instr> {
+    alt(('L'.value(Instr::Turn(false)), 'R'.value(Instr::Turn(true)), usize.map(Instr::Step)))
+        .parse_next(i)
 }
 
 impl Board {
     fn new(input: &str) -> Self {
-        let (grid, path): (Vec<Vec<_>>, Vec<_>) = separated_pair(
-            lines(repeat(1.., none_of('\n'))),
-            "\n\n",
-            repeat(1.., instr),
-        )
-        .read(input);
-        Self {
-            top_left: C(0, grid[0].iter().position(|&c| c != ' ').unwrap() as i32),
-            grid,
-            path,
-        }
+        let (grid, path): (Vec<Vec<_>>, Vec<_>) =
+            separated_pair(lines(repeat(1.., none_of('\n'))), "\n\n", repeat(1.., instr))
+                .read(input);
+        Self { top_left: C(0, grid[0].iter().position(|&c| c != ' ').unwrap() as i32), grid, path }
     }
 
     fn valid(&self, idx: C<i32>) -> bool {
@@ -146,10 +135,8 @@ impl Board {
     }
 
     fn cube_edges(&self) -> HashMap<Pt, Pt> {
-        let cube_size = gcd(
-            self.grid.len(),
-            self.grid.iter().map(|r| r.len()).max().unwrap(),
-        ) as i32;
+        let cube_size =
+            gcd(self.grid.len(), self.grid.iter().map(|r| r.len()).max().unwrap()) as i32;
         let mut edges = HashMap::new();
         let mut pos = self.top_left;
         let mut dir = C(-1, 0);
@@ -169,12 +156,7 @@ impl Board {
                     return true;
                 }
                 let e = edges.entry(pos3d).or_insert_with(Vec::new);
-                e.push(Edge {
-                    pos,
-                    dir: *d2,
-                    src: face,
-                    dest: face.fall_off(*d3).0,
-                });
+                e.push(Edge { pos, dir: *d2, src: face, dest: face.fall_off(*d3).0 });
                 false
             })
             .unwrap();
@@ -240,9 +222,6 @@ pub fn part2(input: &str) -> i32 {
     let edges = board.cube_edges();
     board.walk(|_, pos, dir| {
         let p = pos + dir;
-        board
-            .valid(p)
-            .then_some((p, dir))
-            .unwrap_or_else(|| edges[&(pos, dir)])
+        if board.valid(p) { (p, dir) } else { edges[&(pos, dir)] }
     })
 }

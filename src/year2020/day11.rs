@@ -18,13 +18,13 @@ fn stabilize(s: &str, p2: bool) -> usize {
                     let pos = iterate(start, |&i| i + drc)
                         .take_while(|&i| grid.in_bounds(i))
                         .find(|&coord| grid[coord] == 'L');
-                    if let Some(coord) = pos {
-                        if p2 || {
-                            let C(x, y) = st_coord - coord;
-                            x.abs() <= 1 && y.abs() <= 1
-                        } {
-                            vec.push(coord);
-                        }
+                    if let Some(coord) = pos
+                        && (p2 || {
+                            let C(x, y) = (st_coord - coord).abs();
+                            x <= 1 && y <= 1
+                        })
+                    {
+                        vec.push(coord);
                     }
                 }
             }

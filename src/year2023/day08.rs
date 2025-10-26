@@ -15,12 +15,9 @@ fn network(
     let mut rights = Vec::new();
     let mut ui = UniqueIdx::new();
     for line in input.lines() {
-        let (src, (left, right)) = separated_pair(
-            alphanumeric1,
-            " = ",
-            delimited('(', coord(alphanumeric1), ')'),
-        )
-        .read(line);
+        let (src, (left, right)) =
+            separated_pair(alphanumeric1, " = ", delimited('(', coord(alphanumeric1), ')'))
+                .read(line);
         let k = ui.idx(src);
         if is_start(src) {
             starts.push(k);
@@ -37,7 +34,7 @@ fn network(
 }
 
 pub fn solve(input: &str, is_start: fn(&str) -> bool, is_end: fn(&str) -> bool) -> usize {
-    let (dirs, net) = separated_pair(alpha1, "\n\n", rest).read(input);
+    let (dirs, net) = separated_pair(alpha1, "\n\n", winnow::token::rest).read(input);
     let (starts, ends, lefts, rights) = network(net, is_start, is_end);
     starts
         .into_iter()

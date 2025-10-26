@@ -37,12 +37,7 @@ pub fn part2(input: &str) -> String {
     hashes(
         input,
         |output| output[0] == 0 && output[1] == 0 && output[2] < 8,
-        |output| {
-            (
-                output[2] as usize,
-                std::char::from_digit((output[3] >> 4) as u32, 16).unwrap(),
-            )
-        },
+        |output| (output[2] as usize, std::char::from_digit((output[3] >> 4) as u32, 16).unwrap()),
     )
     .try_fold(([' '; 8], 0), |(mut arr, mut i), (n, c)| {
         if arr[n] == ' ' {

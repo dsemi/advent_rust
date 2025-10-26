@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 
-fn color(i: &mut &str) -> PResult<C3<usize>> {
+fn color(i: &mut &str) -> ModalResult<C3<usize>> {
     alt((
         terminated(usize, " red").map(|r| C3(r, 0, 0)),
         terminated(usize, " green").map(|g| C3(0, g, 0)),

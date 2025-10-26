@@ -1,7 +1,7 @@
-use crate::utils::parsers::*;
 use crate::utils::C;
+use crate::utils::parsers::*;
 use hashbrown::HashSet;
-use std::iter::{once, repeat};
+use std::iter::{once, repeat_n};
 
 fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
     input
@@ -13,7 +13,7 @@ fn path(input: &str) -> impl Iterator<Item = C<i32>> + '_ {
                 _ => panic!("Invalid dir {}", x),
             };
             let n = x[1..].usize();
-            once(df).chain(repeat(C(1, 0)).take(n - 1))
+            once(df).chain(repeat_n(C(1, 0), n - 1))
         })
         .scan((C(0, 0), C(0, 1)), |state, x| {
             state.1 *= x;

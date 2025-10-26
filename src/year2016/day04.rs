@@ -9,13 +9,9 @@ struct Room<'a> {
 
 fn parse_rooms(input: &str) -> impl Iterator<Item = Room<'_>> + '_ {
     input.lines().map(|line| {
-        let (name, rest) = line.rsplit_once('-').unwrap();
-        let (sector, rest2) = rest.split_once('[').unwrap();
-        Room {
-            name,
-            sector_id: sector.i64(),
-            checksum: &rest2[..rest2.len() - 1],
-        }
+        let (name, rem) = line.rsplit_once('-').unwrap();
+        let (sector, rem2) = rem.split_once('[').unwrap();
+        Room { name, sector_id: sector.i64(), checksum: &rem2[..rem2.len() - 1] }
     })
 }
 
@@ -35,10 +31,7 @@ impl Room<'_> {
 }
 
 pub fn part1(input: &str) -> i64 {
-    parse_rooms(input)
-        .filter(|room| room.is_real())
-        .map(|room| room.sector_id)
-        .sum()
+    parse_rooms(input).filter(|room| room.is_real()).map(|room| room.sector_id).sum()
 }
 
 fn rotate(n: i64, c: char) -> char {
@@ -52,10 +45,7 @@ pub fn part2(input: &str) -> Option<i64> {
     parse_rooms(input)
         .filter(|room| {
             room.name.contains(
-                &"northpole"
-                    .chars()
-                    .map(|x| rotate(room.sector_id, x))
-                    .collect::<String>(),
+                &"northpole".chars().map(|x| rotate(room.sector_id, x)).collect::<String>(),
             )
         })
         .map(|room| room.sector_id)

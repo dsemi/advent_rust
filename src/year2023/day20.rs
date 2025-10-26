@@ -1,9 +1,9 @@
 use crate::utils::*;
+use ModuleType::*;
+use Pulse::*;
 use hashbrown::HashMap;
 use num::integer::lcm;
 use std::collections::VecDeque;
-use ModuleType::*;
-use Pulse::*;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 enum Pulse {
@@ -45,14 +45,9 @@ struct Module {
 }
 
 fn parse(input: &str) -> (usize, Vec<Module>) {
-    let lines: Vec<_> = input
-        .lines()
-        .map(|line| line.split_once(" -> ").unwrap())
-        .collect();
-    let mut ui: UniqueIdx<_> = lines
-        .iter()
-        .map(|(k, _)| k.trim_start_matches(['%', '&']))
-        .collect();
+    let lines: Vec<_> = input.lines().map(|line| line.split_once(" -> ").unwrap()).collect();
+    let mut ui: UniqueIdx<_> =
+        lines.iter().map(|(k, _)| k.trim_start_matches(['%', '&'])).collect();
     let mut modules: Vec<_> = lines
         .into_iter()
         .map(|(k, v)| {
@@ -81,12 +76,10 @@ fn push_button(modules: &mut [Module], start: usize, mut f: impl FnMut(Pulse, us
     let mut q = VecDeque::from([(Low, 0, start)]);
     while let Some((pulse, in_idx, idx)) = q.pop_front() {
         f(pulse, in_idx, idx);
-        if let Some(m) = modules.get_mut(idx) {
-            if let Some(pulse) = m.t.signal(pulse, in_idx) {
-                m.outs
-                    .iter()
-                    .for_each(|&out| q.push_back((pulse, idx, out)))
-            }
+        if let Some(m) = modules.get_mut(idx)
+            && let Some(pulse) = m.t.signal(pulse, in_idx)
+        {
+            m.outs.iter().for_each(|&out| q.push_back((pulse, idx, out)))
         }
     }
 }

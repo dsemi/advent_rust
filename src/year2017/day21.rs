@@ -4,10 +4,7 @@ use hashbrown::HashMap;
 type Grid = Vec<Vec<bool>>;
 
 fn parse_img(input: &str) -> Grid {
-    input
-        .split('/')
-        .map(|row| row.chars().map(|c| c == '#').collect())
-        .collect()
+    input.split('/').map(|row| row.chars().map(|c| c == '#').collect()).collect()
 }
 
 fn parse_expansions(input: &str) -> HashMap<Grid, Grid> {
@@ -30,14 +27,12 @@ fn parse_expansions(input: &str) -> HashMap<Grid, Grid> {
 }
 
 fn sqr(grid: &[Vec<bool>], i: usize, j: usize, span: usize) -> Grid {
-    (i..i + span)
-        .map(|x| grid[x][j..j + span].to_vec())
-        .collect()
+    (i..i + span).map(|x| grid[x][j..j + span].to_vec()).collect()
 }
 
 fn expand_image(img: &[Vec<bool>], m: &HashMap<Grid, Grid>) -> Grid {
     let size = img.len();
-    let span = if size % 2 == 0 { 2 } else { 3 };
+    let span = if size.is_multiple_of(2) { 2 } else { 3 };
     let sq_size = size / span;
     let new_span = span + 1;
     let new_size = size * new_span / span;
@@ -62,9 +57,7 @@ fn count_px_after_expanding(input: &str, n: usize) -> usize {
     for _ in 0..n {
         img = expand_image(&img, &m);
     }
-    img.into_iter()
-        .map(|row| row.into_iter().filter(|x| *x).count())
-        .sum()
+    img.into_iter().map(|row| row.into_iter().filter(|x| *x).count()).sum()
 }
 
 pub fn part1(input: &str) -> usize {

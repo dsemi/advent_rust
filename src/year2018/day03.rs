@@ -8,7 +8,7 @@ struct Claim {
     y1: usize,
 }
 
-fn claim(i: &mut &str) -> PResult<Claim> {
+fn claim(i: &mut &str) -> ModalResult<Claim> {
     let num = delimited('#', usize, " @ ").parse_next(i)?;
     let (x, y) = terminated(coord(usize), ": ").parse_next(i)?;
     let (w, h) = sep2(usize, 'x').parse_next(i)?;

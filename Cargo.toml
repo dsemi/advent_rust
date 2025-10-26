@@ -12,16 +12,16 @@ proc-macro = true
 
 [dependencies]
 bit-set = "0.8.0"
-derive_more = { version = "1.0.0", features = ["add", "add_assign", "constructor"]}
+derive_more = { version = "2.0.1", features = ["add", "add_assign", "constructor"]}
 enum-map = "2.7.3"
 genawaiter = "0.99.1"
 hashbrown = { version = "0.16.0", features = ["rayon"] }
 hex = "0.4.3"
-hybrid-array = "0.2.3"
+hybrid-array = "0.4.5"
 impl_ops = "0.1.1"
-itertools = "0.13"
+itertools = "0.14"
 md-5 = "0.11.0-rc.2"
-nalgebra = "0.33"
+nalgebra = "0.34.1"
 ndarray = { version = "0.16.1", features = ["rayon"] }
 num = "0.4.3"
 num-complex = "0.4.6"
@@ -41,7 +41,7 @@ streaming-iterator = "0.1.9"
 syn = { version = "2.0.108", features = ["extra-traits"] }
 toml = "0.9.8"
 wide = "0.8.1"
-winnow = "0.7.13"
+winnow = "0.6.26"
 
 [lints.clippy]
 disallowed_types = "deny"

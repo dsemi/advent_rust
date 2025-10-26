@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 
-fn wins(i: &mut &str) -> PResult<usize> {
+fn wins(i: &mut &str) -> ModalResult<usize> {
     ("Card", space1, u32, ':', space1).parse_next(i)?;
     let (win, own): (Vec<_>, Vec<_>) =
         sep2(separated(1.., u32, space1), (" |", space1)).parse_next(i)?;

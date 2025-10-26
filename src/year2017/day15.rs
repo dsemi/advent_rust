@@ -4,7 +4,7 @@ use itertools::iterate;
 const FACTOR_A: u64 = 16807;
 const FACTOR_B: u64 = 48271;
 
-fn parse(i: &mut &str) -> PResult<(u64, u64)> {
+fn parse(i: &mut &str) -> ModalResult<(u64, u64)> {
     separated_pair(
         preceded("Generator A starts with ", u64),
         '\n',

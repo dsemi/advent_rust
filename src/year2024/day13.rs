@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 use num_rational::Ratio;
 
-fn machine(i: &mut &str) -> PResult<[C<i64>; 3]> {
+fn machine(i: &mut &str) -> ModalResult<[C<i64>; 3]> {
     let (_, ax, _, ay) = ("Button A: X+", i64, ", Y+", i64).parse_next(i)?;
     let (_, bx, _, by) = ("\nButton B: X+", i64, ", Y+", i64).parse_next(i)?;
     let (_, tx, _, ty) = ("\nPrize: X=", i64, ", Y=", i64).parse_next(i)?;

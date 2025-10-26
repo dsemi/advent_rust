@@ -71,7 +71,7 @@ fn person(equip: Equip) -> Person {
     }
 }
 
-fn parse_boss(i: &mut &str) -> PResult<Person> {
+fn parse_boss(i: &mut &str) -> ModalResult<Person> {
     let hitpoints = preceded("Hit Points: ", i32).parse_next(i)?;
     let damage = preceded("\nDamage: ", i32).parse_next(i)?;
     let armor = preceded("\nArmor: ", i32).parse_next(i)?;

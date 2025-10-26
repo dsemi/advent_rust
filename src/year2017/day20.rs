@@ -7,7 +7,7 @@ struct Particle {
     acc: C3<i64>,
 }
 
-fn particle(i: &mut &str) -> PResult<C3<i64>> {
+fn particle(i: &mut &str) -> ModalResult<C3<i64>> {
     delimited((any, "=<"), c3(i64), '>').parse_next(i)
 }
 

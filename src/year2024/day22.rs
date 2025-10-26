@@ -44,10 +44,10 @@ pub fn part2(input: &str) -> i32 {
         for (inner, id) in chunk.chunks(8).zip((1..).step_by(8)) {
             let mut secret = i32x8::new(inner.try_into().unwrap());
             for i in 0..2000 {
-                zip(&mut rems, secret.as_array_ref()).for_each(|(r, s)| r[i] = s % 10);
+                zip(&mut rems, secret.as_array()).for_each(|(r, s)| r[i] = s % 10);
                 step!(secret, mask);
             }
-            zip(&mut rems, secret.as_array_ref()).for_each(|(r, s)| r[2000] = s % 10);
+            zip(&mut rems, secret.as_array()).for_each(|(r, s)| r[2000] = s % 10);
 
             for (offset, rem) in rems.iter().enumerate() {
                 let id = id + offset as u16;

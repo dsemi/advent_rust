@@ -7,7 +7,7 @@ struct Node {
     avail: i64,
 }
 
-fn node(i: &mut &str) -> PResult<(C<i32>, Node)> {
+fn node(i: &mut &str) -> ModalResult<(C<i32>, Node)> {
     "/dev/grid/node-x".parse_next(i)?;
     let coord = sep2(i32, "-y").output_into().parse_next(i)?;
     delimited(space1, i64, 'T').parse_next(i)?;

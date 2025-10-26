@@ -9,7 +9,7 @@ enum Fold {
     Y(usize),
 }
 
-fn parse_fold(i: &mut &str) -> PResult<Fold> {
+fn parse_fold(i: &mut &str) -> ModalResult<Fold> {
     alt((
         preceded("fold along x=", usize).map(X),
         preceded("fold along y=", usize).map(Y),

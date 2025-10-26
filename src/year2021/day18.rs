@@ -44,13 +44,7 @@ impl Snailfish {
         for i in 0..self.ns.len() {
             if self.ns[i].value > 9 {
                 let n = &self.ns[i];
-                self.ns.insert(
-                    i + 1,
-                    Num {
-                        depth: n.depth + 1,
-                        value: (n.value + 1) / 2,
-                    },
-                );
+                self.ns.insert(i + 1, Num { depth: n.depth + 1, value: n.value.div_ceil(2) });
                 self.ns[i].value /= 2;
                 self.ns[i].depth += 1;
                 return true;
@@ -77,9 +71,7 @@ impl Snailfish {
 }
 
 fn add(a: &Snailfish, b: &Snailfish) -> Snailfish {
-    let mut x = Snailfish {
-        ns: a.ns.iter().chain(b.ns.iter()).cloned().collect(),
-    };
+    let mut x = Snailfish { ns: a.ns.iter().chain(b.ns.iter()).cloned().collect() };
     x.ns.iter_mut().for_each(|v| v.depth += 1);
     while x.explode() || x.split() {}
     x
@@ -88,22 +80,13 @@ fn add(a: &Snailfish, b: &Snailfish) -> Snailfish {
 pub fn part1(input: &str) -> u64 {
     input
         .lines()
-        .map(|line| Snailfish {
-            ns: parse(0).read(line),
-        })
+        .map(|line| Snailfish { ns: parse(0).read(line) })
         .reduce(|a, b| add(&a, &b))
         .unwrap()
         .magnitude()
 }
 
 pub fn part2(input: &str) -> Option<u64> {
-    let ns = input
-        .lines()
-        .map(|line| Snailfish {
-            ns: parse(0).read(line),
-        })
-        .collect::<Vec<_>>();
-    ns.par_iter()
-        .flat_map(|a| ns.par_iter().map(|b| add(a, b).magnitude()))
-        .max()
+    let ns = input.lines().map(|line| Snailfish { ns: parse(0).read(line) }).collect::<Vec<_>>();
+    ns.par_iter().flat_map(|a| ns.par_iter().map(|b| add(a, b).magnitude())).max()
 }

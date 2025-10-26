@@ -11,7 +11,7 @@ enum Val {
     Lit(i64),
 }
 
-fn reg(i: &mut &str) -> PResult<usize> {
+fn reg(i: &mut &str) -> ModalResult<usize> {
     one_of(&['w', 'x', 'y', 'z'])
         .map(|c| c as usize - 'w' as usize)
         .parse_next(i)

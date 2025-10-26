@@ -76,7 +76,7 @@ fn apply_effects(state: &mut Game) {
     }
 }
 
-fn parse_boss(i: &mut &str) -> PResult<Game> {
+fn parse_boss(i: &mut &str) -> ModalResult<Game> {
     let boss_health = preceded("Hit Points: ", i32).parse_next(i)?;
     let boss_damage = preceded("\nDamage: ", i32).parse_next(i)?;
     Ok(Game {

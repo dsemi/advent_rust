@@ -30,7 +30,7 @@ enum Instr {
     Move((usize, usize)),
 }
 
-fn parse(i: &mut &str) -> PResult<Instr> {
+fn parse(i: &mut &str) -> ModalResult<Instr> {
     alt((
         (
             preceded("swap position ", usize),

@@ -9,7 +9,7 @@ struct Computer {
     instrs: Vec<i64>,
 }
 
-fn computer(i: &mut &str) -> PResult<Computer> {
+fn computer(i: &mut &str) -> ModalResult<Computer> {
     let a = preceded("Register A: ", i64).parse_next(i)?;
     let b = preceded("\nRegister B: ", i64).parse_next(i)?;
     let c = preceded("\nRegister C: ", i64).parse_next(i)?;

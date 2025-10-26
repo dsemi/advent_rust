@@ -1,7 +1,7 @@
 fn dragon_checksum(desired_len: usize, input: &str) -> String {
     let sz = {
         let mut x = desired_len;
-        while x % 2 == 0 {
+        while x.is_multiple_of(2) {
             x /= 2;
         }
         desired_len / x
@@ -16,13 +16,7 @@ fn dragon_checksum(desired_len: usize, input: &str) -> String {
     }
     (0..desired_len)
         .step_by(sz)
-        .map(|n| {
-            if ns[n..n + sz].iter().sum::<u32>() % 2 == 1 {
-                '0'
-            } else {
-                '1'
-            }
-        })
+        .map(|n| if ns[n..n + sz].iter().sum::<u32>() % 2 == 1 { '0' } else { '1' })
         .collect()
 }
 

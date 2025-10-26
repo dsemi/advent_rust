@@ -30,7 +30,7 @@ impl Group<'_> {
     }
 }
 
-fn attributes<'a>(i: &mut &'a str) -> PResult<(Vec<&'a str>, Vec<&'a str>)> {
+fn attributes<'a>(i: &mut &'a str) -> ModalResult<(Vec<&'a str>, Vec<&'a str>)> {
     '('.parse_next(i)?;
     let [weak, immune] = repeat(
         0..=2,
@@ -83,12 +83,12 @@ fn units<'a>(name: &'a str) -> impl Parser<&'a str, Option<Group<'a>>, ContextEr
     }
 }
 
-fn army<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
+fn army<'a>(i: &mut &'a str) -> ModalResult<Vec<Option<Group<'a>>>> {
     let name = terminated(take_till(1.., |c| c == ':'), ":\n").parse_next(i)?;
     lines(units(name)).parse_next(i)
 }
 
-fn armies<'a>(i: &mut &'a str) -> PResult<Vec<Option<Group<'a>>>> {
+fn armies<'a>(i: &mut &'a str) -> ModalResult<Vec<Option<Group<'a>>>> {
     let (a, b) = sep2(army, "\n\n").parse_next(i)?;
     let mut result = [a, b].concat();
     result.iter_mut().filter_map(|g| g.as_mut()).enumerate().for_each(|(i, g)| g.num = i);

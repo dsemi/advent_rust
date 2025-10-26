@@ -11,7 +11,7 @@ enum Op {
 }
 
 impl Op {
-    fn parse(i: &mut &str) -> PResult<Op> {
+    fn parse(i: &mut &str) -> ModalResult<Op> {
         alt((
             "old * old".value(Double),
             preceded("old + ", u64).map(Add),
@@ -37,7 +37,7 @@ struct Monkey {
     f: usize,
 }
 
-fn monkey(i: &mut &str) -> PResult<Monkey> {
+fn monkey(i: &mut &str) -> ModalResult<Monkey> {
     delimited("Monkey ", usize, ':').parse_next(i)?;
     let ns = preceded("\n  Starting items: ", list(u64)).parse_next(i)?;
     let op = preceded("\n  Operation: new = ", Op::parse).parse_next(i)?;

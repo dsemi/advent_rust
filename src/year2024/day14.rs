@@ -5,7 +5,7 @@ use std::iter::zip;
 const ROWS: i64 = 103;
 const COLS: i64 = 101;
 
-fn robot(i: &mut &str) -> PResult<(C<Mod<ROWS>, Mod<COLS>>, C<Mod<ROWS>, Mod<COLS>>)> {
+fn robot(i: &mut &str) -> ModalResult<(C<Mod<ROWS>, Mod<COLS>>, C<Mod<ROWS>, Mod<COLS>>)> {
     let ((px, py), (vx, vy)) = preceded("p=", sep2(coord(i64), "v=")).parse_next(i)?;
     Ok((C(Mod(py), Mod(px)), C(Mod(vy), Mod(vx))))
 }

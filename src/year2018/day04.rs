@@ -10,14 +10,9 @@ enum Record {
 
 fn parse_records(input: &str) -> impl Iterator<Item = Record> + '_ {
     input.lines().sorted().map(|line| {
-        let (time, rest) = line.split_once("] ").unwrap();
-        if rest.starts_with("Guard") {
-            GuardChange(
-                rest.chars()
-                    .filter(char::is_ascii_digit)
-                    .collect::<String>()
-                    .usize(),
-            )
+        let (time, rem) = line.split_once("] ").unwrap();
+        if rem.starts_with("Guard") {
+            GuardChange(rem.chars().filter(char::is_ascii_digit).collect::<String>().usize())
         } else {
             SleepToggle(time[time.rfind(':').unwrap() + 1..].usize())
         }
@@ -60,12 +55,7 @@ where
 
 pub fn part1(input: &str) -> usize {
     let sleep_freqs = guard_sleep_freqs(parse_records(input));
-    let n = sleep_freqs
-        .iter()
-        .map(|(k, v)| (v.iter().sum::<usize>(), k))
-        .max()
-        .unwrap()
-        .1;
+    let n = sleep_freqs.iter().map(|(k, v)| (v.iter().sum::<usize>(), k)).max().unwrap().1;
     n * sleep_freqs[n].iter().position_max().unwrap()
 }
 

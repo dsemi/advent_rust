@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use hashbrown::HashMap;
 use phf::{phf_map, Map};
-use std::iter::{once, repeat};
+use std::iter::{once, repeat_n};
 
 type Cache = HashMap<(Vec<u8>, usize), usize>;
 type Pt = (usize, usize);
@@ -70,12 +70,12 @@ fn path<F: FnMut(&[u8])>(curr: &mut Vec<u8>, pad: &Map<u8, Pt>, keys: &[u8], fro
     let cv = LR[(to.1 > from.1) as usize];
 
     if (from.0, to.1) != pad[&b' '] {
-        curr.extend(repeat(cv).take(dc).chain(repeat(rv).take(dr)).chain(once(b'A')));
+        curr.extend(repeat_n(cv, dc).chain(repeat_n(rv, dr)).chain(once(b'A')));
         path(curr, pad, &keys[1..], to, f);
         curr.truncate(curr.len() - dr - dc - 1);
     }
     if (to.0, from.1) != pad[&b' '] {
-        curr.extend(repeat(rv).take(dr).chain(repeat(cv).take(dc)).chain(once(b'A')));
+        curr.extend(repeat_n(rv, dr).chain(repeat_n(cv, dc)).chain(once(b'A')));
         path(curr, pad, &keys[1..], to, f);
         curr.truncate(curr.len() - dr - dc - 1);
     }

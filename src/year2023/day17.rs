@@ -1,5 +1,5 @@
 use crate::utils::*;
-use std::iter::repeat;
+use std::iter::repeat_n;
 use std::ops::{AddAssign, SubAssign};
 
 struct AStar(Grid<u32>);
@@ -22,8 +22,7 @@ impl AStar {
         cost: u32,
         f: fn(&mut C<usize>, C<usize>),
     ) {
-        repeat(if horz { C(0, 1) } else { C(1, 0) })
-            .take(HI)
+        repeat_n(if horz { C(0, 1) } else { C(1, 0) }, HI)
             .scan((pos, cost), |acc, d| {
                 f(&mut acc.0, d);
                 acc.1 += self.0.get(acc.0)?;

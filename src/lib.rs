@@ -215,7 +215,7 @@ pub fn parser(input: TokenStream) -> TokenStream {
     let lower_ident = data_ident.to_string().to_lowercase();
     let fn_name = syn::Ident::new(&lower_ident, Span::call_site());
     quote! {
-        fn #fn_name(i: &mut &str) -> PResult<#data_ident> {
+        fn #fn_name(i: &mut &str) -> ModalResult<#data_ident> {
             #inner.parse_next(i)
         }
     }

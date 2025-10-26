@@ -36,17 +36,17 @@ fn lookup(graph: [Gate; LEN], signal: usize) -> u16 {
     get(&graph, &mut [None; LEN], signal)
 }
 
-fn id(i: &mut &str) -> PResult<usize> {
+fn id(i: &mut &str) -> ModalResult<usize> {
     repeat(1..=2, one_of('a'..='z'))
         .fold(|| 0, |acc, v| 27 * acc + (v as u8 - b'a' + 1) as usize)
         .parse_next(i)
 }
 
-fn wire(i: &mut &str) -> PResult<Wire> {
+fn wire(i: &mut &str) -> ModalResult<Wire> {
     alt((u16.map(Num), id.map(Id))).parse_next(i)
 }
 
-fn gate(i: &mut &str) -> PResult<Gate> {
+fn gate(i: &mut &str) -> ModalResult<Gate> {
     let (a, op, b) = alt((
         (wire, " AND ".value((|a, b| a & b) as Op), wire),
         (wire, " OR ".value((|a, b| a | b) as Op), wire),

@@ -4,7 +4,7 @@ use hashbrown::HashMap;
 use itertools::Itertools;
 use std::cmp::{max, Reverse};
 
-fn valve<'a>(i: &mut &'a str) -> PResult<Valve<'a>> {
+fn valve<'a>(i: &mut &'a str) -> ModalResult<Valve<'a>> {
     let (_, name, _, flow, _) = ("Valve ", alpha1, " has flow rate=", u8, "; ").parse_next(i)?;
     let tunnel =
         preceded((alpha1, ' ', alpha1, " to ", alpha1, ' '), list(alpha1)).parse_next(i)?;

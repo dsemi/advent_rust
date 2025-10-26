@@ -13,7 +13,7 @@ fn run(input: &str, instrs: &str) -> Option<i64> {
         prog.input.push_back(c as i64);
     }
     prog.run();
-    prog.output.drain(..).last()
+    prog.output.drain(..).next_back()
 }
 
 pub fn part1(input: &str) -> Option<i64> {

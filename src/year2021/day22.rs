@@ -19,7 +19,7 @@ enum St {
     On,
 }
 
-fn parse_cube(i: &mut &str) -> PResult<(St, Cube<i64>)> {
+fn parse_cube(i: &mut &str) -> ModalResult<(St, Cube<i64>)> {
     let st = terminated(alt(("off".value(Off), "on".value(On))), ' ').parse_next(i)?;
     let ((x0, x1), (y0, y1), (z0, z1)) =
         sep3(preceded((any, '='), sep2(i64, "..")), ',').parse_next(i)?;

@@ -8,9 +8,9 @@ use num::traits::SaturatingAdd;
 use num::{Bounded, FromPrimitive, Num, One, PrimInt, Signed, Zero};
 use smallvec::SmallVec;
 use std::cmp::Ordering::*;
-use std::cmp::{max, min, Ordering, Reverse};
+use std::cmp::{Ordering, Reverse, max, min};
 use std::collections::{BinaryHeap, VecDeque};
-use std::convert::{identity, From};
+use std::convert::{From, identity};
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::Deref;
@@ -174,7 +174,7 @@ pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     out
 }
 
-pub trait AbsDiff<T> {
+pub trait AbsDiff<T = Self> {
     fn abs_diff(self, other: T) -> T;
 }
 
@@ -261,9 +261,9 @@ macro_rules! broadcast {
 pub struct C<T, U = T>(pub T, pub U);
 
 mod cparse {
+    use winnow::Parser;
     use winnow::error::ParserError;
     use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
-    use winnow::Parser;
 
     pub fn c<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C<O>, E> + 'a
     where
@@ -436,9 +436,9 @@ where
 pub struct C3<A, B = A, C = A>(pub A, pub B, pub C);
 
 mod c3parse {
+    use winnow::Parser;
     use winnow::error::ParserError;
     use winnow::stream::{AsChar, Compare, Stream, StreamIsPartial};
-    use winnow::Parser;
 
     pub fn c3<'a, I, O, E, F>(f: F) -> impl Parser<I, super::C3<O>, E> + 'a
     where
@@ -598,7 +598,7 @@ impl<I: Iterator<Item = u64>> Iterator for PrimeFactors<I> {
             }
             if let Some(f) = self.fs.next() {
                 let mut cnt = 0;
-                while self.n % f == 0 {
+                while self.n.is_multiple_of(f) {
                     cnt += 1;
                     self.n /= f;
                 }

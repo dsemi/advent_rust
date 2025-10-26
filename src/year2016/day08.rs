@@ -12,7 +12,7 @@ enum Instr {
     RotateCol((usize, usize)),
 }
 
-fn parse(i: &mut &str) -> PResult<Instr> {
+fn parse(i: &mut &str) -> ModalResult<Instr> {
     alt((
         preceded("rect ", sep2(usize, 'x')).map(Rect),
         preceded("rotate row y=", sep2(usize, " by ")).map(RotateRow),

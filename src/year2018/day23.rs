@@ -14,7 +14,7 @@ impl Nanobot {
     }
 }
 
-fn nanobot(i: &mut &str) -> PResult<Nanobot> {
+fn nanobot(i: &mut &str) -> ModalResult<Nanobot> {
     let pos = preceded("pos=<", c3(i64)).parse_next(i)?;
     let radius = preceded(">, r=", i64).parse_next(i)?;
     Ok(Nanobot { pos, radius })

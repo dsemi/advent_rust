@@ -74,7 +74,7 @@ fn place_tiles(tiles: Vec<Tile>) -> (Vec<Tile>, usize) {
     let size = (tiles.len() as f64).sqrt().floor() as usize;
     let mut grid: Vec<Tile> = Vec::new();
     let (corners, m) = find_corners(&tiles);
-    let mut start = tiles.into_iter().find(|x| corners.iter().any(|n| x.num == *n)).unwrap();
+    let mut start = tiles.into_iter().find(|x| corners.contains(&x.num)).unwrap();
     while m[&start.grid.iter().map(|row| row[row.len() - 1]).collect::<Row>()].len() < 2
         || m[&start.grid[start.grid.len() - 1]].len() < 2
     {

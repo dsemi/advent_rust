@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::{held_karp, UniqueIdx};
 use std::cmp::max;
 
-fn parser<'a>(i: &mut &'a str) -> PResult<(&'a str, i32, &'a str)> {
+fn parser<'a>(i: &mut &'a str) -> ModalResult<(&'a str, i32, &'a str)> {
     (
         alpha1,
         " would ",
