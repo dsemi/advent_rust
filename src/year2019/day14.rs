@@ -19,7 +19,7 @@ fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, (i64, Vec<(i64, &'a str)>))> 
         .parse_next(i)
 }
 
-fn parse_reactions(input: &str) -> Reactions {
+fn parse_reactions(input: &str) -> Reactions<'_> {
     let graph = lines_iter(input, parse).collect::<HashMap<_, _>>();
     let mut incoming = HashMap::new();
     graph.values().for_each(|(_, srcs)| {

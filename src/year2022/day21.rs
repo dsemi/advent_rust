@@ -39,7 +39,7 @@ fn parse<'a>(i: &mut &'a str) -> PResult<(&'a str, Monkey<'a>)> {
     separated_pair(alpha1, ": ", alt((num, math))).parse_next(i)
 }
 
-fn monkeys(input: &str) -> HashMap<&str, Monkey> {
+fn monkeys(input: &str) -> HashMap<&str, Monkey<'_>> {
     lines_iter(input, parse).collect()
 }
 
