@@ -43,7 +43,7 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
     result.into()
 }
 
-fn i64(input: &mut &str) -> PResult<i64> {
+fn i64(input: &mut &str) -> ModalResult<i64> {
     digit1.parse_to().parse_next(input)
 }
 
