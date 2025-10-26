@@ -36,10 +36,7 @@ pub fn part1(input: &str) -> usize {
             safe.remove(x);
         }
     }
-    ingredients
-        .into_iter()
-        .filter(|&i| safe.contains(&i))
-        .count()
+    ingredients.into_iter().filter(|&i| safe.contains(&i)).count()
 }
 
 pub fn part2(input: &str) -> String {

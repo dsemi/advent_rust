@@ -16,13 +16,9 @@ fn parse(input: &str) -> impl Iterator<Item = Vec<usize>> + '_ {
 }
 
 pub fn part1(input: &str) -> usize {
-    parse(input)
-        .flat_map(|ns| ns.into_iter().filter(|&n| [1, 4, 7, 8].contains(&n)))
-        .count()
+    parse(input).flat_map(|ns| ns.into_iter().filter(|&n| [1, 4, 7, 8].contains(&n))).count()
 }
 
 pub fn part2(input: &str) -> usize {
-    parse(input)
-        .map(|ns| ns.into_iter().fold(0, |a, b| a * 10 + b))
-        .sum()
+    parse(input).map(|ns| ns.into_iter().fold(0, |a, b| a * 10 + b)).sum()
 }

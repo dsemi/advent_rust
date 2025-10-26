@@ -1,8 +1,8 @@
 use crate::utils::*;
+use Dir::*;
 use itertools::chain;
 use std::cmp::{max, min};
 use std::mem::transmute;
-use Dir::*;
 
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
 mod simd {

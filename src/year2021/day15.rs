@@ -1,11 +1,7 @@
 fn parse(input: &str) -> Vec<Vec<i8>> {
     input
         .lines()
-        .map(|line| {
-            line.chars()
-                .map(|c| c.to_digit(10).unwrap() as i8)
-                .collect()
-        })
+        .map(|line| line.chars().map(|c| c.to_digit(10).unwrap() as i8).collect())
         .collect()
 }
 

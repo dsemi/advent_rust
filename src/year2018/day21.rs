@@ -63,7 +63,5 @@ pub fn part1(input: &str) -> Option<i64> {
 
 pub fn part2(input: &str) -> Option<i64> {
     let mut s = HashSet::new();
-    Prog::parse_instrs(input)
-        .take_while(|&x| s.insert(x))
-        .last()
+    Prog::parse_instrs(input).take_while(|&x| s.insert(x)).last()
 }

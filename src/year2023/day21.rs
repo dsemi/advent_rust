@@ -20,10 +20,7 @@ fn dists(grid: Grid<u8>) -> Grid<Option<usize>> {
 
 pub fn part1(input: &str) -> usize {
     let dists = dists(input.bytes().collect());
-    dists
-        .into_iter()
-        .filter(|&d| matches!(d, Some(n) if n <= 64 && n & 1 == 0))
-        .count()
+    dists.into_iter().filter(|&d| matches!(d, Some(n) if n <= 64 && n & 1 == 0)).count()
 }
 
 const GOAL: usize = 26501365;
@@ -33,19 +30,16 @@ pub fn part2(input: &str) -> usize {
     let start = C(dists.rows / 2, dists.cols / 2);
     let (mut evens, mut odds) = (0, 0);
     let (mut outer_evens, mut outer_odds) = (0, 0);
-    dists
-        .idx_iter()
-        .filter_map(|(p, d)| d.is_some().then_some(p))
-        .for_each(|p| {
-            let d = p.dist(&start);
-            if d & 1 == 0 {
-                evens += 1;
-                outer_evens += (d > 65) as usize;
-            } else {
-                odds += 1;
-                outer_odds += (d > 65) as usize;
-            }
-        });
+    dists.idx_iter().filter_map(|(p, d)| d.is_some().then_some(p)).for_each(|p| {
+        let d = p.dist(&start);
+        if d & 1 == 0 {
+            evens += 1;
+            outer_evens += (d > 65) as usize;
+        } else {
+            odds += 1;
+            outer_odds += (d > 65) as usize;
+        }
+    });
     let n = GOAL / dists.rows;
     (n + 1) * (n + 1) * odds - (n + 1) * outer_odds + n * n * evens + n * outer_evens
 }

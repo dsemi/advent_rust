@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
-use hashbrown::HashSet;
 use Op::*;
 use Wire::*;
+use hashbrown::HashSet;
 
 const LEN: usize = 1 << 15;
 

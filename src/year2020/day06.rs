@@ -4,10 +4,7 @@ fn solve(f: fn(u32, u32) -> u32, s: &str) -> u32 {
             group
                 .split_whitespace()
                 .map(|x| {
-                    x.chars()
-                        .map(|c| 1 << (c as u32 - 'a' as u32))
-                        .reduce(|a, b| a | b)
-                        .unwrap()
+                    x.chars().map(|c| 1 << (c as u32 - 'a' as u32)).reduce(|a, b| a | b).unwrap()
                 })
                 .reduce(f)
                 .unwrap()

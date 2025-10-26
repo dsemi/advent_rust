@@ -65,40 +65,22 @@ fn is_winning(boss: Person, player: Person) -> bool {
 }
 
 fn person(equip: Equip) -> Person {
-    Person {
-        hitpoints: 100,
-        equip,
-    }
+    Person { hitpoints: 100, equip }
 }
 
 fn parse_boss(i: &mut &str) -> ModalResult<Person> {
     let hitpoints = preceded("Hit Points: ", i32).parse_next(i)?;
     let damage = preceded("\nDamage: ", i32).parse_next(i)?;
     let armor = preceded("\nArmor: ", i32).parse_next(i)?;
-    Ok(Person {
-        hitpoints,
-        equip: Equip {
-            cost: 0,
-            damage,
-            armor,
-        },
-    })
+    Ok(Person { hitpoints, equip: Equip { cost: 0, damage, armor } })
 }
 
 pub fn part1(input: &str) -> Option<i32> {
     let boss = parse_boss.read(input);
-    ALL_EQUIP_COMBOS
-        .iter()
-        .filter(|&&p| is_winning(boss, p))
-        .map(|p| p.equip.cost)
-        .min()
+    ALL_EQUIP_COMBOS.iter().filter(|&&p| is_winning(boss, p)).map(|p| p.equip.cost).min()
 }
 
 pub fn part2(input: &str) -> Option<i32> {
     let boss = parse_boss.read(input);
-    ALL_EQUIP_COMBOS
-        .iter()
-        .filter(|&&p| !is_winning(boss, p))
-        .map(|p| p.equip.cost)
-        .max()
+    ALL_EQUIP_COMBOS.iter().filter(|&&p| !is_winning(boss, p)).map(|p| p.equip.cost).max()
 }

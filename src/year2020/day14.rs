@@ -15,11 +15,7 @@ fn parse_cmds(s: &str) -> Vec<Cmd> {
             mask = line[7..].chars().zip((0..36).rev()).collect();
         } else {
             let (_, r, _, v) = ("mem[", u64, "] = ", u64).read(line);
-            res.push(Cmd {
-                mask: mask.clone(),
-                r,
-                v,
-            });
+            res.push(Cmd { mask: mask.clone(), r, v });
         }
     }
     res

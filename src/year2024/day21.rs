@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use hashbrown::HashMap;
-use phf::{phf_map, Map};
+use phf::{Map, phf_map};
 use std::iter::{once, repeat_n};
 
 type Cache = HashMap<(Vec<u8>, usize), usize>;

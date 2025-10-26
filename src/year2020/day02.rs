@@ -14,10 +14,7 @@ fn count_valid(f: fn(usize, usize, u8, &[u8]) -> bool, input: &str) -> usize {
 }
 
 pub fn part1(input: &str) -> usize {
-    count_valid(
-        |lo, hi, c, s| (lo..=hi).contains(&s.iter().filter(|&x| *x == c).count()),
-        input,
-    )
+    count_valid(|lo, hi, c, s| (lo..=hi).contains(&s.iter().filter(|&x| *x == c).count()), input)
 }
 
 pub fn part2(input: &str) -> usize {

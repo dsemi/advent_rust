@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
+use Record::*;
 use hashbrown::HashMap;
 use itertools::Itertools;
-use Record::*;
 
 enum Record {
     GuardChange(usize),

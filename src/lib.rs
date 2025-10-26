@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;

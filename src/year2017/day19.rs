@@ -17,11 +17,7 @@ const LEFT: C<i32> = C(0, 1);
 const RIGHT: C<i32> = C(0, -1);
 
 fn turn(grid: &HashMap<C<i32>, char>, dir: C<i32>, pos: C<i32>) -> C<i32> {
-    if grid.contains_key(&(LEFT * dir + pos)) {
-        LEFT * dir
-    } else {
-        RIGHT * dir
-    }
+    if grid.contains_key(&(LEFT * dir + pos)) { LEFT * dir } else { RIGHT * dir }
 }
 
 fn follow_path(grid: HashMap<C<i32>, char>) -> Vec<char> {

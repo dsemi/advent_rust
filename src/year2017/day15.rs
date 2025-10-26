@@ -152,12 +152,8 @@ mod simd {
 
 pub fn part1(input: &str) -> u64 {
     let (a0, b0) = parse.read(input);
-    let mut a = simd::T {
-        ns: generate(a0, FACTOR_A),
-    };
-    let mut b = simd::T {
-        ns: generate(b0, FACTOR_B),
-    };
+    let mut a = simd::T { ns: generate(a0, FACTOR_A) };
+    let mut b = simd::T { ns: generate(b0, FACTOR_B) };
     let mut ans = simd::T { ns: [0_u64; 4] };
     for _ in 0..10_000_000 {
         simd::count_eq(&mut ans, &a, &b);
@@ -169,12 +165,8 @@ pub fn part1(input: &str) -> u64 {
 
 pub fn part2(input: &str) -> u64 {
     let (a0, b0) = parse.read(input);
-    let mut a = simd::T {
-        ns: generate(a0, FACTOR_A),
-    };
-    let mut b = simd::T {
-        ns: generate(b0, FACTOR_B),
-    };
+    let mut a = simd::T { ns: generate(a0, FACTOR_A) };
+    let mut b = simd::T { ns: generate(b0, FACTOR_B) };
     let mut ans = 0;
     let mut mask_a = simd::do_mask(&a, simd::splat(3));
     let mut mask_b = simd::do_mask(&b, simd::splat(7));

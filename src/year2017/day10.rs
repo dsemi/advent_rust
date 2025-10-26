@@ -29,14 +29,8 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> String {
-    let res = hash(
-        64,
-        input
-            .chars()
-            .map(|x| x as u8 as usize)
-            .chain(vec![17, 31, 73, 47, 23])
-            .collect(),
-    );
+    let res =
+        hash(64, input.chars().map(|x| x as u8 as usize).chain(vec![17, 31, 73, 47, 23]).collect());
     hex::encode(
         res.chunks(res.len() / 16)
             .map(|x| x.iter().fold(0, |a, b| a ^ *b) as u8)

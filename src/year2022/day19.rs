@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use derive_more::{Add, AddAssign, Constructor, Sub};
-use std::cmp::{max, Ordering, Ordering::*, PartialOrd};
+use std::cmp::{Ordering, Ordering::*, PartialOrd, max};
 use std::mem::replace;
 
 const ORE_BOT: Res = Res::new(1, 0, 0, 0);
@@ -54,10 +54,7 @@ fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
             clay_cost: Res::new(clay_bot_ore, 0, 0, 0),
             obs_cost: Res::new(obs_bot_ore, obs_bot_clay, 0, 0),
             geode_cost: Res::new(geode_bot_ore, 0, geode_bot_obs, 0),
-            max_ore: ore_bot_ore
-                .max(clay_bot_ore)
-                .max(obs_bot_ore)
-                .max(geode_bot_ore),
+            max_ore: ore_bot_ore.max(clay_bot_ore).max(obs_bot_ore).max(geode_bot_ore),
             max_clay: obs_bot_clay,
             max_obs: geode_bot_obs,
         }

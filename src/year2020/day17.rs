@@ -6,14 +6,11 @@ fn solve(s: &str, dim: usize) -> usize {
         .lines()
         .enumerate()
         .flat_map(|(y, row)| {
-            row.chars()
-                .enumerate()
-                .filter(|(_, v)| v == &'#')
-                .map(move |(x, _)| {
-                    let mut v = vec![x as i64, y as i64];
-                    v.extend(vec![0; dim - 2]);
-                    v
-                })
+            row.chars().enumerate().filter(|(_, v)| v == &'#').map(move |(x, _)| {
+                let mut v = vec![x as i64, y as i64];
+                v.extend(vec![0; dim - 2]);
+                v
+            })
         })
         .collect();
     let pts = vec![vec![-1, 0, 1]; dim];

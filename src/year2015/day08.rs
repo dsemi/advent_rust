@@ -18,15 +18,9 @@ fn encoded_len(s: &str) -> usize {
 }
 
 pub fn part1(input: &str) -> usize {
-    input
-        .lines()
-        .map(|line| line.len() - encoded_len(line))
-        .sum()
+    input.lines().map(|line| line.len() - encoded_len(line)).sum()
 }
 
 pub fn part2(input: &str) -> usize {
-    input
-        .lines()
-        .map(|line| line.chars().filter(|&c| c == '\\' || c == '"').count() + 2)
-        .sum()
+    input.lines().map(|line| line.chars().filter(|&c| c == '\\' || c == '"').count() + 2).sum()
 }

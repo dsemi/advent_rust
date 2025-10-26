@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::UniqueIdx;
+use crate::utils::parsers::*;
 use hashbrown::HashSet;
 use num::integer::lcm;
 use std::cmp::max;

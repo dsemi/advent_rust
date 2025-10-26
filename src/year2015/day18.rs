@@ -67,10 +67,7 @@ pub fn part1(input: &str) -> u32 {
     for _ in 0..100 {
         step(&mut lights);
     }
-    lights
-        .into_iter()
-        .map(|row| row.into_iter().map(|x| x.count_ones()).sum::<u32>())
-        .sum()
+    lights.into_iter().map(|row| row.into_iter().map(|x| x.count_ones()).sum::<u32>()).sum()
 }
 
 pub fn part2(input: &str) -> u32 {
@@ -86,8 +83,5 @@ pub fn part2(input: &str) -> u32 {
         lights[ROWS - 1][0] |= 1 << (Cluster::BITS - BITS_PER_CELL as u32);
         lights[ROWS - 1][CLUSTERS - 1] |= 1;
     }
-    lights
-        .into_iter()
-        .map(|row| row.into_iter().map(|x| x.count_ones()).sum::<u32>())
-        .sum()
+    lights.into_iter().map(|row| row.into_iter().map(|x| x.count_ones()).sum::<u32>()).sum()
 }

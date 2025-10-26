@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
+use Op::*;
 use num::integer::lcm;
 use rayon::prelude::*;
-use Op::*;
 
 #[derive(Clone)]
 enum Op {
@@ -60,11 +60,7 @@ fn play(
         let monkey = &monkeys[i];
         let worry = monkey.op.ap(v);
         v = adjust(worry);
-        let i2 = if v % monkey.test == 0 {
-            monkey.t
-        } else {
-            monkey.f
-        };
+        let i2 = if v % monkey.test == 0 { monkey.t } else { monkey.f };
         round += (i2 < i) as usize;
         inspections[i] += 1;
         i = i2;
@@ -87,13 +83,10 @@ fn solve(input: &str, p2: bool) -> usize {
             .unwrap()
     } else {
         let m = mks.iter().map(|m| m.test).reduce(lcm).unwrap();
-        items
-            .into_par_iter()
-            .map(|item| play(&mks, 10000, item, |x| x % m))
-            .reduce(
-                || vec![0; mks.len()],
-                |a, b| a.into_iter().zip(b).map(|(a, b)| a + b).collect(),
-            )
+        items.into_par_iter().map(|item| play(&mks, 10000, item, |x| x % m)).reduce(
+            || vec![0; mks.len()],
+            |a, b| a.into_iter().zip(b).map(|(a, b)| a + b).collect(),
+        )
     };
     inspections.sort_unstable();
     inspections[inspections.len() - 2] * inspections[inspections.len() - 1]

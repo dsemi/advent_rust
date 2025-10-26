@@ -1,10 +1,5 @@
 fn mirrors(ns: &[u32], i: usize, smudges: u32) -> bool {
-    (0..i)
-        .rev()
-        .zip(i..ns.len())
-        .map(|(a, b)| (ns[a] ^ ns[b]).count_ones())
-        .sum::<u32>()
-        == smudges
+    (0..i).rev().zip(i..ns.len()).map(|(a, b)| (ns[a] ^ ns[b]).count_ones()).sum::<u32>() == smudges
 }
 
 fn summarize(grid: &str, smudges: u32) -> Option<usize> {
@@ -33,10 +28,7 @@ fn summarize(grid: &str, smudges: u32) -> Option<usize> {
 }
 
 fn solve(input: &str, smudges: u32) -> usize {
-    input
-        .split("\n\n")
-        .map(|grid| summarize(grid, smudges).unwrap())
-        .sum()
+    input.split("\n\n").map(|grid| summarize(grid, smudges).unwrap()).sum()
 }
 
 pub fn part1(input: &str) -> usize {

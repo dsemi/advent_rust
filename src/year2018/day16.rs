@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
+use Op::*;
 use num::FromPrimitive;
 use num_derive::FromPrimitive;
-use Op::*;
 
 #[derive(Clone, Copy, Eq, FromPrimitive, Hash, PartialEq)]
 enum Op {

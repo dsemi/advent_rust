@@ -1,7 +1,7 @@
 use crate::utils::C;
-use genawaiter::stack::{let_gen_using, Co};
-use hashbrown::{hash_map::Entry::Occupied, HashMap};
 use Turn::*;
+use genawaiter::stack::{Co, let_gen_using};
+use hashbrown::{HashMap, hash_map::Entry::Occupied};
 
 #[derive(Clone, Copy)]
 enum Turn {
@@ -87,7 +87,7 @@ impl Tracks {
             }
         }
         for p in self.carts.drain() {
-            co.yield_((p.0 .1, p.0 .0)).await;
+            co.yield_((p.0.1, p.0.0)).await;
         }
     }
 }

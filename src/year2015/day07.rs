@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
-use std::fmt::Write;
 use Wire::*;
+use std::fmt::Write;
 
 const LEN: usize = 729;
 

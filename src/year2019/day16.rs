@@ -3,10 +3,7 @@ use num::integer::lcm;
 use std::cmp::min;
 
 pub fn part1(input: &str) -> String {
-    let mut ns: Vec<i64> = input
-        .chars()
-        .map(|x| x.to_digit(10).unwrap() as i64)
-        .collect();
+    let mut ns: Vec<i64> = input.chars().map(|x| x.to_digit(10).unwrap() as i64).collect();
     for _ in 0..100 {
         ns = (0..ns.len())
             .map(|n| {
@@ -28,10 +25,7 @@ pub fn part1(input: &str) -> String {
             })
             .collect();
     }
-    ns[..8]
-        .iter()
-        .map(|x| std::char::from_digit(*x as u32, 10).unwrap())
-        .collect()
+    ns[..8].iter().map(|x| std::char::from_digit(*x as u32, 10).unwrap()).collect()
 }
 
 const PASCAL_PERIOD: usize = 16000;
@@ -61,20 +55,12 @@ const fn make_pascal() -> [i32; PASCAL_PERIOD] {
 
 pub fn part2(input: &str) -> String {
     let offset = input[..7].usize();
-    let ns: Vec<i32> = input
-        .chars()
-        .map(|x| x.to_digit(10).unwrap() as i32)
-        .collect();
+    let ns: Vec<i32> = input.chars().map(|x| x.to_digit(10).unwrap() as i32).collect();
     assert!(offset > ns.len() * 10000 / 2, "Offset is not large enough");
     let pascal_diag = make_pascal();
 
     let n_len = ns.len();
-    let ds: Vec<i32> = ns
-        .into_iter()
-        .cycle()
-        .skip(offset % n_len)
-        .take(n_len)
-        .collect();
+    let ds: Vec<i32> = ns.into_iter().cycle().skip(offset % n_len).take(n_len).collect();
     let joint_cycle = lcm(PASCAL_PERIOD, n_len);
     let tot_len = n_len * 10000 - offset;
     let num_cycles = tot_len / joint_cycle;

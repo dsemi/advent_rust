@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::Partitions;
+use crate::utils::parsers::*;
 use std::cmp::max;
 use streaming_iterator::StreamingIterator;
 

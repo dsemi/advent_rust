@@ -3,10 +3,8 @@ use hashbrown::HashSet;
 use std::collections::VecDeque;
 
 fn parse_game(s: &str) -> (VecDeque<i64>, VecDeque<i64>) {
-    let parts: Vec<VecDeque<i64>> = s
-        .split("\n\n")
-        .map(|p| p.lines().skip(1).map(i64::read).collect())
-        .collect();
+    let parts: Vec<VecDeque<i64>> =
+        s.split("\n\n").map(|p| p.lines().skip(1).map(i64::read).collect()).collect();
     (parts[0].clone(), parts[1].clone())
 }
 
@@ -40,14 +38,7 @@ fn play(mut a_s: VecDeque<i64>, mut b_s: VecDeque<i64>, p2: bool, sub: bool) -> 
     }
     let win = b_s.is_empty();
     let x = if a_s.is_empty() { b_s } else { a_s };
-    (
-        x.into_iter()
-            .rev()
-            .enumerate()
-            .map(|(i, x)| (i as i64 + 1) * x)
-            .sum(),
-        win,
-    )
+    (x.into_iter().rev().enumerate().map(|(i, x)| (i as i64 + 1) * x).sum(), win)
 }
 
 pub fn part1(input: &str) -> i64 {

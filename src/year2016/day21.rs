@@ -3,11 +3,7 @@ use Dir::*;
 use Instr::*;
 
 fn rot_chr_idx(i: usize) -> usize {
-    if i >= 4 {
-        i + 2
-    } else {
-        i + 1
-    }
+    if i >= 4 { i + 2 } else { i + 1 }
 }
 
 fn move_p<T>(s: &mut Vec<T>, i: usize, j: usize) {
@@ -32,32 +28,16 @@ enum Instr {
 
 fn parse(i: &mut &str) -> ModalResult<Instr> {
     alt((
-        (
-            preceded("swap position ", usize),
-            preceded(" with position ", usize),
-        )
-            .map(SwapPos),
-        (
-            preceded("swap letter ", any),
-            preceded(" with letter ", any),
-        )
-            .map(SwapChr),
+        (preceded("swap position ", usize), preceded(" with position ", usize)).map(SwapPos),
+        (preceded("swap letter ", any), preceded(" with letter ", any)).map(SwapChr),
         (
             preceded("rotate ", alt(("left".value(L), "right".value(R)))),
             delimited(' ', usize, (' ', alpha1)),
         )
             .map(Rotate),
         preceded("rotate based on position of letter ", any).map(RotatePos),
-        (
-            preceded("reverse positions ", usize),
-            preceded(" through ", usize),
-        )
-            .map(Reverse),
-        (
-            preceded("move position ", usize),
-            preceded(" to position ", usize),
-        )
-            .map(Move),
+        (preceded("reverse positions ", usize), preceded(" through ", usize)).map(Reverse),
+        (preceded("move position ", usize), preceded(" to position ", usize)).map(Move),
     ))
     .parse_next(i)
 }

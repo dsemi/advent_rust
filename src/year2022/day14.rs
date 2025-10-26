@@ -7,10 +7,7 @@ fn parse_grid(input: &str) -> Vec<Vec<char>> {
     let mut res = Vec::new();
     for line in input.lines() {
         let pts: Vec<_> = separated(1.., coord(usize), "->").read(line);
-        res.resize(
-            max(res.len(), pts.iter().map(|(_, r)| r).max().unwrap() + 2),
-            vec!['-'; WIDTH],
-        );
+        res.resize(max(res.len(), pts.iter().map(|(_, r)| r).max().unwrap() + 2), vec!['-'; WIDTH]);
         for i in 1..pts.len() {
             let (x0, y0) = min(pts[i - 1], pts[i]);
             let (x1, y1) = max(pts[i - 1], pts[i]);
@@ -43,9 +40,7 @@ fn go(grid: &mut Vec<Vec<char>>, p2: bool, coord: (usize, usize)) -> bool {
 
 fn flow_sand(mut grid: Vec<Vec<char>>, p2: bool) -> usize {
     go(&mut grid, p2, (0, 500));
-    grid.into_iter()
-        .map(|row| row.into_iter().filter(|&v| v == 'o').count())
-        .sum()
+    grid.into_iter().map(|row| row.into_iter().filter(|&v| v == 'o').count()).sum()
 }
 
 pub fn part1(input: &str) -> usize {

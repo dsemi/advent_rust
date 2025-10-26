@@ -5,10 +5,7 @@ struct Ip<'a> {
 
 fn ips(input: &str) -> impl Iterator<Item = Ip<'_>> + '_ {
     input.lines().map(|line| {
-        let mut ip = Ip {
-            supernets: Vec::new(),
-            hypernets: Vec::new(),
-        };
+        let mut ip = Ip { supernets: Vec::new(), hypernets: Vec::new() };
         for (i, part) in line.split(&['[', ']'][..]).enumerate() {
             if i % 2 == 0 {
                 ip.supernets.push(part);
@@ -34,9 +31,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 fn abas(s: &[u8]) -> impl Iterator<Item = (u8, u8)> + '_ {
-    (0..s.len() - 2)
-        .filter(|&i| s[i] != s[i + 1] && s[i] == s[i + 2])
-        .map(|i| (s[i], s[i + 1]))
+    (0..s.len() - 2).filter(|&i| s[i] != s[i + 1] && s[i] == s[i + 2]).map(|i| (s[i], s[i + 1]))
 }
 
 pub fn part2(input: &str) -> usize {

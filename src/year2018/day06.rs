@@ -1,9 +1,9 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use Tile::*;
 use hashbrown::HashSet;
 use std::cmp::{max, min};
 use std::collections::VecDeque;
-use Tile::*;
 
 struct Pos {
     id: usize,
@@ -38,11 +38,7 @@ pub fn part1(input: &str) -> Option<usize> {
     let mut frontier = coords
         .into_iter()
         .enumerate()
-        .map(|(i, c)| Pos {
-            id: i,
-            dist: 0,
-            pos: C(c.0 as usize - minp.0, c.1 as usize - minp.1),
-        })
+        .map(|(i, c)| Pos { id: i, dist: 0, pos: C(c.0 as usize - minp.0, c.1 as usize - minp.1) })
         .collect::<VecDeque<_>>();
     while let Some(p) = frontier.pop_front() {
         match grid[p.pos.1][p.pos.0] {
@@ -57,32 +53,16 @@ pub fn part1(input: &str) -> Option<usize> {
                 areas[p.id] += 1;
                 grid[p.pos.1][p.pos.0] = Taken((p.id, p.dist));
                 if p.pos.0 > 0 {
-                    frontier.push_back(Pos {
-                        id: p.id,
-                        dist: p.dist + 1,
-                        pos: p.pos - C(1, 0),
-                    });
+                    frontier.push_back(Pos { id: p.id, dist: p.dist + 1, pos: p.pos - C(1, 0) });
                 }
                 if p.pos.1 > 0 {
-                    frontier.push_back(Pos {
-                        id: p.id,
-                        dist: p.dist + 1,
-                        pos: p.pos - C(0, 1),
-                    });
+                    frontier.push_back(Pos { id: p.id, dist: p.dist + 1, pos: p.pos - C(0, 1) });
                 }
                 if p.pos.0 < maxp.0 - 1 {
-                    frontier.push_back(Pos {
-                        id: p.id,
-                        dist: p.dist + 1,
-                        pos: p.pos + C(1, 0),
-                    });
+                    frontier.push_back(Pos { id: p.id, dist: p.dist + 1, pos: p.pos + C(1, 0) });
                 }
                 if p.pos.1 < maxp.1 - 1 {
-                    frontier.push_back(Pos {
-                        id: p.id,
-                        dist: p.dist + 1,
-                        pos: p.pos + C(0, 1),
-                    });
+                    frontier.push_back(Pos { id: p.id, dist: p.dist + 1, pos: p.pos + C(0, 1) });
                 }
             }
         }

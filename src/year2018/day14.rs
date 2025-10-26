@@ -7,12 +7,7 @@ struct Step {
 
 impl Step {
     fn new() -> Self {
-        Step {
-            rs: vec![3, 7],
-            elf1: 0,
-            elf2: 1,
-            idx: 0,
-        }
+        Step { rs: vec![3, 7], elf1: 0, elf2: 1, idx: 0 }
     }
 }
 

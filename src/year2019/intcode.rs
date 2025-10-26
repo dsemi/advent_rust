@@ -1,8 +1,8 @@
 use crate::utils::parsers::*;
+use Instr::*;
 use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
-use Instr::*;
 
 #[derive(Clone)]
 pub struct Program {

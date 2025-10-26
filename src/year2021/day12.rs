@@ -34,10 +34,7 @@ fn dfs(vis: &mut [u8], l: &[bool], m: &[Vec<usize>], k: usize, mut double: bool)
         double = true;
     }
     vis[k] += 1;
-    let sum = m[k]
-        .iter()
-        .map(|&child| dfs(vis, l, m, child, double))
-        .sum();
+    let sum = m[k].iter().map(|&child| dfs(vis, l, m, child, double)).sum();
     vis[k] -= 1;
     sum
 }

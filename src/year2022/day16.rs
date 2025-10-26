@@ -2,7 +2,7 @@ use crate::utils::parsers::*;
 use crate::utils::*;
 use hashbrown::HashMap;
 use itertools::Itertools;
-use std::cmp::{max, Reverse};
+use std::cmp::{Reverse, max};
 
 fn valve<'a>(i: &mut &'a str) -> ModalResult<Valve<'a>> {
     let (_, name, _, flow, _) = ("Valve ", alpha1, " has flow rate=", u8, "; ").parse_next(i)?;
@@ -103,16 +103,13 @@ pub fn part2(input: &str) -> u16 {
         .filter_map(|(i, best)| (best > 0).then_some((i as u16, best)))
         .sorted_unstable_by_key(|p| Reverse(p.1))
         .collect::<Vec<_>>();
-    best_pressures
-        .iter()
-        .enumerate()
-        .fold(0, |best, (i, (h_opens, h_pressure))| {
-            best_pressures
-                .iter()
-                .skip(i + 1)
-                .map(|(o, e_pressure)| (o, h_pressure + e_pressure))
-                .take_while(|&(_, p)| p > best)
-                .find_map(|(e_opens, p)| (e_opens & h_opens == 0).then_some(p))
-                .unwrap_or(best)
-        })
+    best_pressures.iter().enumerate().fold(0, |best, (i, (h_opens, h_pressure))| {
+        best_pressures
+            .iter()
+            .skip(i + 1)
+            .map(|(o, e_pressure)| (o, h_pressure + e_pressure))
+            .take_while(|&(_, p)| p > best)
+            .find_map(|(e_opens, p)| (e_opens & h_opens == 0).then_some(p))
+            .unwrap_or(best)
+    })
 }

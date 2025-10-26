@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use crate::utils::{held_karp, UniqueIdx};
+use crate::utils::{UniqueIdx, held_karp};
 use std::cmp::max;
 
 fn parser<'a>(i: &mut &'a str) -> ModalResult<(&'a str, i32, &'a str)> {

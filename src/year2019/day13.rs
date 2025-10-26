@@ -1,6 +1,6 @@
 use super::intcode;
-use genawaiter::stack::{let_gen_using, Co};
 use genawaiter::GeneratorState;
+use genawaiter::stack::{Co, let_gen_using};
 use num::FromPrimitive;
 use num_derive::FromPrimitive;
 

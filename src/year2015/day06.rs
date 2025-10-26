@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::{Interval, Rect};
-use ndarray::{s, Array2, ArrayViewMut2, Zip};
 use Cmd::*;
+use ndarray::{Array2, ArrayViewMut2, Zip, s};
 
 #[derive(Clone)]
 enum Cmd {

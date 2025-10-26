@@ -32,9 +32,9 @@ fn ivar(i: impl Iterator<Item = i64>) -> i64 {
 
 pub fn part2(input: &str) -> Option<i64> {
     let (rbs, vels): (Vec<_>, Vec<_>) = input.lines().map(|line| robot.read(line)).unzip();
-    let rvar = ivar(rbs.iter().map(|r| r.0 .0));
+    let rvar = ivar(rbs.iter().map(|r| r.0.0));
     let rt = (1..).find(|&t| rvar / 2 > ivar(zip(&rbs, &vels).map(|(r, v)| (r.0 + v.0 * t).0)))?;
-    let cvar = ivar(rbs.iter().map(|r| r.1 .0));
+    let cvar = ivar(rbs.iter().map(|r| r.1.0));
     let ct = (1..).find(|&t| cvar / 2 > ivar(zip(&rbs, &vels).map(|(r, v)| (r.1 + v.1 * t).0)))?;
     Some((Mod::<ROWS>(COLS).mod_inv() * (rt - ct)).0 * COLS + ct)
 }

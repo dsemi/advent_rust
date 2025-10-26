@@ -1,4 +1,4 @@
-use hashbrown::{hash_map::Entry::*, HashMap};
+use hashbrown::{HashMap, hash_map::Entry::*};
 use std::ops::{Shl, Shr};
 
 enum Dir {

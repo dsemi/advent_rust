@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use advent::Parser;
 use Op::*;
+use advent::Parser;
 
 #[derive(Clone, Copy, Parser)]
 pub enum Op {

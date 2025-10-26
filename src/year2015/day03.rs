@@ -25,7 +25,5 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    locations(input.chars().step_by(2))
-        .union(&locations(input.chars().skip(1).step_by(2)))
-        .count()
+    locations(input.chars().step_by(2)).union(&locations(input.chars().skip(1).step_by(2))).count()
 }

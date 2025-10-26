@@ -1,5 +1,5 @@
 use super::intcode;
-use genawaiter::stack::{let_gen_using, Co};
+use genawaiter::stack::{Co, let_gen_using};
 
 struct Packet {
     address: i64,

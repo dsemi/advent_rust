@@ -17,11 +17,7 @@ fn parse_buses(s: &str) -> (i64, Vec<(i64, i64)>) {
 
 pub fn part1(input: &str) -> i64 {
     let (t, buses) = parse_buses(input);
-    let (a, b) = buses
-        .iter()
-        .map(|(_, b)| (b, b - t % b))
-        .min_by_key(|x| x.1)
-        .unwrap();
+    let (a, b) = buses.iter().map(|(_, b)| (b, b - t % b)).min_by_key(|x| x.1).unwrap();
     a * b
 }
 

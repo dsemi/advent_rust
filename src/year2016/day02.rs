@@ -24,11 +24,7 @@ fn run(input: &str, pad: &str) -> String {
                 'R' => C(1, 0),
                 _ => panic!("Invalid dir {}", b),
             };
-            if d.contains_key(&(a + dir)) {
-                a + dir
-            } else {
-                a
-            }
+            if d.contains_key(&(a + dir)) { a + dir } else { a }
         });
         result.push_str(d[&xy]);
     }

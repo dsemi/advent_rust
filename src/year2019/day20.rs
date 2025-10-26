@@ -1,6 +1,6 @@
 use crate::utils::*;
-use hashbrown::HashMap;
 use Portal::*;
+use hashbrown::HashMap;
 
 type Pos = (usize, usize);
 
@@ -36,17 +36,9 @@ fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
                     continue;
                 }
                 let (k, b, coord) = if r > 0 && grid[r - 1][c] == '.' {
-                    (
-                        vec![grid[r][c], grid[r + 1][c]],
-                        r + 2 == grid.len(),
-                        (r - 1, c),
-                    )
+                    (vec![grid[r][c], grid[r + 1][c]], r + 2 == grid.len(), (r - 1, c))
                 } else if c > 0 && grid[r][c - 1] == '.' {
-                    (
-                        vec![grid[r][c], grid[r][c + 1]],
-                        c + 2 == grid[r].len(),
-                        (r, c - 1),
-                    )
+                    (vec![grid[r][c], grid[r][c + 1]], c + 2 == grid[r].len(), (r, c - 1))
                 } else if grid[r + 1][c].is_ascii_uppercase() {
                     (vec![grid[r][c], grid[r + 1][c]], r == 0, (r + 2, c))
                 } else {
@@ -98,14 +90,7 @@ fn parse_maze(input: &str) -> (Maze, Pos, Pos) {
                 .collect()
         })
         .collect();
-    (
-        Maze {
-            grid: grid2,
-            moves: HashMap::new(),
-        },
-        start.unwrap(),
-        end.unwrap(),
-    )
+    (Maze { grid: grid2, moves: HashMap::new() }, start.unwrap(), end.unwrap())
 }
 
 impl Maze {

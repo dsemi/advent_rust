@@ -13,9 +13,7 @@ impl<I> IpRanges<I> {
     where
         I: Iterator<Item = IpRange>,
     {
-        IpRanges {
-            ips: ips.peekable(),
-        }
+        IpRanges { ips: ips.peekable() }
     }
 }
 
@@ -42,11 +40,7 @@ fn parse_ip_filters(input: &str) -> impl Iterator<Item = IpRange> {
 
 pub fn part1(input: &str) -> u64 {
     let (a, b) = parse_ip_filters(input).next().unwrap();
-    if a > 0 {
-        0
-    } else {
-        b + 1
-    }
+    if a > 0 { 0 } else { b + 1 }
 }
 
 pub fn part2(input: &str) -> u64 {

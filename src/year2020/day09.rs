@@ -3,11 +3,8 @@ use std::cmp::Ordering::*;
 
 fn find_first_invalid(ns: &[i64]) -> Option<i64> {
     (25..ns.len()).find_map(|n| {
-        (!ns[n - 25..n]
-            .iter()
-            .combinations(2)
-            .any(|combo| combo.into_iter().sum::<i64>() == ns[n]))
-        .then(|| ns[n])
+        (!ns[n - 25..n].iter().combinations(2).any(|combo| combo.into_iter().sum::<i64>() == ns[n]))
+            .then(|| ns[n])
     })
 }
 

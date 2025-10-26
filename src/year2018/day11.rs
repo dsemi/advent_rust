@@ -31,11 +31,7 @@ fn max_cell(size: usize, sat: &[Vec<i64>]) -> (usize, usize, i64) {
     (1..sat.len() - size)
         .flat_map(|y| {
             (1..sat[y].len() - size).map(move |x| {
-                (
-                    x,
-                    y,
-                    sat[y][x] - sat[y + size][x] - sat[y][x + size] + sat[y + size][x + size],
-                )
+                (x, y, sat[y][x] - sat[y + size][x] - sat[y][x + size] + sat[y + size][x + size])
             })
         })
         .max_by_key(|x| x.2)

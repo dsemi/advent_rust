@@ -1,6 +1,6 @@
 use super::intcode;
-use crate::utils::ocr::*;
 use crate::utils::C;
+use crate::utils::ocr::*;
 use hashbrown::HashMap;
 use std::cmp::{max, min};
 
@@ -36,11 +36,7 @@ fn draw(points: &HashMap<C<i64>, i64>) -> String {
     for y in min_y..=max_y {
         chrs.push('\n');
         for x in min_x..=max_x {
-            chrs.push(if points.get(&C(x, y)).unwrap_or(&0) == &0 {
-                ' '
-            } else {
-                '#'
-            });
+            chrs.push(if points.get(&C(x, y)).unwrap_or(&0) == &0 { ' ' } else { '#' });
         }
     }
     parse_letters(&chrs.into_iter().collect::<String>(), None)

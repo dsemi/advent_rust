@@ -3,20 +3,10 @@ use crate::utils::*;
 use hashbrown::{HashMap, HashSet};
 
 pub fn part1(input: &str) -> &str {
-    let inp: Vec<Vec<&str>> = transpose(
-        &input
-            .lines()
-            .map(|line| line.split(" -> ").collect())
-            .collect::<Vec<_>>(),
-    );
-    let c = inp[1]
-        .iter()
-        .flat_map(|x| x.split(", "))
-        .collect::<HashSet<_>>();
-    let s = inp[0]
-        .iter()
-        .map(|x| x.split_whitespace().next().unwrap())
-        .collect::<HashSet<_>>();
+    let inp: Vec<Vec<&str>> =
+        transpose(&input.lines().map(|line| line.split(" -> ").collect()).collect::<Vec<_>>());
+    let c = inp[1].iter().flat_map(|x| x.split(", ")).collect::<HashSet<_>>();
+    let s = inp[0].iter().map(|x| x.split_whitespace().next().unwrap()).collect::<HashSet<_>>();
     (&s - &c).into_iter().next().unwrap()
 }
 
@@ -31,11 +21,7 @@ fn find_imbalance(m: &HashMap<&str, Node>, curr: &str) -> (i64, bool) {
         return (node.weight, false);
     }
 
-    let recs = node
-        .children
-        .iter()
-        .map(|x| find_imbalance(m, x))
-        .collect::<Vec<_>>();
+    let recs = node.children.iter().map(|x| find_imbalance(m, x)).collect::<Vec<_>>();
     for r in &recs {
         if r.1 {
             return *r;
@@ -70,11 +56,7 @@ pub fn part2(input: &str) -> i64 {
                 n,
                 Node {
                     weight: w[..w.len() - 1].i64(),
-                    children: if pts.len() > 1 {
-                        pts[1].split(", ").collect()
-                    } else {
-                        vec![]
-                    },
+                    children: if pts.len() > 1 { pts[1].split(", ").collect() } else { vec![] },
                 },
             )
         })

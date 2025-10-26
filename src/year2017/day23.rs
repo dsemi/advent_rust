@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
-use advent::Parser;
 use Instr::*;
 use Val::*;
+use advent::Parser;
 
 #[derive(Parser)]
 #[parser(dont_parse_name)]
@@ -30,11 +30,7 @@ struct Prog {
 
 fn parse_instrs(input: &str) -> Prog {
     let instrs = lines(instr).read(input);
-    Prog {
-        reg: [0; 8],
-        line: 0,
-        instrs,
-    }
+    Prog { reg: [0; 8], line: 0, instrs }
 }
 
 fn is_prime(n: i64) -> bool {

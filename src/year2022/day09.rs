@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::C;
+use crate::utils::parsers::*;
 use hashbrown::HashSet;
 
 fn sim_rope(input: &str, rope_len: usize) -> usize {

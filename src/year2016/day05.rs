@@ -1,5 +1,5 @@
-use hybrid_array::sizes::U16;
 use hybrid_array::Array;
+use hybrid_array::sizes::U16;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
 

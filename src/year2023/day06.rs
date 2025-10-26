@@ -14,10 +14,7 @@ fn race(time: u64, dist: u64) -> u64 {
 
 pub fn part1(input: &str) -> u64 {
     let (times, dists) = input.split_once('\n').unwrap();
-    nums(times)
-        .zip(nums(dists))
-        .map(|(time, win_dist)| race(time, win_dist))
-        .product()
+    nums(times).zip(nums(dists)).map(|(time, win_dist)| race(time, win_dist)).product()
 }
 
 fn squish(i: &str) -> String {

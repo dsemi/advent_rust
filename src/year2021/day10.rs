@@ -25,11 +25,7 @@ pub fn part1(input: &str) -> u64 {
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut ns = input
-        .lines()
-        .map(analyze)
-        .filter_map(|r| r.ok())
-        .collect::<Vec<_>>();
+    let mut ns = input.lines().map(analyze).filter_map(|r| r.ok()).collect::<Vec<_>>();
     ns.sort_unstable();
     ns[ns.len() / 2]
 }

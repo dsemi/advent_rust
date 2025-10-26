@@ -18,10 +18,7 @@ fn parse_nodes(input: &str) -> Tree {
         let m = ns.next().unwrap();
         let nodes = (0..n).map(|_| parse_node(ns)).collect();
         let vals = (0..m).map(|_| ns.next().unwrap()).collect();
-        Tree {
-            val: vals,
-            children: nodes,
-        }
+        Tree { val: vals, children: nodes }
     }
     parse_node(&mut ns)
 }

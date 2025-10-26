@@ -1,7 +1,7 @@
-use crate::utils::parsers::*;
 use crate::utils::Cube;
-use bit_set::BitSet;
+use crate::utils::parsers::*;
 use St::*;
+use bit_set::BitSet;
 
 fn intersect_volume(cubes: &[Cube<i64>], bs: &[BitSet], cube: &Cube<i64>, set: &BitSet) -> i64 {
     let mut vol = cube.volume();

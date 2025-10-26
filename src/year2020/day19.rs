@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
-use itertools::Itertools;
 use Rule::*;
+use itertools::Itertools;
 
 enum Rule {
     Single(u8),
@@ -42,16 +42,11 @@ fn count_matches(rules: Vec<Rule>, messages: Vec<&str>) -> usize {
         }
         match &rules[seq[0]] {
             Single(c) => &s[0] == c && check(rules, &s[1..], &seq[1..]),
-            Multi(rss) => rss
-                .iter()
-                .any(|rs| check(rules, s, &[rs, &seq[1..]].concat())),
+            Multi(rss) => rss.iter().any(|rs| check(rules, s, &[rs, &seq[1..]].concat())),
         }
     }
 
-    messages
-        .into_iter()
-        .filter(|&message| check(&rules, message.as_bytes(), &[0]))
-        .count()
+    messages.into_iter().filter(|&message| check(&rules, message.as_bytes(), &[0])).count()
 }
 
 pub fn part1(input: &str) -> usize {

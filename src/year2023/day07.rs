@@ -62,11 +62,7 @@ fn solve(input: &str, j: u8) -> u64 {
         })
         .collect();
     hands.sort_unstable();
-    hands
-        .into_iter()
-        .zip(1..)
-        .map(|(hand, rank)| rank * (hand & u16::MAX as u64))
-        .sum()
+    hands.into_iter().zip(1..).map(|(hand, rank)| rank * (hand & u16::MAX as u64)).sum()
 }
 
 pub fn part1(input: &str) -> u64 {

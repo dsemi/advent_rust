@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::Mod;
+use crate::utils::parsers::*;
 use Tech::*;
 
 #[derive(Clone, Copy)]
@@ -10,10 +10,7 @@ struct LinearTrans<const M: i64> {
 
 impl<const M: i64> LinearTrans<M> {
     fn mappend(self, other: Self) -> Self {
-        Self {
-            a: other.a * self.a,
-            b: other.a * self.b + other.b,
-        }
+        Self { a: other.a * self.a, b: other.a * self.b + other.b }
     }
 
     fn invert(self) -> Self {
@@ -62,18 +59,9 @@ fn parse_techs<const M: i64>(input: &str) -> LinearTrans<M> {
     input
         .lines()
         .map(|line| match tech.read(line) {
-            New => LinearTrans {
-                a: Mod(M - 1),
-                b: Mod(M - 1),
-            },
-            Cut(n) => LinearTrans {
-                a: Mod(1),
-                b: Mod((-n).rem_euclid(M)),
-            },
-            Deal(n) => LinearTrans {
-                a: Mod(n.rem_euclid(M)),
-                b: Mod(0),
-            },
+            New => LinearTrans { a: Mod(M - 1), b: Mod(M - 1) },
+            Cut(n) => LinearTrans { a: Mod(1), b: Mod((-n).rem_euclid(M)) },
+            Deal(n) => LinearTrans { a: Mod(n.rem_euclid(M)), b: Mod(0) },
         })
         .reduce(|a, b| a.mappend(b))
         .unwrap()

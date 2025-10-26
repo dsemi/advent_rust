@@ -18,9 +18,7 @@ fn game(i: &str) -> C3<usize> {
 }
 
 fn parse(input: &str) -> impl Iterator<Item = C3<usize>> + '_ {
-    input
-        .lines()
-        .map(|line| game(line.split_once(": ").unwrap().1))
+    input.lines().map(|line| game(line.split_once(": ").unwrap().1))
 }
 
 pub fn part1(input: &str) -> usize {

@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::C;
+use crate::utils::parsers::*;
 
 fn travel(start: C<i64>, move_way: bool, s: &str) -> i64 {
     let mut st = [C(0, 0), start];

@@ -20,10 +20,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
     let mut bins: Vec<Vec<Item>> = input
         .lines()
         .enumerate()
-        .map(|(i, x)| Item {
-            val: x.i64() * scale,
-            g_idx: i,
-        })
+        .map(|(i, x)| Item { val: x.i64() * scale, g_idx: i })
         .chunks(BIN_SIZE)
         .into_iter()
         .map(|c| c.collect())
@@ -35,11 +32,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
     let mut addrs: Vec<Addr> = bins
         .iter()
         .enumerate()
-        .flat_map(|(i, bin)| {
-            bin.iter()
-                .enumerate()
-                .map(move |x| Addr { bin: i, off: x.0 })
-        })
+        .flat_map(|(i, bin)| bin.iter().enumerate().map(move |x| Addr { bin: i, off: x.0 }))
         .collect();
     let m = addrs.len() as i64 - 1;
     for _ in 0..times {
@@ -57,9 +50,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
 
             let mut g_idx = a.off;
             g_idx += clusters.iter().take(c_id).sum::<usize>();
-            g_idx += (c_id * CLUSTER_SIZE..a.bin)
-                .map(|i| bins[i].len())
-                .sum::<usize>();
+            g_idx += (c_id * CLUSTER_SIZE..a.bin).map(|i| bins[i].len()).sum::<usize>();
             g_idx = (g_idx as i64 + x.val).rem_euclid(m) as usize;
             let (mut bin, mut off) = (0, 0);
             while off + clusters[bin / CLUSTER_SIZE] <= g_idx {
@@ -86,12 +77,7 @@ fn mix(input: &str, scale: i64, times: usize) -> i64 {
             .into_iter()
             .flatten()
             .enumerate()
-            .inspect(|(i, x)| {
-                addrs[x.g_idx] = Addr {
-                    bin: i / BIN_SIZE,
-                    off: i % BIN_SIZE,
-                }
-            })
+            .inspect(|(i, x)| addrs[x.g_idx] = Addr { bin: i / BIN_SIZE, off: i % BIN_SIZE })
             .map(|x| x.1)
             .chunks(BIN_SIZE)
             .into_iter()

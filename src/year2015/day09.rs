@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use crate::utils::{held_karp, UniqueIdx};
+use crate::utils::{UniqueIdx, held_karp};
 use std::cmp::{max, min};
 
 fn all_path_distances(input: &str, f: fn(usize, usize) -> usize) -> Option<usize> {

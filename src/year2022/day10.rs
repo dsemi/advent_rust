@@ -9,10 +9,7 @@ fn run(input: &str) -> impl Iterator<Item = i32> + '_ {
 }
 
 pub fn part1(input: &str) -> i32 {
-    run(input)
-        .zip(1..)
-        .filter_map(|(x, c)| (c % 40 == 20).then_some(c * x))
-        .sum()
+    run(input).zip(1..).filter_map(|(x, c)| (c % 40 == 20).then_some(c * x)).sum()
 }
 
 pub fn part2(input: &str) -> String {

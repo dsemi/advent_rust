@@ -1,8 +1,8 @@
 use crate::utils::parsers::*;
-use advent::Parser;
-use hashbrown::HashSet;
 use Instr::*;
 use Val::*;
+use advent::Parser;
+use hashbrown::HashSet;
 
 #[derive(Clone, Copy, Debug, Parser)]
 #[parser(dont_parse_name)]
@@ -12,9 +12,7 @@ enum Val {
 }
 
 fn reg(i: &mut &str) -> ModalResult<usize> {
-    one_of(&['w', 'x', 'y', 'z'])
-        .map(|c| c as usize - 'w' as usize)
-        .parse_next(i)
+    one_of(&['w', 'x', 'y', 'z']).map(|c| c as usize - 'w' as usize).parse_next(i)
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -39,10 +37,7 @@ fn parse(input: &str) -> Vec<Instr> {
 
 impl Prog {
     fn new() -> Self {
-        Self {
-            regs: [0; 4],
-            pc: 0,
-        }
+        Self { regs: [0; 4], pc: 0 }
     }
 
     fn val(&self, v: &Val) -> i64 {

@@ -1,9 +1,5 @@
 fn idx(b: u8) -> usize {
-    if b >= b'a' {
-        (b - b'a') as usize
-    } else {
-        (b - b'A') as usize + 26
-    }
+    if b >= b'a' { (b - b'a') as usize } else { (b - b'A') as usize + 26 }
 }
 
 pub fn part1(input: &str) -> usize {

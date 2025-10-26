@@ -30,11 +30,7 @@ fn parse_scanners(input: &str) -> Vec<Scanner> {
     input
         .split("\n\n")
         .map(|sc| {
-            let mut scanner = Scanner {
-                ps: vec![],
-                offset: [0; 3],
-                min: [0; 3],
-            };
+            let mut scanner = Scanner { ps: vec![], offset: [0; 3], min: [0; 3] };
             for line in sc.lines().skip(1) {
                 let (x, y, z) = coord3(i32).read(line);
                 scanner.add([x, y, z]);
@@ -117,11 +113,7 @@ fn combine(scanners: &mut [Scanner]) {
 pub fn part1(input: &str) -> usize {
     let mut scanners = parse_scanners(input);
     combine(&mut scanners);
-    scanners
-        .iter()
-        .flat_map(|s| s.ps.iter().map(hash))
-        .collect::<HashSet<_>>()
-        .len()
+    scanners.iter().flat_map(|s| s.ps.iter().map(hash)).collect::<HashSet<_>>().len()
 }
 
 pub fn part2(input: &str) -> i32 {

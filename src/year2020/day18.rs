@@ -32,15 +32,9 @@ fn calc<I: Iterator<Item = char>>(s: &mut I, prec: fn(char) -> u8) -> i64 {
 }
 
 pub fn part1(input: &str) -> i64 {
-    input
-        .lines()
-        .map(|line| calc(&mut line.chars(), |_| 1))
-        .sum()
+    input.lines().map(|line| calc(&mut line.chars(), |_| 1)).sum()
 }
 
 pub fn part2(input: &str) -> i64 {
-    input
-        .lines()
-        .map(|line| calc(&mut line.chars(), |x| if x == '+' { 2 } else { 1 }))
-        .sum()
+    input.lines().map(|line| calc(&mut line.chars(), |x| if x == '+' { 2 } else { 1 })).sum()
 }

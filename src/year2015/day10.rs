@@ -1,7 +1,7 @@
-use enum_map::{enum_map, Enum, EnumMap};
-use smallvec::{smallvec as sv, SmallVec};
-use std::sync::LazyLock;
 use Atom::*;
+use enum_map::{Enum, EnumMap, enum_map};
+use smallvec::{SmallVec, smallvec as sv};
+use std::sync::LazyLock;
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, Enum)]
@@ -120,10 +120,7 @@ static MAPPINGS: LazyLock<EnumMap<Atom, A>> = LazyLock::new(|| {
 
 fn look_and_say(n: usize, input: &str) -> usize {
     let mut state: EnumMap<Atom, usize> = EnumMap::default();
-    let start = MAPPINGS
-        .iter()
-        .find_map(|(k, v)| (input == v.seq).then_some(k))
-        .unwrap();
+    let start = MAPPINGS.iter().find_map(|(k, v)| (input == v.seq).then_some(k)).unwrap();
     state[start] += 1;
     for _ in 0..n {
         let mut next: EnumMap<Atom, usize> = EnumMap::default();
@@ -136,10 +133,7 @@ fn look_and_say(n: usize, input: &str) -> usize {
         }
         state = next;
     }
-    state
-        .into_iter()
-        .map(|(k, v)| v * MAPPINGS[k].seq.len())
-        .sum()
+    state.into_iter().map(|(k, v)| v * MAPPINGS[k].seq.len()).sum()
 }
 
 pub fn part1(input: &str) -> usize {

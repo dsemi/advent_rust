@@ -12,13 +12,7 @@ fn claim(i: &mut &str) -> ModalResult<Claim> {
     let num = delimited('#', usize, " @ ").parse_next(i)?;
     let (x, y) = terminated(coord(usize), ": ").parse_next(i)?;
     let (w, h) = sep2(usize, 'x').parse_next(i)?;
-    Ok(Claim {
-        num,
-        x0: x,
-        y0: y,
-        x1: x + w,
-        y1: y + h,
-    })
+    Ok(Claim { num, x0: x, y0: y, x1: x + w, y1: y + h })
 }
 
 fn coord_freq(claims: &[Claim]) -> Vec<Vec<usize>> {

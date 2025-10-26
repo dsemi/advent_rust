@@ -63,10 +63,7 @@ impl Record {
 }
 
 fn solve(input: &str, reps: usize) -> usize {
-    input
-        .par_lines()
-        .map(|line| Record::parse(line, reps).count_arrangements())
-        .sum()
+    input.par_lines().map(|line| Record::parse(line, reps).count_arrangements()).sum()
 }
 
 pub fn part1(input: &str) -> usize {

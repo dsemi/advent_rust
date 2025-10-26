@@ -80,9 +80,7 @@ fn solve<T: Ord>(input: &str, key: fn(&Bridge) -> T) -> u32 {
             singles[pipe.a as usize] += 1;
         }
     }
-    Bridge::default()
-        .build(key, &neighbs, &mut singles, &mut HashSet::new())
-        .strength
+    Bridge::default().build(key, &neighbs, &mut singles, &mut HashSet::new()).strength
 }
 
 pub fn part1(input: &str) -> u32 {

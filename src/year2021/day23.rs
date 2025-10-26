@@ -1,6 +1,6 @@
 use crate::utils::bits;
 use std::cmp::Ordering::*;
-use std::cmp::{max, Reverse};
+use std::cmp::{Reverse, max};
 use std::collections::BinaryHeap;
 
 const ROOM_XOR: u32 = 0xffaa5500;
@@ -108,12 +108,7 @@ struct State {
 
 impl State {
     fn new(hash: u64) -> Self {
-        Self {
-            room: Room { room: hash as u32 },
-            hall: Hall {
-                hall: (hash >> 32) as u32,
-            },
-        }
+        Self { room: Room { room: hash as u32 }, hall: Hall { hall: (hash >> 32) as u32 } }
     }
 
     fn hash(&self) -> u64 {
@@ -159,14 +154,7 @@ impl State {
             if g == r || !self.room.empty(g) {
                 continue;
             }
-            if !self.obstructed(
-                r,
-                if r < g {
-                    State::room_r(g)
-                } else {
-                    State::room_l(g)
-                },
-            ) {
+            if !self.obstructed(r, if r < g { State::room_r(g) } else { State::room_l(g) }) {
                 self.room.pop(r);
                 return true;
             }
@@ -307,9 +295,7 @@ impl<const SIZE: usize, T> Hash<SIZE, T> {
 
 fn solve(start: State) -> i32 {
     const TBL_SIZE: usize = 14983;
-    let mut cost = Hash::<TBL_SIZE, (u16, u32)> {
-        table: [(0, (0, 0)); TBL_SIZE],
-    };
+    let mut cost = Hash::<TBL_SIZE, (u16, u32)> { table: [(0, (0, 0)); TBL_SIZE] };
     cost.insert(start.hash(), (0, 0));
     let mut q = BinaryHeap::<Reverse<(i32, u64)>>::new();
     q.push(Reverse((0, start.hash())));

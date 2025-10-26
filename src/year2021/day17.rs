@@ -32,7 +32,5 @@ pub fn part2(input: &str) -> usize {
     // First triangular number > x0 is lower bound.
     // n^2 + n - 2x0 = 0
     let mx = ((1.0 + 8.0 * x0 as f64).sqrt() / 2.0 - 0.5).ceil() as i64;
-    (mx..=x1)
-        .flat_map(|x| (y0..=-y0).filter(move |y| hits_target(x0, x1, y0, y1, x, *y)))
-        .count()
+    (mx..=x1).flat_map(|x| (y0..=-y0).filter(move |y| hits_target(x0, x1, y0, y1, x, *y))).count()
 }

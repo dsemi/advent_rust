@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::DefaultVec;
+use crate::utils::parsers::*;
 use advent::Parser;
 
 #[derive(Clone, Copy, Parser)]

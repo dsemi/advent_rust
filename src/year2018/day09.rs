@@ -2,11 +2,7 @@ use crate::utils::parsers::*;
 use std::collections::VecDeque;
 
 fn parse(input: &str) -> (usize, usize) {
-    (
-        terminated(usize, " players; last marble is worth "),
-        terminated(usize, " points"),
-    )
-        .read(input)
+    (terminated(usize, " players; last marble is worth "), terminated(usize, " points")).read(input)
 }
 
 fn play(n: usize, s: usize) -> Option<usize> {

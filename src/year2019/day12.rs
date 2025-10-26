@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use num::integer::lcm;
-use smallvec::{smallvec as sv, SmallVec};
+use smallvec::{SmallVec, smallvec as sv};
 
 #[derive(Clone, Eq, PartialEq)]
 struct Moon {
@@ -47,13 +47,8 @@ pub fn part2(input: &str) -> Option<u64> {
     let moons = lines(moon).read(input);
     (0..=2)
         .map(|n| {
-            let mut degen: Vec<_> = moons
-                .iter()
-                .map(|m| Moon {
-                    pos: sv![m.pos[n]],
-                    vel: sv![m.vel[n]],
-                })
-                .collect();
+            let mut degen: Vec<_> =
+                moons.iter().map(|m| Moon { pos: sv![m.pos[n]], vel: sv![m.vel[n]] }).collect();
             let mut counter = 1;
             loop {
                 step(&mut degen);

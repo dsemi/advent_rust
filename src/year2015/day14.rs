@@ -26,10 +26,7 @@ fn dists_at_each_second(input: &str) -> Vec<Vec<i32>> {
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    dists_at_each_second(input)
-        .into_iter()
-        .map(|x| *x.last().unwrap())
-        .max()
+    dists_at_each_second(input).into_iter().map(|x| *x.last().unwrap()).max()
 }
 
 pub fn part2(input: &str) -> Option<i32> {

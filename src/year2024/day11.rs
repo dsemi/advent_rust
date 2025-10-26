@@ -1,5 +1,5 @@
 use crate::utils::UniqueIdx;
-use smallvec::{smallvec as sv, SmallVec};
+use smallvec::{SmallVec, smallvec as sv};
 
 fn blink(stone: u64, mut f: impl FnMut(u64) -> usize) -> SmallVec<[usize; 2]> {
     if stone == 0 {

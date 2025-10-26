@@ -27,11 +27,7 @@ pub fn part1(input: &str) -> Option<u32> {
         .map(|seed| {
             maps.iter().fold(seed, |seed, map| {
                 map.binary_search_by(|(filter, _)| {
-                    if filter.contains(seed) {
-                        Equal
-                    } else {
-                        filter.lo.cmp(&seed)
-                    }
+                    if filter.contains(seed) { Equal } else { filter.lo.cmp(&seed) }
                 })
                 .map(|idx| seed + map[idx].1)
                 .unwrap_or(seed)

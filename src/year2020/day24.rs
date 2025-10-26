@@ -1,5 +1,5 @@
 use crate::utils::parsers::*;
-use crate::utils::{Grid, C};
+use crate::utils::{C, Grid};
 use hashbrown::{HashMap, HashSet};
 use phf::phf_map;
 
@@ -20,11 +20,7 @@ fn flip_tiles(s: &str) -> HashSet<C<i32>> {
             .read(line);
         *tiles.entry(tile).or_insert(0) += 1;
     }
-    tiles
-        .into_iter()
-        .filter(|&(_, v)| v % 2 == 1)
-        .map(|(t, _)| t)
-        .collect()
+    tiles.into_iter().filter(|&(_, v)| v % 2 == 1).map(|(t, _)| t).collect()
 }
 
 pub fn part1(input: &str) -> usize {
@@ -34,10 +30,10 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     const STEPS: i32 = 100;
     let tiles = flip_tiles(input);
-    let (mut min, mut max) = tiles.iter().fold(
-        (C(i32::MAX, i32::MAX), C(i32::MIN, i32::MIN)),
-        |(min, max), &pos| (min.smol(pos), max.swol(pos)),
-    );
+    let (mut min, mut max) =
+        tiles.iter().fold((C(i32::MAX, i32::MAX), C(i32::MIN, i32::MIN)), |(min, max), &pos| {
+            (min.smol(pos), max.swol(pos))
+        });
     let offset = -min + C(STEPS + 1, STEPS + 1);
     min += offset;
     max += offset;

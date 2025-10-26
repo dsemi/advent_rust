@@ -23,11 +23,7 @@ pub fn part1(input: &str) -> String {
         prog.input.push_back(c as i64);
     }
     prog.run();
-    prog.output
-        .into_iter()
-        .map(|x| x as u8 as char)
-        .filter(char::is_ascii_digit)
-        .collect()
+    prog.output.into_iter().map(|x| x as u8 as char).filter(char::is_ascii_digit).collect()
 }
 
 pub fn part2(_input: &str) -> &str {

@@ -1,8 +1,8 @@
 use crate::utils::*;
+use Outcome::*;
 use hashbrown::{HashMap, HashSet};
 use itertools::iterate;
 use std::collections::VecDeque;
-use Outcome::*;
 
 #[derive(Eq, PartialEq)]
 enum Outcome {
@@ -20,9 +20,7 @@ fn parse_graph(input: &str) -> Grid<(char, i32), i32> {
 
 fn neighbors(coord: &C<i32>) -> impl Iterator<Item = C<i32>> + '_ {
     // reading order
-    vec![(-1, 0), (0, -1), (0, 1), (1, 0)]
-        .into_iter()
-        .map(|(x, y)| C(x, y) + *coord)
+    vec![(-1, 0), (0, -1), (0, 1), (1, 0)].into_iter().map(|(x, y)| C(x, y) + *coord)
 }
 
 fn find_next_move(grid: &Grid<(char, i32), i32>, enemy: char, coord: C<i32>) -> Option<C<i32>> {
@@ -80,9 +78,8 @@ fn run_round(grid: &mut Grid<(char, i32), i32>, elf_power: i32, allow_elf_death:
             grid[p] = v;
             pos = p;
         }
-        if let Some(t_pos) = neighbors(&pos)
-            .filter(|&n| grid[n].0 == enemy)
-            .min_by_key(|&n| grid[n].1)
+        if let Some(t_pos) =
+            neighbors(&pos).filter(|&n| grid[n].0 == enemy).min_by_key(|&n| grid[n].1)
         {
             let pwr = if v.0 == 'E' { elf_power } else { 3 };
             let (t, hp) = grid[t_pos];
@@ -143,9 +140,7 @@ pub fn part1(input: &str) -> Option<i32> {
 
 pub fn part2(input: &str) -> Option<i32> {
     let grid_start = parse_graph(input);
-    let n = iterate(4, |&x| x * 2)
-        .find(|&x| run(grid_start.clone(), x, false).is_some())
-        .unwrap();
+    let n = iterate(4, |&x| x * 2).find(|&x| run(grid_start.clone(), x, false).is_some()).unwrap();
     let v = (n / 2..=n).collect::<Vec<_>>();
     let i = v.partition_point(|&x| run(grid_start.clone(), x, false).is_none());
     run(grid_start, v[i], false)

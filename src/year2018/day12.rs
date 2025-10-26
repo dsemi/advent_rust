@@ -27,10 +27,7 @@ fn next_gen(m: &Map, s: Vec<(i64, char)>) -> Vec<(i64, char)> {
     for i in 1..=3 {
         v.push((x1 + i, '.'));
     }
-    v[..]
-        .windows(5)
-        .map(|x| (x[2].0, m[&(x[0].1, x[1].1, x[2].1, x[3].1, x[4].1)]))
-        .collect()
+    v[..].windows(5).map(|x| (x[2].0, m[&(x[0].1, x[1].1, x[2].1, x[3].1, x[4].1)])).collect()
 }
 
 fn sum_indices(s: &[(i64, char)]) -> i64 {

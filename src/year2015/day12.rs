@@ -16,8 +16,6 @@ pub fn part1(input: &str) -> i64 {
 
 pub fn part2(input: &str) -> i64 {
     walk(&serde_json::from_str(input).unwrap(), |v| {
-        v.as_object()
-            .map(|o| o.values().any(|x| x == "red"))
-            .unwrap_or(false)
+        v.as_object().map(|o| o.values().any(|x| x == "red")).unwrap_or(false)
     })
 }

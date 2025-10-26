@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
-use advent::Parser;
 use Instr::*;
 use Val::*;
+use advent::Parser;
 
 #[derive(Clone, Copy, Parser)]
 #[parser(dont_parse_name)]
@@ -41,9 +41,14 @@ fn optimize(instrs: &mut [Instr]) {
     for i in 0..instrs.len() {
         if i + 6 <= instrs.len() {
             match instrs[i..i + 6] {
-                [Cpy(a, Reg(d)), Inc(c), Dec(d2), Jnz(Reg(d3), Lit(-2)), Dec(b), Jnz(Reg(b2), Lit(-5))]
-                    if d == d2 && d == d3 && b == b2 =>
-                {
+                [
+                    Cpy(a, Reg(d)),
+                    Inc(c),
+                    Dec(d2),
+                    Jnz(Reg(d3), Lit(-2)),
+                    Dec(b),
+                    Jnz(Reg(b2), Lit(-5)),
+                ] if d == d2 && d == d3 && b == b2 => {
                     instrs[i] = Mul(a, b, c, d);
                     instrs[i + 1] = Nop;
                     instrs[i + 2] = Nop;

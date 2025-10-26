@@ -1,5 +1,5 @@
-use crate::utils::parsers::*;
 use crate::utils::C;
+use crate::utils::parsers::*;
 
 #[derive(Eq, PartialEq)]
 enum Orientation {
@@ -60,11 +60,7 @@ impl Wire {
                 if w1.o == w2.o {
                     return None;
                 }
-                let (hs, vs) = if w1.o == Orientation::H {
-                    (w1, w2)
-                } else {
-                    (w2, w1)
-                };
+                let (hs, vs) = if w1.o == Orientation::H { (w1, w2) } else { (w2, w1) };
                 (hs.a.0 <= vs.a.0 && vs.a.0 <= hs.b.0 && vs.a.1 <= hs.a.1 && hs.a.1 <= vs.b.1).then(
                     || {
                         (

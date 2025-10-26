@@ -15,9 +15,7 @@ pub fn part1(input: &str) -> i64 {
         .filter_map(|y| {
             (min_x..50).find(|&x| is_pulled(&prog, x, y)).map(|mx| {
                 min_x = mx;
-                max_x = (max(min_x, max_x)..50)
-                    .find(|&x| !is_pulled(&prog, x, y))
-                    .unwrap();
+                max_x = (max(min_x, max_x)..50).find(|&x| !is_pulled(&prog, x, y)).unwrap();
                 max_x - min_x
             })
         })

@@ -40,24 +40,12 @@ fn neighbors(path: &Path) -> Vec<Path> {
 }
 
 pub fn part1(input: &str) -> Option<String> {
-    bfs(
-        Path {
-            pos: C(1, 1),
-            st: input.to_string(),
-        },
-        neighbors,
-    )
-    .find_map(|(_, p)| p.is_done().then(|| p.st[input.len()..].to_string()))
+    bfs(Path { pos: C(1, 1), st: input.to_string() }, neighbors)
+        .find_map(|(_, p)| p.is_done().then(|| p.st[input.len()..].to_string()))
 }
 
 pub fn part2(input: &str) -> Option<usize> {
-    bfs(
-        Path {
-            pos: C(1, 1),
-            st: input.to_string(),
-        },
-        neighbors,
-    )
-    .filter_map(|(d, p)| p.is_done().then_some(d))
-    .max()
+    bfs(Path { pos: C(1, 1), st: input.to_string() }, neighbors)
+        .filter_map(|(d, p)| p.is_done().then_some(d))
+        .max()
 }

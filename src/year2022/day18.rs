@@ -19,10 +19,7 @@ fn cubes(input: &str) -> HashSet<C3<i32>> {
 
 pub fn part1(input: &str) -> usize {
     let lava = cubes(input);
-    lava.iter()
-        .flat_map(adj)
-        .filter(|a| !lava.contains(a))
-        .count()
+    lava.iter().flat_map(adj).filter(|a| !lava.contains(a)).count()
 }
 
 pub fn part2(input: &str) -> usize {
@@ -43,8 +40,5 @@ pub fn part2(input: &str) -> usize {
     })
     .map(|(_, p)| p)
     .collect::<HashSet<_>>();
-    lava.iter()
-        .flat_map(adj)
-        .filter(|a| air.contains(a))
-        .count()
+    lava.iter().flat_map(adj).filter(|a| air.contains(a)).count()
 }

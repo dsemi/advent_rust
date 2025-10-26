@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
-use advent::Parser;
 use Instr::*;
+use advent::Parser;
 
 #[derive(Clone, Copy, Parser)]
 enum Instr {

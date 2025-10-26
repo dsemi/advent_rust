@@ -62,20 +62,14 @@ fn write(res: [u8; 16], out: &mut Sum) {
             out.neon8x16x2.0,
             vaddq_u8(
                 vld1q_dup_u8(&48),
-                vandq_u8(
-                    vld1q_dup_u8(&39),
-                    vcgtq_u8(out.neon8x16x2.0, vld1q_dup_u8(&9)),
-                ),
+                vandq_u8(vld1q_dup_u8(&39), vcgtq_u8(out.neon8x16x2.0, vld1q_dup_u8(&9))),
             ),
         );
         out.neon8x16x2.1 = vaddq_u8(
             out.neon8x16x2.1,
             vaddq_u8(
                 vld1q_dup_u8(&48),
-                vandq_u8(
-                    vld1q_dup_u8(&39),
-                    vcgtq_u8(out.neon8x16x2.1, vld1q_dup_u8(&9)),
-                ),
+                vandq_u8(vld1q_dup_u8(&39), vcgtq_u8(out.neon8x16x2.1, vld1q_dup_u8(&9))),
             ),
         );
     }
@@ -118,10 +112,7 @@ fn find_indexes(seed: &str, num: usize) -> impl Iterator<Item = usize> {
                 .windows(5)
                 .filter(|w| w[0] == w[1] && w[0] == w[2] && w[0] == w[3] && w[0] == w[4])
                 .flat_map(|w| {
-                    pot[idx(w[0])]
-                        .drain(..)
-                        .filter(|&v| i - v <= 1000)
-                        .collect::<Vec<_>>()
+                    pot[idx(w[0])].drain(..).filter(|&v| i - v <= 1000).collect::<Vec<_>>()
                 })
                 .collect();
             for w in hashed.windows(3) {

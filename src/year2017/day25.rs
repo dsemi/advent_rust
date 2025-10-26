@@ -22,11 +22,7 @@ fn branch(i: &mut &str) -> ModalResult<Rule> {
     let write = delimited("    - Write the value ", usize, ".\n").parse_next(i)?;
     let dir = delimited("    - Move one slot to the ", parse_dir, ".\n").parse_next(i)?;
     let state = delimited("    - Continue with state ", any, '.').parse_next(i)?;
-    Ok(Rule {
-        write,
-        dir,
-        state: state as usize - 'A' as usize,
-    })
+    Ok(Rule { write, dir, state: state as usize - 'A' as usize })
 }
 
 fn state(i: &mut &str) -> ModalResult<[Rule; 2]> {
@@ -39,11 +35,7 @@ fn parse_rules(i: &mut &str) -> ModalResult<(usize, usize, Vec<[Rule; 2]>)> {
     let start = delimited("Begin in state ", any, ".\n").parse_next(i)?;
     let n =
         delimited("Perform a diagnostic checksum after ", usize, " steps.\n\n").parse_next(i)?;
-    Ok((
-        start as usize - 'A' as usize,
-        n,
-        separated(1.., state, "\n\n").parse_next(i)?,
-    ))
+    Ok((start as usize - 'A' as usize, n, separated(1.., state, "\n\n").parse_next(i)?))
 }
 
 pub fn part1(input: &str) -> usize {

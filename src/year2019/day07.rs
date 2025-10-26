@@ -33,16 +33,10 @@ fn chain(p: &intcode::Program, phases: Vec<i64>, cycle: bool) -> Vec<i64> {
 
 pub fn part1(input: &str) -> Option<i64> {
     let prog = intcode::new(input);
-    (0..5)
-        .permutations(5)
-        .map(|perm| *chain(&prog, perm, false).first().unwrap())
-        .max()
+    (0..5).permutations(5).map(|perm| *chain(&prog, perm, false).first().unwrap()).max()
 }
 
 pub fn part2(input: &str) -> Option<i64> {
     let prog = intcode::new(input);
-    (5..10)
-        .permutations(5)
-        .map(|perm| *chain(&prog, perm, true).last().unwrap())
-        .max()
+    (5..10).permutations(5).map(|perm| *chain(&prog, perm, true).last().unwrap()).max()
 }

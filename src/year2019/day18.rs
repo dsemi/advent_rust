@@ -1,6 +1,6 @@
 use crate::utils::*;
-use hashbrown::HashMap;
 use Tile::*;
+use hashbrown::HashMap;
 
 fn conv(c: char) -> u32 {
     1 << (c as u32 - 'a' as u32)
@@ -48,10 +48,7 @@ impl Maze {
     fn new(input: &str) -> Self {
         let cols = input.lines().next().unwrap().len();
         Maze {
-            grid: input
-                .lines()
-                .flat_map(|line| line.chars().map(tile))
-                .collect(),
+            grid: input.lines().flat_map(|line| line.chars().map(tile)).collect(),
             cols,
             moves: HashMap::new(),
         }
@@ -67,11 +64,7 @@ impl Maze {
                     .or_insert_with(|| {
                         bfs_on(
                             |e| e.dest,
-                            [Edge {
-                                dest: from,
-                                doors: 0,
-                                keys: 0,
-                            }],
+                            [Edge { dest: from, doors: 0, keys: 0 }],
                             |edge| {
                                 vec![
                                     edge.dest - self.cols,
@@ -98,13 +91,7 @@ impl Maze {
                     .map(|(len, edge)| {
                         let mut poss = node.poss.clone();
                         poss[i] = edge.dest;
-                        (
-                            *len,
-                            Node {
-                                poss,
-                                keys: node.keys | edge.keys,
-                            },
-                        )
+                        (*len, Node { poss, keys: node.keys | edge.keys })
                     })
                     .collect::<Vec<_>>()
             })
@@ -113,12 +100,8 @@ impl Maze {
 }
 
 fn search(mut maze: Maze) -> Option<usize> {
-    let start_poss = maze
-        .grid
-        .iter()
-        .enumerate()
-        .filter_map(|(i, v)| (v == &Start).then_some(i))
-        .collect();
+    let start_poss =
+        maze.grid.iter().enumerate().filter_map(|(i, v)| (v == &Start).then_some(i)).collect();
     let ks = maze
         .grid
         .iter()
@@ -127,14 +110,8 @@ fn search(mut maze: Maze) -> Option<usize> {
             _ => None,
         })
         .fold(0, |a, b| a | b);
-    dijkstra(
-        Node {
-            poss: start_poss,
-            keys: 0,
-        },
-        |n| maze.available_moves(n),
-    )
-    .find_map(|(d, n)| (n.keys == ks).then_some(d))
+    dijkstra(Node { poss: start_poss, keys: 0 }, |n| maze.available_moves(n))
+        .find_map(|(d, n)| (n.keys == ks).then_some(d))
 }
 
 pub fn part1(input: &str) -> Option<usize> {
@@ -143,9 +120,8 @@ pub fn part1(input: &str) -> Option<usize> {
 
 pub fn part2(input: &str) -> Option<usize> {
     let mut maze = Maze::new(input);
-    for (k, v) in (39..=41)
-        .flat_map(|x| (39..=41).map(move |y| (x, y)))
-        .zip("@#@###@#@".chars().map(tile))
+    for (k, v) in
+        (39..=41).flat_map(|x| (39..=41).map(move |y| (x, y))).zip("@#@###@#@".chars().map(tile))
     {
         maze.grid[k.0 * maze.cols + k.1] = v;
     }

@@ -28,12 +28,7 @@ fn parse_scans(input: &str) -> Ground {
         y1 = std::cmp::max(y1, y);
     }
     let grid = vec![vec!['.'; (y1 - y0 + 1) as usize]; (x1 - x0 + 1) as usize];
-    let mut ground = Ground {
-        grid,
-        offset_x: x0,
-        min_y: y0,
-        max_y: y1,
-    };
+    let mut ground = Ground { grid, offset_x: x0, min_y: y0, max_y: y1 };
     clay.into_iter().for_each(|pos| ground.set(pos, '#'));
     ground
 }
@@ -97,19 +92,11 @@ fn flood(g: &mut Ground) {
 pub fn part1(input: &str) -> usize {
     let mut ground = parse_scans(input);
     flood(&mut ground);
-    ground
-        .grid
-        .into_iter()
-        .map(|col| col.into_iter().filter(|&c| "~|".contains(c)).count())
-        .sum()
+    ground.grid.into_iter().map(|col| col.into_iter().filter(|&c| "~|".contains(c)).count()).sum()
 }
 
 pub fn part2(input: &str) -> usize {
     let mut ground = parse_scans(input);
     flood(&mut ground);
-    ground
-        .grid
-        .into_iter()
-        .map(|col| col.into_iter().filter(|&c| "~".contains(c)).count())
-        .sum()
+    ground.grid.into_iter().map(|col| col.into_iter().filter(|&c| "~".contains(c)).count()).sum()
 }

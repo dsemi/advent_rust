@@ -1,9 +1,9 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use Label::*;
 use hashbrown::HashMap;
 use std::cmp::Ordering;
 use std::cmp::Ordering::*;
-use Label::*;
 
 #[derive(Copy, Clone)]
 enum Label<'a> {
@@ -81,25 +81,13 @@ fn valid_parts<'a>(
         &Rule::Cond(i, o, b, lbl) => valid_parts(workflows, &[Rule::Label(lbl)])
             .into_iter()
             .filter_map(|mut part| {
-                part[i] = if o == Less {
-                    part[i].clamp_hi(b)?
-                } else {
-                    part[i].clamp_lo(b + 1)?
-                };
+                part[i] = if o == Less { part[i].clamp_hi(b)? } else { part[i].clamp_lo(b + 1)? };
                 Some(part)
             })
-            .chain(
-                valid_parts(workflows, &workflow[1..])
-                    .into_iter()
-                    .filter_map(|mut part| {
-                        part[i] = if o == Less {
-                            part[i].clamp_lo(b)?
-                        } else {
-                            part[i].clamp_hi(b + 1)?
-                        };
-                        Some(part)
-                    }),
-            )
+            .chain(valid_parts(workflows, &workflow[1..]).into_iter().filter_map(|mut part| {
+                part[i] = if o == Less { part[i].clamp_lo(b)? } else { part[i].clamp_hi(b + 1)? };
+                Some(part)
+            }))
             .collect(),
     }
 }

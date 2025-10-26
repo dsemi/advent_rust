@@ -27,11 +27,7 @@ fn hash(n: usize, lens: Vec<usize>) -> Vec<u8> {
 fn knot_hash(key: &str, i: usize) -> u128 {
     let res = hash(
         64,
-        format!("{key}-{i}")
-            .bytes()
-            .map(|x| x as usize)
-            .chain(vec![17, 31, 73, 47, 23])
-            .collect(),
+        format!("{key}-{i}").bytes().map(|x| x as usize).chain(vec![17, 31, 73, 47, 23]).collect(),
     );
     res.chunks(res.len() / 16)
         .map(|x| x.iter().fold(0, |a, &b| a ^ b))

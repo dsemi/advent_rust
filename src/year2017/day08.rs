@@ -3,14 +3,9 @@ use hashbrown::HashMap;
 
 fn parse<'a>(reg: &HashMap<&str, i64>, i: &'a str) -> (bool, &'a str, i64) {
     let mut p = |i: &mut &'a str| {
-        let (mut_r, sgn, mut_n, _, cmp_r) = (
-            alpha1,
-            alt((" inc ".value(1), " dec ".value(-1))),
-            i64,
-            " if ",
-            alpha1,
-        )
-            .parse_next(i)?;
+        let (mut_r, sgn, mut_n, _, cmp_r) =
+            (alpha1, alt((" inc ".value(1), " dec ".value(-1))), i64, " if ", alpha1)
+                .parse_next(i)?;
         let rv = *reg.get(cmp_r).unwrap_or(&0);
         let cond = alt((
             preceded(" == ", i64).map(|cmp_n| rv == cmp_n),

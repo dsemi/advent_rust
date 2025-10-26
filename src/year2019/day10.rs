@@ -29,10 +29,7 @@ impl Angle {
     fn new(a: &C<i32>, b: &C<i32>) -> Self {
         let C(x, y) = b - a;
         let gcd = gcd(x.abs(), y.abs());
-        Self {
-            x: x / gcd,
-            y: y / gcd,
-        }
+        Self { x: x / gcd, y: y / gcd }
     }
 }
 
@@ -62,9 +59,8 @@ fn visibilities(pt: &C<i32>, pts: &[C<i32>]) -> Vec<Vec<C<i32>>> {
     for p in pts.iter() {
         if p != pt {
             let e = m.entry(Angle::new(pt, p)).or_default();
-            let idx = e
-                .binary_search_by_key(&pt.dist(p), |x| pt.dist(x))
-                .map_or_else(identity, identity);
+            let idx =
+                e.binary_search_by_key(&pt.dist(p), |x| pt.dist(x)).map_or_else(identity, identity);
             e.insert(idx, *p);
         }
     }

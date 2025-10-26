@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
+use Packet::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
-use Packet::*;
 
 #[derive(Clone, Eq, PartialEq)]
 enum Packet {

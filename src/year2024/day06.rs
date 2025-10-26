@@ -1,5 +1,5 @@
 use crate::utils::*;
-use itertools::{iterate, Itertools};
+use itertools::{Itertools, iterate};
 use rayon::prelude::*;
 use std::iter::successors;
 

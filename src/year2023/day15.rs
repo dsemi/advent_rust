@@ -28,9 +28,7 @@ pub fn part2(input: &str) -> usize {
         .into_iter()
         .enumerate()
         .flat_map(|(n, b)| {
-            b.into_iter()
-                .enumerate()
-                .map(move |(s, (_, len))| (n + 1) * (s + 1) * len)
+            b.into_iter().enumerate().map(move |(s, (_, len))| (n + 1) * (s + 1) * len)
         })
         .sum()
 }

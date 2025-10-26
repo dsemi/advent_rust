@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
+use Action::*;
 use hashbrown::HashMap;
 use std::fmt::{Display, Error, Formatter, Write};
-use Action::*;
 
 enum Action {
     Spin(usize),
@@ -49,10 +49,8 @@ fn apply_action(l: &mut Line, action: &Action) {
             }
             Exchange(i, j) => {
                 let len = l.s.len();
-                l.s.as_bytes_mut().swap(
-                    (l.offset + *i).rem_euclid(len),
-                    (l.offset + *j).rem_euclid(len),
-                );
+                l.s.as_bytes_mut()
+                    .swap((l.offset + *i).rem_euclid(len), (l.offset + *j).rem_euclid(len));
             }
             Partner(a, b) => {
                 let (i, j) = (l.s.find(*a).unwrap(), l.s.find(*b).unwrap());
@@ -63,10 +61,7 @@ fn apply_action(l: &mut Line, action: &Action) {
 }
 
 fn dance(n: usize, actions: Vec<Action>) -> String {
-    let mut result = Line {
-        offset: 0,
-        s: "abcdefghijklmnop".to_string(),
-    };
+    let mut result = Line { offset: 0, s: "abcdefghijklmnop".to_string() };
     let mut tbl = HashMap::new();
     for c in 0..n {
         if let Some(v) = tbl.insert(result.to_string(), c) {

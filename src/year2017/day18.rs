@@ -1,9 +1,9 @@
 use crate::utils::parsers::*;
+use Instr::*;
+use Val::*;
 use advent::Parser;
 use std::cell::Cell;
 use std::collections::VecDeque;
-use Instr::*;
-use Val::*;
 
 #[derive(Clone, Parser)]
 #[parser(dont_parse_name)]
@@ -37,12 +37,7 @@ struct Sim {
 
 impl Sim {
     fn parse(input: &str) -> Self {
-        Self {
-            line: 0,
-            reg: [0; 26],
-            instrs: lines(instr).read(input),
-            sends: 0,
-        }
+        Self { line: 0, reg: [0; 26], instrs: lines(instr).read(input), sends: 0 }
     }
 
     fn run<F1, F2>(&mut self, mut send: F1, mut recv: F2)

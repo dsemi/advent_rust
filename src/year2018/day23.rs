@@ -40,34 +40,13 @@ impl Cube {
                 lo: C3(mid.0 + 1, mid.1 + 1, mid.2 + 1),
                 hi: C3(self.hi.0, self.hi.1, self.hi.2),
             },
-            Cube {
-                lo: C3(mid.0 + 1, mid.1 + 1, self.lo.2),
-                hi: C3(self.hi.0, self.hi.1, mid.2),
-            },
-            Cube {
-                lo: C3(mid.0 + 1, self.lo.1, mid.2 + 1),
-                hi: C3(self.hi.0, mid.1, self.hi.2),
-            },
-            Cube {
-                lo: C3(mid.0 + 1, self.lo.1, self.lo.2),
-                hi: C3(self.hi.0, mid.1, mid.2),
-            },
-            Cube {
-                lo: C3(self.lo.0, mid.1 + 1, mid.2 + 1),
-                hi: C3(mid.0, self.hi.1, self.hi.2),
-            },
-            Cube {
-                lo: C3(self.lo.0, mid.1 + 1, self.lo.2),
-                hi: C3(mid.0, self.hi.1, mid.2),
-            },
-            Cube {
-                lo: C3(self.lo.0, self.lo.1, mid.2 + 1),
-                hi: C3(mid.0, mid.1, self.hi.2),
-            },
-            Cube {
-                lo: C3(self.lo.0, self.lo.1, self.lo.2),
-                hi: C3(mid.0, mid.1, mid.2),
-            },
+            Cube { lo: C3(mid.0 + 1, mid.1 + 1, self.lo.2), hi: C3(self.hi.0, self.hi.1, mid.2) },
+            Cube { lo: C3(mid.0 + 1, self.lo.1, mid.2 + 1), hi: C3(self.hi.0, mid.1, self.hi.2) },
+            Cube { lo: C3(mid.0 + 1, self.lo.1, self.lo.2), hi: C3(self.hi.0, mid.1, mid.2) },
+            Cube { lo: C3(self.lo.0, mid.1 + 1, mid.2 + 1), hi: C3(mid.0, self.hi.1, self.hi.2) },
+            Cube { lo: C3(self.lo.0, mid.1 + 1, self.lo.2), hi: C3(mid.0, self.hi.1, mid.2) },
+            Cube { lo: C3(self.lo.0, self.lo.1, mid.2 + 1), hi: C3(mid.0, mid.1, self.hi.2) },
+            Cube { lo: C3(self.lo.0, self.lo.1, self.lo.2), hi: C3(mid.0, mid.1, mid.2) },
         ]
     }
 
@@ -83,10 +62,8 @@ impl Cube {
 
 pub fn part2(input: &str) -> i64 {
     let ns = lines(nanobot).read(input);
-    let mut cube = Cube {
-        lo: C3(i64::MAX, i64::MAX, i64::MAX),
-        hi: C3(i64::MIN, i64::MIN, i64::MIN),
-    };
+    let mut cube =
+        Cube { lo: C3(i64::MAX, i64::MAX, i64::MAX), hi: C3(i64::MIN, i64::MIN, i64::MIN) };
     for n in ns.iter() {
         cube.lo = C3(
             min(cube.lo.0, n.pos.0 - n.radius),

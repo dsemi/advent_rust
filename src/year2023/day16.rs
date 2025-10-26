@@ -9,10 +9,7 @@ struct Visited {
 
 impl Visited {
     fn new(dim: i8) -> Self {
-        Self {
-            vis_ns: Grid::new(dim, dim),
-            vis_ew: Grid::new(dim, dim),
-        }
+        Self { vis_ns: Grid::new(dim, dim), vis_ew: Grid::new(dim, dim) }
     }
 
     fn expand_ns(&mut self, grid: &Grid<u8, i8>, pos: C<i8>, mut dir: C<i8>) {
@@ -68,11 +65,7 @@ impl Visited {
     }
 
     fn energized(&self) -> usize {
-        self.vis_ns
-            .iter()
-            .zip(self.vis_ew.iter())
-            .filter(|&(a, b)| *a || *b)
-            .count()
+        self.vis_ns.iter().zip(self.vis_ew.iter()).filter(|&(a, b)| *a || *b).count()
     }
 }
 

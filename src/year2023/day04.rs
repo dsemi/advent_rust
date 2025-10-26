@@ -8,17 +8,12 @@ fn wins(i: &mut &str) -> ModalResult<usize> {
 }
 
 pub fn part1(input: &str) -> u32 {
-    lines_iter(input, wins)
-        .filter(|&n| n > 0)
-        .map(|n| 1 << (n - 1))
-        .sum()
+    lines_iter(input, wins).filter(|&n| n > 0).map(|n| 1 << (n - 1)).sum()
 }
 
 pub fn part2(input: &str) -> usize {
     let ns = lines(wins).read(input);
     let mut cards = vec![1; ns.len()];
-    ns.into_iter()
-        .enumerate()
-        .for_each(|(i, n)| (1..=n).for_each(|j| cards[i + j] += cards[i]));
+    ns.into_iter().enumerate().for_each(|(i, n)| (1..=n).for_each(|j| cards[i + j] += cards[i]));
     cards.into_iter().sum()
 }

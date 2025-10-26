@@ -7,9 +7,7 @@ fn solve(input: &str, f: fn(i32, i32, i32, i32) -> bool) -> usize {
 }
 
 pub fn part1(input: &str) -> usize {
-    solve(input, |a0, a1, b0, b1| {
-        a0 <= b0 && a1 >= b1 || b0 <= a0 && b1 >= a1
-    })
+    solve(input, |a0, a1, b0, b1| a0 <= b0 && a1 >= b1 || b0 <= a0 && b1 >= a1)
 }
 
 pub fn part2(input: &str) -> usize {

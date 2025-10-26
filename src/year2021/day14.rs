@@ -22,8 +22,7 @@ fn polymerize(input: &str, n: usize) -> usize {
         cnts = cnts2;
     }
     let mut lets = HashMap::new();
-    cnts.into_iter()
-        .for_each(|(k, v)| *lets.entry(k[0]).or_insert(0) += v);
+    cnts.into_iter().for_each(|(k, v)| *lets.entry(k[0]).or_insert(0) += v);
     *lets.entry(*vtmpl.last().unwrap()).or_insert(0) += 1;
     lets.values().max().unwrap() - lets.values().min().unwrap()
 }

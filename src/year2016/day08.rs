@@ -1,7 +1,7 @@
 use crate::utils::ocr::*;
 use crate::utils::parsers::*;
-use hashbrown::HashSet;
 use Instr::*;
+use hashbrown::HashSet;
 
 const W: usize = 50;
 const H: usize = 6;
@@ -31,16 +31,12 @@ fn process_instr(grid: &mut HashSet<(usize, usize)>, instr: Instr) {
             }
         }
         RotateRow((a, b)) => {
-            *grid = grid
-                .iter()
-                .map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c }))
-                .collect();
+            *grid =
+                grid.iter().map(|(r, c)| (*r, if *r == a { (c + b) % W } else { *c })).collect();
         }
         RotateCol((a, b)) => {
-            *grid = grid
-                .iter()
-                .map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c))
-                .collect();
+            *grid =
+                grid.iter().map(|(r, c)| (if *c == a { (r + b) % H } else { *r }, *c)).collect();
         }
     }
 }
@@ -59,11 +55,7 @@ pub fn part2(input: &str) -> String {
     let pix = lit_pixels(input);
     let mut display = vec!["".to_string()];
     for r in 0..H {
-        display.push(
-            (0..W)
-                .map(|c| if pix.contains(&(r, c)) { '#' } else { ' ' })
-                .collect(),
-        );
+        display.push((0..W).map(|c| if pix.contains(&(r, c)) { '#' } else { ' ' }).collect());
     }
     parse_letters(&display.join("\n"), None)
 }

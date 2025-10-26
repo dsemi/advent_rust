@@ -1,5 +1,5 @@
-use std::cmp::max_by;
 use std::cmp::Ordering::Equal;
+use std::cmp::max_by;
 use std::env;
 use std::time::{Duration, Instant};
 

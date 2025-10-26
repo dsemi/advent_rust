@@ -5,9 +5,7 @@ pub fn part1(input: &str) -> Option<i64> {
     (0..).find(|i| {
         let mut sim = ssim.clone();
         sim.regs[0] = *i;
-        sim.take(10)
-            .zip([0, 1].iter().cycle())
-            .all(|(a, b)| a == *b)
+        sim.take(10).zip([0, 1].iter().cycle()).all(|(a, b)| a == *b)
     })
 }
 
