@@ -1,31 +1,20 @@
-fn safe_or_trap(a: char, b: char, c: char) -> char {
-    match (a, b, c) {
-        ('^', '^', '.') => '^',
-        ('.', '^', '^') => '^',
-        ('^', '.', '.') => '^',
-        ('.', '.', '^') => '^',
-        _ => '.',
-    }
+use itertools::iterate;
+
+fn num_safe(n: u32, input: &str) -> u32 {
+    let row_len = input.len() as u32;
+    let row_mask = (1 << row_len) - 1;
+    let row_one = input.bytes().fold(0u128, |acc, b| (acc << 1) | (b == b'^') as u128);
+    let traps: u32 = iterate(row_one, |row| (row >> 1) ^ (row << 1) & row_mask)
+        .take(n as usize)
+        .map(|row| row.count_ones())
+        .sum();
+    n * row_len - traps
 }
 
-fn num_safe(n: usize, input: &str) -> usize {
-    let mut state = input.chars().collect::<Vec<_>>();
-    state.push('.');
-    let mut total = 0;
-    for _ in 0..n {
-        total += state[..state.len() - 1].iter().filter(|&x| *x == '.').count();
-        let mut prev = '.';
-        for i in 0..state.len() - 1 {
-            state[i] = safe_or_trap(std::mem::replace(&mut prev, state[i]), state[i], state[i + 1]);
-        }
-    }
-    total
-}
-
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> u32 {
     num_safe(40, input)
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u32 {
     num_safe(400000, input)
 }
