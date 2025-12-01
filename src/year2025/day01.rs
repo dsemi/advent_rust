@@ -6,26 +6,21 @@ fn rotations(input: &str) -> impl Iterator<Item = i32> {
 }
 
 pub fn part1(input: &str) -> i32 {
-    let mut pos = 50;
-    let mut cnt = 0;
-    for n in rotations(input) {
-        pos = (pos + n).rem_euclid(100);
-        cnt += i32::from(pos == 0);
-    }
-    cnt
+    rotations(input)
+        .scan(50, |pos, n| {
+            *pos += n;
+            Some(i32::from(*pos % 100 == 0))
+        })
+        .sum()
 }
 
 pub fn part2(input: &str) -> i32 {
-    let mut pos = 50;
-    let mut cnt = 0;
-    for n in rotations(input) {
-        let next_pos = pos + n;
-        if next_pos >= 100 {
-            cnt += next_pos / 100;
-        } else if next_pos <= 0 {
-            cnt += i32::from(pos != 0) - next_pos / 100;
-        }
-        pos = next_pos.rem_euclid(100);
-    }
-    cnt
+    rotations(input)
+        .scan(50, |pos, n| {
+            let n_pos = *pos + n;
+            let res = if n_pos > 0 { n_pos / 100 } else { i32::from(*pos != 0) - n_pos / 100 };
+            *pos = n_pos.rem_euclid(100);
+            Some(res)
+        })
+        .sum()
 }
