@@ -15,6 +15,7 @@ mod year2021;
 mod year2022;
 mod year2023;
 mod year2024;
+mod year2025;
 // Needs to be after the year modules.
 mod problems;
 

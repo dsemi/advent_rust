@@ -997,3 +997,7 @@ part2 = "bjm,hsw,nvr,skf,wkr,z07,z13,z18"
 [2024.25]
 part1 = "2885"
 part2 = " "
+
+[2025.1]
+part1 = "1064"
+part2 = "6122"
