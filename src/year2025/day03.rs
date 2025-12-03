@@ -1,13 +1,11 @@
 use crate::utils::*;
 
-fn max_jolt(mut row: &[u64], ns: usize) -> u64 {
-    let mut curr = 0;
-    (0..ns).rev().for_each(|off| {
-        let (idx, n) = row[..row.len() - off].iter().enumerate().rev().max_by_key(|x| x.1).unwrap();
-        row = &row[idx + 1..];
-        curr = 10 * curr + n;
-    });
-    curr
+fn max_jolt(row: &[u64], ns: usize) -> u64 {
+    let mut start = 0;
+    (row.len() - ns + 1..=row.len()).fold(0, |curr, end| {
+        start = (start..end).rev().max_by_key(|&i| row[i]).unwrap() + 1;
+        10 * curr + row[start - 1]
+    })
 }
 
 pub fn part1(input: &str) -> u64 {
