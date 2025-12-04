@@ -23,6 +23,7 @@ itertools = "0.14"
 md-5 = "0.11.0-rc.2"
 nalgebra = "0.34.1"
 ndarray = { version = "0.16.1", features = ["rayon"] }
+ndarray-conv = "0.5.2"
 num = "0.4.3"
 num-complex = "0.4.6"
 num-derive = "0.4.2"

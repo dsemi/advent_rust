@@ -1370,7 +1370,7 @@ impl<'a, T, I> IntoIterator for &'a Grid<T, I> {
     }
 }
 
-fn grid_from_iter<T, I, E, F, Idx>(iter: I, sep: T, f: F) -> Grid<E, Idx>
+pub fn grid_from_iter<T, I, E, F, Idx>(iter: I, sep: T, f: F) -> Grid<E, Idx>
 where
     T: Eq,
     I: IntoIterator<Item = T>,
