@@ -1,25 +1,33 @@
 use crate::utils::*;
-use ndarray::prelude::*;
-use ndarray_conv::{ConvExt, ConvMode, PaddingMode};
 
-fn remove_accessible(m0: &mut Array2<u16>) -> u16 {
-    let kernel = array![[1, 1, 1], [1, 0, 1], [1, 1, 1]];
-    let mut m1 = m0.conv(&kernel, ConvMode::Same, PaddingMode::Zeros).unwrap();
-    m1.mapv_inplace(|v| u16::from(v < 4));
-    m1 &= m0 as &Array2<u16>;
-    let sum = m1.sum();
-    *m0 ^= &m1;
-    sum
+fn adj(grid: &Grid<bool>, c: C<usize>) -> impl Iterator<Item = C<usize>> {
+    adjacents(c).filter(|&i| grid.in_bounds(i))
 }
 
-pub fn part1(input: &str) -> u16 {
-    let grid: Grid<_> = grid_from_iter(input.bytes(), b'\n', |b| u16::from(b == b'@'));
-    let mut m = Array::from_shape_vec((grid.rows, grid.cols), grid.elems).unwrap();
-    remove_accessible(&mut m)
+pub fn part1(input: &str) -> usize {
+    let grid: Grid<_> = grid_from_iter(input.bytes(), b'\n', |b| b == b'@');
+    grid.idx_iter().filter(|&(i, &v)| v && adj(&grid, i).filter(|&j| grid[j]).count() < 4).count()
 }
 
-pub fn part2(input: &str) -> u16 {
-    let grid: Grid<_> = grid_from_iter(input.bytes(), b'\n', |b| u16::from(b == b'@'));
-    let m = Array::from_shape_vec((grid.rows, grid.cols), grid.elems).unwrap();
-    (0..).scan(m, |m, _| Some(remove_accessible(m))).take_while(|&n| n > 0).sum()
+pub fn part2(input: &str) -> usize {
+    let grid: Grid<_> = grid_from_iter(input.bytes(), b'\n', |b| b == b'@');
+    let mut rolls = Grid::<u8>::new(grid.rows + 2, grid.cols + 2);
+    let mut q: Vec<_> = grid
+        .idx_iter()
+        .filter(|&(_, &v)| v)
+        .map(|(i, _)| (i + C(1, 1), adj(&grid, i).filter(|&j| grid[j]).count() as u8))
+        .inspect(|&(i, n)| rolls[i] = n)
+        .filter_map(|(i, n)| (n < 4).then_some(i))
+        .collect();
+    let mut total = 0;
+    while let Some(i) = q.pop() {
+        total += 1;
+        for a in adjacents(i) {
+            if rolls[a] == 4 {
+                q.push(a);
+            }
+            rolls[a] -= 1;
+        }
+    }
+    total
 }
