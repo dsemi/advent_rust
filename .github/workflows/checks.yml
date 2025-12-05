@@ -11,5 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu clippy
     - run: cargo +nightly clippy --tests -- --deny warnings
     - run: cargo +nightly test --release
