@@ -1,4 +1,4 @@
-#![feature(custom_inner_attributes, proc_macro_hygiene)]
+#![feature(custom_inner_attributes, proc_macro_hygiene, trait_alias)]
 
 use std::cmp::Ordering::Equal;
 use std::cmp::max_by;

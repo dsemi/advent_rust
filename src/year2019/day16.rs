@@ -29,9 +29,7 @@ pub fn part1(input: &str) -> String {
 }
 
 const PASCAL_PERIOD: usize = 16000;
-
-// Move into const when const_eval_limit stabilizes
-const fn make_pascal() -> [i32; PASCAL_PERIOD] {
+const DIAG: [i32; PASCAL_PERIOD] = {
     let mut pascal = [0; PASCAL_PERIOD];
     let mut i = 0;
     let mut v = 1;
@@ -51,13 +49,12 @@ const fn make_pascal() -> [i32; PASCAL_PERIOD] {
         p += 1;
     }
     pascal
-}
+};
 
 pub fn part2(input: &str) -> String {
     let offset = input[..7].usize();
     let ns: Vec<i32> = input.chars().map(|x| x.to_digit(10).unwrap() as i32).collect();
     assert!(offset > ns.len() * 10000 / 2, "Offset is not large enough");
-    let pascal_diag = make_pascal();
 
     let n_len = ns.len();
     let ds: Vec<i32> = ns.into_iter().cycle().skip(offset % n_len).take(n_len).collect();
@@ -73,7 +70,7 @@ pub fn part2(input: &str) -> String {
                 .skip(i)
                 .take(joint_cycle)
                 .enumerate()
-                .map(|(idx, dig)| pascal_diag[idx % PASCAL_PERIOD] * *dig)
+                .map(|(idx, dig)| DIAG[idx % PASCAL_PERIOD] * *dig)
                 .sum();
             let sum_last: i32 = ds
                 .iter()
@@ -81,7 +78,7 @@ pub fn part2(input: &str) -> String {
                 .take(tot_len)
                 .skip(i + num_cycles * joint_cycle)
                 .enumerate()
-                .map(|(idx, dig)| pascal_diag[idx % PASCAL_PERIOD] * *dig)
+                .map(|(idx, dig)| DIAG[idx % PASCAL_PERIOD] * *dig)
                 .sum();
             ((sum_first * num_cycles as i32 + sum_last) % 10).to_string()
         })

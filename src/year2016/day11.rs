@@ -36,7 +36,7 @@ impl Floors {
     }
 }
 
-fn parse<'a>(flr: i32) -> impl Parser<&'a str, (&'a str, Pair), ContextError> {
+fn parse<'a>(flr: i32) -> impl Parser<&'a str, (&'a str, Pair)> {
     move |i: &mut &'a str| {
         let elem =
             delimited((opt("and "), "a "), alpha1, (opt("-compatible"), space1)).parse_next(i)?;

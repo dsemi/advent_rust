@@ -9,7 +9,7 @@ fn instr1(i: &mut &str) -> Result<(C<i64>, i64)> {
         .parse_next(i)
 }
 
-fn solve<'a>(input: &'a str, instr: impl Parser<&'a str, (C<i64>, i64), ContextError>) -> i64 {
+fn solve<'a>(input: &'a str, instr: impl Parser<&'a str, (C<i64>, i64)>) -> i64 {
     let dig_plan = lines(instr).read(input);
     let pts: Vec<_> = dig_plan
         .iter()

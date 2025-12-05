@@ -1,7 +1,7 @@
 use crate::utils::parsers::*;
 use hashbrown::HashSet;
 
-fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, (), ContextError> {
+fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, ()> {
     move |i: &mut &'a str| {
         match field {
             "byr" => {
@@ -37,7 +37,7 @@ fn validate_val<'a>(field: &'a str) -> impl Parser<&'a str, (), ContextError> {
     }
 }
 
-fn parse<'a>(validate: bool) -> impl Parser<&'a str, (), ContextError> {
+fn parse<'a>(validate: bool) -> impl Parser<&'a str, ()> {
     move |i: &mut &'a str| {
         let mut req_fields: HashSet<&str> =
             vec!["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"].into_iter().collect();

@@ -51,7 +51,7 @@ fn attributes<'a>(i: &mut &'a str) -> Result<(Vec<&'a str>, Vec<&'a str>)> {
     Ok((weak, immune))
 }
 
-fn units<'a>(name: &'a str) -> impl Parser<&'a str, Option<Group<'a>>, ContextError> {
+fn units<'a>(name: &'a str) -> impl Parser<&'a str, Option<Group<'a>>> {
     move |i: &mut &'a str| {
         let (units, _, hp, _, attr, _, dmg, _, elem, _, init) = (
             i32,

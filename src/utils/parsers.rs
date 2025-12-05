@@ -5,8 +5,7 @@ pub use winnow::prelude::*;
 pub use winnow::stream::*;
 pub use winnow::token::*;
 
-// Use when trait_alias stabilizes.
-// pub trait Parser<I, O> = winnow::prelude::Parser<I, O, ContextError>;
+pub trait Parser<I, O> = winnow::prelude::Parser<I, O, ContextError>;
 
 pub trait ParserExt<I, O> {
     fn read(&mut self, i: I) -> O;
@@ -15,7 +14,7 @@ pub trait ParserExt<I, O> {
 impl<I, O, P> ParserExt<I, O> for P
 where
     I: Stream + StreamIsPartial + Clone,
-    P: Parser<I, O, ContextError>,
+    P: Parser<I, O>,
 {
     fn read(&mut self, i: I) -> O {
         self.parse(i).unwrap()
@@ -92,15 +91,15 @@ pub fn separated_triplet<I, O1, O2, O3, O4, O5, E, F1, F2, F3, G1, G2>(
     mut f2: F2,
     mut sep2: G2,
     mut f3: F3,
-) -> impl Parser<I, (O1, O3, O5), E>
+) -> impl winnow::prelude::Parser<I, (O1, O3, O5), E>
 where
     I: Stream,
     E: ParserError<I>,
-    F1: Parser<I, O1, E>,
-    G1: Parser<I, O2, E>,
-    F2: Parser<I, O3, E>,
-    G2: Parser<I, O4, E>,
-    F3: Parser<I, O5, E>,
+    F1: winnow::prelude::Parser<I, O1, E>,
+    G1: winnow::prelude::Parser<I, O2, E>,
+    F2: winnow::prelude::Parser<I, O3, E>,
+    G2: winnow::prelude::Parser<I, O4, E>,
+    F3: winnow::prelude::Parser<I, O5, E>,
 {
     move |i: &mut I| {
         let a = f1.parse_next(i)?;
@@ -112,12 +111,12 @@ where
     }
 }
 
-pub fn sep2<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O), E>
+pub fn sep2<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl winnow::prelude::Parser<I, (O, O), E>
 where
     I: Stream,
     E: ParserError<I>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
+    F: winnow::prelude::Parser<I, O, E>,
+    G: winnow::prelude::Parser<I, O2, E>,
 {
     move |i: &mut I| {
         let a = f.parse_next(i)?;
@@ -127,12 +126,15 @@ where
     }
 }
 
-pub fn sep3<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O), E>
+pub fn sep3<I, O, O2, E, F, G>(
+    mut f: F,
+    mut sep: G,
+) -> impl winnow::prelude::Parser<I, (O, O, O), E>
 where
     I: Stream,
     E: ParserError<I>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
+    F: winnow::prelude::Parser<I, O, E>,
+    G: winnow::prelude::Parser<I, O2, E>,
 {
     move |i: &mut I| {
         let a = f.parse_next(i)?;
@@ -144,12 +146,15 @@ where
     }
 }
 
-pub fn sep4<I, O, O2, E, F, G>(mut f: F, mut sep: G) -> impl Parser<I, (O, O, O, O), E>
+pub fn sep4<I, O, O2, E, F, G>(
+    mut f: F,
+    mut sep: G,
+) -> impl winnow::prelude::Parser<I, (O, O, O, O), E>
 where
     I: Stream,
     E: ParserError<I>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
+    F: winnow::prelude::Parser<I, O, E>,
+    G: winnow::prelude::Parser<I, O2, E>,
 {
     move |i: &mut I| {
         let a = f.parse_next(i)?;
@@ -163,66 +168,66 @@ where
     }
 }
 
-pub fn strip<I, O, E, F>(f: F) -> impl Parser<I, O, E>
+pub fn strip<I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, O, E>
 where
     I: Stream + StreamIsPartial,
     <I as Stream>::Token: AsChar + Clone,
     E: ParserError<I>,
-    F: Parser<I, O, E>,
+    F: winnow::prelude::Parser<I, O, E>,
 {
     delimited(space0, f, space0)
 }
 
-pub fn coord<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O), E> + 'a
+pub fn coord<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, (O, O), E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     sep2(strip(f), ',')
 }
 
-pub fn coord3<'a, I, O, E, F>(f: F) -> impl Parser<I, (O, O, O), E> + 'a
+pub fn coord3<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, (O, O, O), E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     sep3(strip(f), ',')
 }
 
-pub fn spaced<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
+pub fn spaced<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     strip(separated(0.., f, space1))
 }
 
-pub fn list<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
+pub fn list<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
     E: ParserError<I> + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     separated(0.., f, (',', space0))
 }
 
-pub fn lines<'a, I, O, E, F>(f: F) -> impl Parser<I, Vec<O>, E> + 'a
+pub fn lines<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
     O: 'a,
     E: ParserError<I> + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     separated(0.., f, "\n")
 }
@@ -232,15 +237,15 @@ where
 // where
 // I: Stream,
 // E: ParserError<I>,
-// F: Parser<I, O, E>,
-// G: Parser<I, O2, E>,
+// F: winnow::prelude::Parser<I, O, E>,
+// G: winnow::prelude::Parser<I, O2, E>,
 // {
 // todo!()
 // }
 
 pub fn lines_iter<'a, O, F>(i: &'a str, mut f: F) -> impl Iterator<Item = O> + 'a
 where
-    F: Parser<&'a str, O, ContextError> + 'a,
+    F: Parser<&'a str, O> + 'a,
 {
     i.lines().map(move |line| f.read(line))
 }

@@ -11,7 +11,7 @@ struct Snailfish {
     ns: Vec<Num>,
 }
 
-fn parse<'a>(d: usize) -> impl Parser<&'a str, Vec<Num>, ContextError> {
+fn parse<'a>(d: usize) -> impl Parser<&'a str, Vec<Num>> {
     move |i: &mut &'a str| {
         alt((
             u64.map(|n| vec![Num { depth: d, value: n }]),
