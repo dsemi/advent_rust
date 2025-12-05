@@ -3,7 +3,6 @@ use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::fs;
 use std::sync::Mutex;
 use syn::parse_macro_input;
 use winnow::ascii::digit1;
@@ -12,6 +11,28 @@ use winnow::error::Result;
 use winnow::prelude::*;
 
 static PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
+
+fn i64(input: &mut &str) -> Result<i64> {
+    digit1.parse_to().parse_next(input)
+}
+
+#[proc_macro_attribute]
+pub fn register_mods(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let module = item.clone();
+    let module = parse_macro_input!(module as syn::ItemMod);
+    let s = module.ident.to_string();
+    let year = preceded("year", i64).parse(&s).unwrap();
+    let mut map = PROBS.lock().unwrap();
+    for dec in module.content.unwrap().1 {
+        if let syn::Item::Mod(m) = dec {
+            let s = m.ident.to_string();
+            if let Ok(day) = preceded("day", i64).parse(&s) {
+                map.entry(year).or_default().insert(day);
+            }
+        }
+    }
+    item
+}
 
 #[proc_macro]
 pub fn make_problems(_item: TokenStream) -> TokenStream {
@@ -43,50 +64,6 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
         }
     };
     result.into()
-}
-
-fn i64(input: &mut &str) -> Result<i64> {
-    digit1.parse_to().parse_next(input)
-}
-
-#[proc_macro_attribute]
-pub fn register_mods(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let module = item.clone();
-    let module = parse_macro_input!(module as syn::ItemMod);
-    let year = i64.parse(&module.ident.to_string()[4..]).unwrap();
-    let mut map = PROBS.lock().unwrap();
-    for dec in module.content.unwrap().1 {
-        if let syn::Item::Mod(m) = dec {
-            let s = m.ident.to_string();
-            if let Ok(day) = preceded("day", i64).parse(&s) {
-                map.entry(year).or_default().insert(day);
-            }
-        }
-    }
-    item
-}
-
-#[proc_macro]
-pub fn make_mods(_item: TokenStream) -> TokenStream {
-    let mod_file = Span::call_site().file();
-    let d = mod_file.rsplit_once('/').unwrap().0;
-    let mut mods = proc_macro2::TokenStream::new();
-    let mut map = PROBS.lock().unwrap();
-    for entry in fs::read_dir(d).unwrap().map(|x| x.unwrap().path()) {
-        let path = entry.to_str().unwrap();
-        if let Ok((_, year, _, day, _)) = ("src/year", i64, "/day", i64, ".rs").parse(path) {
-            let m: proc_macro2::TokenStream = format!("day{day:02}").parse().unwrap();
-            let mstr = m.to_string();
-            let day = preceded("day", i64).parse(mstr.as_str()).unwrap();
-            map.entry(year).or_default().insert(day);
-            mods.extend(quote! {
-                pub mod #m;
-            });
-        } else {
-            // Add prints here if debugging is necessary.
-        }
-    }
-    mods.into()
 }
 
 #[proc_macro]
