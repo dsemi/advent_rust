@@ -1,3 +1,5 @@
+#![feature(custom_inner_attributes, proc_macro_hygiene)]
+
 use std::cmp::Ordering::Equal;
 use std::cmp::max_by;
 use std::env;

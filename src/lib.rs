@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::fs;
 use std::sync::Mutex;
+use syn::parse_macro_input;
 use winnow::ascii::digit1;
 use winnow::combinator::preceded;
 use winnow::error::Result;
@@ -46,6 +47,23 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
 
 fn i64(input: &mut &str) -> Result<i64> {
     digit1.parse_to().parse_next(input)
+}
+
+#[proc_macro_attribute]
+pub fn register_mods(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let module = item.clone();
+    let module = parse_macro_input!(module as syn::ItemMod);
+    let year = i64.parse(&module.ident.to_string()[4..]).unwrap();
+    let mut map = PROBS.lock().unwrap();
+    for dec in module.content.unwrap().1 {
+        if let syn::Item::Mod(m) = dec {
+            let s = m.ident.to_string();
+            if let Ok(day) = preceded("day", i64).parse(&s) {
+                map.entry(year).or_default().insert(day);
+            }
+        }
+    }
+    item
 }
 
 #[proc_macro]
