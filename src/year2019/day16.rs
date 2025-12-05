@@ -29,7 +29,7 @@ pub fn part1(input: &str) -> String {
 }
 
 const PASCAL_PERIOD: usize = 16000;
-const DIAG: [i32; PASCAL_PERIOD] = {
+static DIAG: [i32; PASCAL_PERIOD] = {
     let mut pascal = [0; PASCAL_PERIOD];
     let mut i = 0;
     let mut v = 1;
