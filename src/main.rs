@@ -86,7 +86,7 @@ fn main() {
     let year = args[0].i64();
     let mut days: Vec<i64> = args[1..].iter().flat_map(|x| parse_day(x)).collect();
     if days.is_empty() {
-        days = (1..=25).collect();
+        days = advent::get_days!(year);
     }
 
     let mut total = Duration::ZERO;

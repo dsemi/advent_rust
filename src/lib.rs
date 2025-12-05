@@ -4,10 +4,10 @@ use quote::{ToTokens, quote};
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::sync::Mutex;
-use syn::parse_macro_input;
+use syn::{Ident, parse_macro_input};
 use winnow::ascii::digit1;
 use winnow::combinator::preceded;
-use winnow::error::Result;
+use winnow::error::{ContextError, Result};
 use winnow::prelude::*;
 
 static PROBS: Mutex<BTreeMap<i64, BTreeSet<i64>>> = Mutex::new(BTreeMap::new());
@@ -16,19 +16,24 @@ fn i64(input: &mut &str) -> Result<i64> {
     digit1.parse_to().parse_next(input)
 }
 
+fn parse_ident<O, P>(prec: &str, p: P, id: Ident) -> Option<O>
+where
+    P: for<'a> Parser<&'a str, O, ContextError>,
+{
+    let s = id.to_string();
+    preceded(prec, p).parse(s.as_str()).ok()
+}
+
 #[proc_macro_attribute]
 pub fn register_mods(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let module = item.clone();
-    let module = parse_macro_input!(module as syn::ItemMod);
-    let s = module.ident.to_string();
-    let year = preceded("year", i64).parse(&s).unwrap();
+    let module: syn::ItemMod = syn::parse(item.clone()).unwrap();
+    let year = parse_ident("year", i64, module.ident).unwrap();
     let mut map = PROBS.lock().unwrap();
     for dec in module.content.unwrap().1 {
-        if let syn::Item::Mod(m) = dec {
-            let s = m.ident.to_string();
-            if let Ok(day) = preceded("day", i64).parse(&s) {
-                map.entry(year).or_default().insert(day);
-            }
+        if let syn::Item::Mod(m) = dec
+            && let Some(day) = parse_ident("day", i64, m.ident)
+        {
+            map.entry(year).or_default().insert(day);
         }
     }
     item
@@ -55,15 +60,15 @@ pub fn make_problems(_item: TokenStream) -> TokenStream {
             },
         });
     }
-    let result = quote! {
+    quote! {
         pub fn get_prob(year: i64, day: i64) -> Option<(Part, Part)> {
             match year {
                 #year_matches
                 _ => None,
             }
         }
-    };
-    result.into()
+    }
+    .into()
 }
 
 #[proc_macro]
@@ -94,7 +99,7 @@ pub fn make_tests(_item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn lower(item: TokenStream) -> TokenStream {
     let mut result = proc_macro2::TokenStream::new();
-    let i = syn::parse_macro_input!(item as syn::Ident).to_string().to_lowercase();
+    let i = parse_macro_input!(item as Ident).to_string().to_lowercase();
     result.extend(quote! { #i });
     result.into()
 }
@@ -118,7 +123,7 @@ fn parse_fields(
             }
             let mut arg = 'a';
             for field in &fields.unnamed {
-                let mut fun = syn::Ident::new(
+                let mut fun = Ident::new(
                     &field.ty.to_token_stream().to_string().to_lowercase(),
                     Span::call_site(),
                 );
@@ -126,7 +131,7 @@ fn parse_fields(
                     if attr.path().is_ident(PARSER_IDENT) {
                         attr.parse_nested_meta(|meta| {
                             if meta.path.is_ident("impl") {
-                                let ident: syn::Ident = meta.value()?.parse()?;
+                                let ident: Ident = meta.value()?.parse()?;
                                 fun = ident;
                             }
                             Ok(())
@@ -141,7 +146,7 @@ fn parse_fields(
                 if !fn_match_arg_tup.is_empty() {
                     fn_match_arg_tup.push(quote! { _ });
                 }
-                let id = syn::Ident::new(&arg.to_string(), Span::call_site());
+                let id = Ident::new(&arg.to_string(), Span::call_site());
                 fn_match_arg_tup.push(quote! { #id });
                 fn_apply_arg_tup.push(quote! { #id });
                 arg = char::from_u32(arg as u32 + 1).unwrap();
@@ -209,10 +214,25 @@ pub fn parser(input: TokenStream) -> TokenStream {
         syn::Data::Union(_) => unimplemented!(),
     };
     let lower_ident = data_ident.to_string().to_lowercase();
-    let fn_name = syn::Ident::new(&lower_ident, Span::call_site());
+    let fn_name = Ident::new(&lower_ident, Span::call_site());
     quote! {
         fn #fn_name(i: &mut &str) -> Result<#data_ident> {
             #inner.parse_next(i)
+        }
+    }
+    .into()
+}
+
+#[proc_macro]
+pub fn get_days(item: TokenStream) -> TokenStream {
+    let year = parse_macro_input!(item as Ident);
+    let map = PROBS.lock().unwrap();
+    let result: proc_macro2::TokenStream =
+        map.iter().map(|(year, days)| quote!(#year => vec![#(#days),*],)).collect();
+    quote! {
+        match #year {
+            #result
+            _ => unreachable!(),
         }
     }
     .into()
