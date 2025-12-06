@@ -163,15 +163,30 @@ where
 
 pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     let cols = inp.iter().map(|x| x.len()).max().unwrap();
-    let mut out = vec![vec![]; cols];
-    for i in 0..cols {
-        for row in inp.iter() {
-            if i < row.len() {
-                out[i].push(row[i]);
+    let mut rows: Vec<_> = inp.iter().map(|r| r.iter()).collect();
+    let mut outs = vec![vec![]; cols];
+    for out in outs.iter_mut() {
+        for row in rows.iter_mut() {
+            if let Some(v) = row.next() {
+                out.push(*v);
             }
         }
     }
-    out
+    outs
+}
+
+pub fn transpose_str(inp: &[String]) -> Vec<String> {
+    let cols = inp.iter().map(|x| x.len()).max().unwrap();
+    let mut rows: Vec<_> = inp.iter().map(|s| s.chars()).collect();
+    let mut outs = vec![String::new(); cols];
+    for out in outs.iter_mut() {
+        for row in rows.iter_mut() {
+            if let Some(v) = row.next() {
+                out.push(v);
+            }
+        }
+    }
+    outs
 }
 
 pub trait AbsDiff<T = Self> {

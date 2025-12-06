@@ -1,44 +1,33 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
-use std::ops::{AddAssign, MulAssign};
+use itertools::Itertools;
+use std::ops::{Add, Mul};
 
-struct Col(fn(&mut u64, u64), u64);
+#[derive(Clone)]
+struct Col(fn(u64, u64) -> u64, u64);
 
-impl Col {
-    fn apply(&mut self, rhs: u64) {
-        self.0(&mut self.1, rhs);
-    }
+fn parse(input: &str) -> (Vec<String>, Vec<Col>) {
+    let mut lines = lines(repeat(.., none_of('\n'))).read(input);
+    let ops: String = lines.pop().unwrap();
+    let cols =
+        spaced(alt(('+'.value(Col(u64::add, 0)), '*'.value(Col(u64::mul, 1))))).read(ops.as_str());
+    (lines, cols)
 }
 
-fn parse(input: &[u8]) -> (Vec<Col>, Vec<Vec<u8>>) {
-    let mut lines: Vec<Vec<u8>> = lines(repeat(.., none_of('\n'))).read(input);
-    let cols: Vec<_> = lines
-        .pop()
-        .unwrap()
-        .into_iter()
-        .filter(|&c| c == b'+' || c == b'*')
-        .map(|c| if c == b'+' { Col(u64::add_assign, 0) } else { Col(u64::mul_assign, 1) })
-        .collect();
-    (cols, lines)
-}
-
-pub fn part1(input: &[u8]) -> u64 {
-    let (mut cols, lines) = parse(input);
+pub fn part1(input: &str) -> u64 {
+    let (lines, mut cols) = parse(input);
     lines.into_iter().for_each(|line| {
-        cols.iter_mut().zip(spaced(u64).read(line.as_slice())).for_each(|(col, n)| col.apply(n))
+        cols.iter_mut().zip(spaced(u64).read(line.as_str())).for_each(|(c, n)| c.1 = c.0(c.1, n))
     });
     cols.into_iter().map(|c| c.1).sum()
 }
 
-pub fn part2(input: &[u8]) -> u64 {
-    let (mut cols, lines) = parse(input);
-    let transposed = transpose(&lines)
-        .into_iter()
-        .map(|line| unsafe { str::from_utf8_unchecked(&line) }.trim().to_owned())
-        .collect::<Vec<_>>()
-        .join("\n");
+pub fn part2(input: &str) -> u64 {
+    let (lines, mut cols) = parse(input);
+    let transposed =
+        transpose_str(&lines).into_iter().map(|line| line.trim().to_owned()).join("\n");
     cols.iter_mut()
         .zip(transposed.split("\n\n"))
-        .for_each(|(col, ns)| ns.lines().for_each(|n| col.apply(n.u64())));
+        .for_each(|(c, ns)| ns.lines().for_each(|n| c.1 = c.0(c.1, n.u64())));
     cols.into_iter().map(|c| c.1).sum()
 }
