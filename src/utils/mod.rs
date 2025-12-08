@@ -502,6 +502,13 @@ impl<T: Num + AbsDiff<T> + Copy> C3<T> {
     pub fn dist(&self, other: &Self) -> T {
         self.0.abs_diff(other.0) + self.1.abs_diff(other.1) + self.2.abs_diff(other.2)
     }
+
+    pub fn dist_sq(&self, other: &Self) -> T {
+        let dx = self.0 - other.0;
+        let dy = self.1 - other.1;
+        let dz = self.2 - other.2;
+        dx * dx + dy * dy + dz * dz
+    }
 }
 
 impl<T: Ord + Copy> C3<T> {
