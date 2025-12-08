@@ -1,4 +1,10 @@
-#![feature(bool_to_result, custom_inner_attributes, proc_macro_hygiene, trait_alias)]
+#![feature(
+    binary_heap_into_iter_sorted,
+    bool_to_result,
+    custom_inner_attributes,
+    proc_macro_hygiene,
+    trait_alias
+)]
 
 use std::cmp::Ordering::Equal;
 use std::cmp::max_by;
