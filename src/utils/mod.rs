@@ -1084,11 +1084,11 @@ impl<T: Eq + Hash> UnionFind<T> {
         self.nodes.push(UnionFindNode { val, parent: self.nodes.len(), rank: 0 })
     }
 
-    pub fn union(&mut self, x: usize, y: usize) {
+    pub fn union(&mut self, x: usize, y: usize) -> bool {
         let x_root = self.find(x);
         let y_root = self.find(y);
         if x_root == y_root {
-            return;
+            return false;
         }
         match self.nodes[x_root].rank.cmp(&self.nodes[y_root].rank) {
             Less => self.nodes[x_root].parent = y_root,
@@ -1098,6 +1098,7 @@ impl<T: Eq + Hash> UnionFind<T> {
                 self.nodes[x_root].rank += 1;
             }
         }
+        true
     }
 
     pub fn find(&mut self, k: usize) -> usize {

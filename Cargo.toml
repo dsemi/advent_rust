@@ -43,6 +43,9 @@ toml = "0.9.8"
 wide = "0.8.1"
 winnow = "0.7.13"
 
+[lints.rust]
+dropping_copy_types = "allow"
+
 [lints.clippy]
 disallowed_types = "deny"
 filter_map_bool_then = "allow"
