@@ -161,14 +161,14 @@ where
     }
 }
 
-pub fn transpose<T: Copy>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
+pub fn transpose<T: Clone>(inp: &[Vec<T>]) -> Vec<Vec<T>> {
     let cols = inp.iter().map(|x| x.len()).max().unwrap();
     let mut rows: Vec<_> = inp.iter().map(|r| r.iter()).collect();
     let mut outs = vec![vec![]; cols];
     for out in outs.iter_mut() {
         for row in rows.iter_mut() {
             if let Some(v) = row.next() {
-                out.push(*v);
+                out.push(v.clone());
             }
         }
     }
