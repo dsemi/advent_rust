@@ -200,6 +200,7 @@ where
     sep3(strip(f), ',')
 }
 
+// Consider changing to<O> instead of Vec for the next 3.
 pub fn spaced<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
