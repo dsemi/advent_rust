@@ -20,9 +20,9 @@ fn parse(input: &str) -> Vec<Vec<usize>> {
     graph
 }
 
-#[cached(key = "(usize, usize)", convert = r#"{ (src, dest) }"#)]
-fn dfs(g: &[Vec<usize>], src: usize, dest: usize) -> usize {
-    if src == dest { 1 } else { g[src].iter().map(|&src| dfs(g, src, dest)).sum() }
+#[cached(key = "(usize, usize)", convert = r#"{ (src, dst) }"#)]
+fn dfs(g: &[Vec<usize>], src: usize, dst: usize) -> usize {
+    if src == dst { 1 } else { g[src].iter().map(|&src| dfs(g, src, dst)).sum() }
 }
 
 pub fn part1(input: &str) -> usize {
