@@ -1,4 +1,5 @@
 use cached::proc_macro::cached;
+use std::cmp::max_by_key;
 
 const YOU: usize = id("you");
 const OUT: usize = id("out");
@@ -30,6 +31,6 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let g = parse(input);
-    let mid = (dfs(&g, (DAC, FFT)), (DAC, FFT)).max((dfs(&g, (FFT, DAC)), (FFT, DAC))).1;
+    let mid = max_by_key((DAC, FFT), (FFT, DAC), |&x| dfs(&g, x));
     dfs(&g, (SVR, mid.0)) * dfs(&g, mid) * dfs(&g, (mid.1, OUT))
 }
