@@ -1,34 +1,37 @@
-use crate::utils::parsers::*;
-use hashbrown::HashMap;
+use cached::proc_macro::cached;
 
-fn parse(input: &str) -> HashMap<&str, Vec<&str>> {
-    input.lines().map(|line| separated_pair(alpha1, ": ", spaced(alpha1)).read(line)).collect()
+const LEN: usize = 17576;
+const YOU: usize = id("you");
+const OUT: usize = id("out");
+const SVR: usize = id("svr");
+const DAC: usize = id("dac");
+const FFT: usize = id("fft");
+
+const fn id(i: &str) -> usize {
+    let &[a, b, c] = i.as_bytes() else { unreachable!() };
+    676 * (a as usize - 97) + 26 * (b as usize - 97) + (c as usize - 97)
 }
 
-fn dfs<'a, const N: usize>(
-    graph: &HashMap<&'a str, Vec<&'a str>>,
-    cache: &mut HashMap<([bool; N], &'a str), usize>,
-    conds: &[fn(&'a str) -> bool; N],
-    mut st: [bool; N],
-    k: &'a str,
-) -> usize {
-    st.iter_mut().zip(conds).for_each(|(v, cond)| *v = *v || cond(k));
-    if k == "out" {
-        return usize::from(st.iter().all(|&b| b));
+fn parse(input: &str) -> Vec<Vec<usize>> {
+    let mut graph = vec![vec![]; LEN];
+    for mut ids in input.lines().map(|line| line.split_whitespace().map(|w| id(&w[..3]))) {
+        graph[ids.next().unwrap()].extend(ids);
     }
-    if let Some(&v) = cache.get(&(st, k)) {
-        return v;
-    }
-    let v = graph.get(k).unwrap_or(&vec![]).iter().map(|k| dfs(graph, cache, conds, st, k)).sum();
-    cache.insert((st, k), v);
-    v
+    graph
+}
+
+#[cached(key = "(usize, usize)", convert = r#"{ (src, dest) }"#)]
+fn dfs(g: &[Vec<usize>], src: usize, dest: usize) -> usize {
+    if src == dest { 1 } else { g[src].iter().map(|&src| dfs(g, src, dest)).sum() }
 }
 
 pub fn part1(input: &str) -> usize {
-    dfs(&parse(input), &mut HashMap::new(), &[], [], "you")
+    dfs(&parse(input), YOU, OUT)
 }
 
 pub fn part2(input: &str) -> usize {
-    let graph = parse(input);
-    dfs(&graph, &mut HashMap::new(), &[|k| k == "dac", |k| k == "fft"], [false, false], "svr")
+    let g = parse(input);
+    let p1 = dfs(&g, SVR, DAC) * dfs(&g, DAC, FFT) * dfs(&g, FFT, OUT);
+    let p2 = dfs(&g, SVR, FFT) * dfs(&g, FFT, DAC) * dfs(&g, DAC, OUT);
+    p1 + p2
 }
