@@ -13,10 +13,9 @@ use std::collections::{BinaryHeap, VecDeque};
 use std::convert::{From, identity};
 use std::hash::Hash;
 use std::iter::Sum;
-use std::ops::Deref;
 use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Rem, Shr,
-    ShrAssign, Sub, SubAssign,
+    Add, AddAssign, BitAnd, BitAndAssign, BitXor, Deref, Div, Index, IndexMut, Mul, MulAssign, Neg,
+    Rem, Shr, ShrAssign, Sub, SubAssign,
 };
 use streaming_iterator::StreamingIterator;
 
@@ -1632,5 +1631,27 @@ impl<T> Deref for DefaultVec<T> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+pub trait BitXorSlice {
+    type Output;
+
+    fn bitxor(&self) -> Self::Output;
+}
+
+impl BitXorSlice for &[u16] {
+    type Output = u16;
+
+    fn bitxor(&self) -> Self::Output {
+        self.iter().fold(0, |a, &b| a.bitxor(b))
+    }
+}
+
+impl BitXorSlice for &[&u16] {
+    type Output = u16;
+
+    fn bitxor(&self) -> Self::Output {
+        self.iter().fold(0, |a, &b| a.bitxor(b))
     }
 }
