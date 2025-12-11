@@ -14,8 +14,8 @@ use std::convert::{From, identity};
 use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, BitXor, Deref, Div, Index, IndexMut, Mul, MulAssign, Neg,
-    Rem, Shr, ShrAssign, Sub, SubAssign,
+    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitXor, Deref, Div, Index, IndexMut, Mul,
+    MulAssign, Neg, Rem, Shr, ShrAssign, Sub, SubAssign,
 };
 use streaming_iterator::StreamingIterator;
 
@@ -745,6 +745,58 @@ impl<T: PartialEq + PrimInt + BitAndAssign + Zero + One> Iterator for Bits<T> {
         let b = self.n.trailing_zeros();
         self.n &= self.n - T::one();
         Some(b as usize)
+    }
+}
+
+#[expect(unused)]
+pub fn bit_combos(set: usize, total: usize) -> BitCombos<i32> {
+    BitCombos { n: (1 << set) - 1, max: 1 << total }
+}
+
+fn gospers_hack<T>(n: T) -> T
+where
+    T: Add<Output = T>,
+    T: BitAnd<Output = T>,
+    T: BitOr<Output = T>,
+    T: BitXor<Output = T>,
+    T: Copy,
+    T: Div<Output = T>,
+    T: One,
+    T: Neg<Output = T>,
+    T: Shr<Output = T>,
+{
+    let c = n & -n;
+    let r = n + c;
+    (((r ^ n) >> (T::one() + T::one())) / c) | r
+}
+
+pub struct BitCombos<T> {
+    n: T,
+    max: T,
+}
+
+impl<T> Iterator for BitCombos<T>
+where
+    T: Add<Output = T>,
+    T: BitAnd<Output = T>,
+    T: BitOr<Output = T>,
+    T: BitXor<Output = T>,
+    T: Copy,
+    T: Div<Output = T>,
+    T: One,
+    T: Ord,
+    T: Neg<Output = T>,
+    T: Shr<Output = T>,
+{
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.n >= self.max {
+            return None;
+        }
+        let n = self.n;
+        self.n = gospers_hack(self.n);
+        Some(n)
     }
 }
 
