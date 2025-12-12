@@ -20,7 +20,7 @@ fn parse(input: &str) -> Vec<Vec<usize>> {
     graph
 }
 
-#[cached(key = "(usize, usize)", convert = r#"{ (src, dst) }"#)]
+#[cached(key = "usize", convert = r#"{ (src << 16) | dst }"#)]
 fn dfs(g: &[Vec<usize>], (src, dst): (usize, usize)) -> usize {
     if src == dst { 1 } else { g[src].iter().map(|&src| dfs(g, (src, dst))).sum() }
 }
