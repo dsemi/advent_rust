@@ -11,13 +11,21 @@ fn valid<T: Borrow<i8>>(ns: &[T]) -> bool {
 }
 
 pub fn part1(input: &str) -> usize {
-    input.lines().map(|line| spaced(i8).read(line)).filter(|ns| valid(ns)).count()
+    input
+        .lines()
+        .filter(|&line| {
+            let ns: Vec<_> = spaced(i8).read(line);
+            valid(&ns)
+        })
+        .count()
 }
 
 pub fn part2(input: &str) -> usize {
     input
         .lines()
-        .map(|line| spaced(i8).read(line))
-        .filter(|ns| valid(ns) || ns.combinations(ns.len() - 1).any(valid))
+        .filter(|&line| {
+            let ns: Vec<_> = spaced(i8).read(line);
+            valid(&ns) || ns.combinations(ns.len() - 1).any(valid)
+        })
         .count()
 }

@@ -8,7 +8,7 @@ fn extrapolate(ns: Vec<i64>) -> i64 {
 }
 
 fn solve(input: &str, part2: bool) -> i64 {
-    let mut vals = lines(spaced(i64)).read(input);
+    let mut vals: Vec<Vec<_>> = lines(spaced(i64)).read(input);
     if part2 {
         vals.iter_mut().for_each(|row| row.reverse());
     }

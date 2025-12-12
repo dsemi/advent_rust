@@ -17,7 +17,9 @@ fn parse(input: &str) -> (Vec<String>, Vec<Col>) {
 pub fn part1(input: &str) -> u64 {
     let (lines, mut cols) = parse(input);
     lines.into_iter().for_each(|line| {
-        cols.iter_mut().zip(spaced(u64).read(line.as_str())).for_each(|(c, n)| c.1 = c.0(c.1, n))
+        cols.iter_mut()
+            .zip(line.split_whitespace().map(|x| x.u64()))
+            .for_each(|(c, n)| c.1 = c.0(c.1, n))
     });
     cols.into_iter().map(|c| c.1).sum()
 }

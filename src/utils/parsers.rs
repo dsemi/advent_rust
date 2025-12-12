@@ -203,18 +203,19 @@ where
     sep3(strip(f), ',')
 }
 
-// Consider changing to<O> instead of Vec for the next 3.
-pub fn spaced<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
+pub fn spaced<'a, I, O, A, E, F>(f: F) -> impl winnow::prelude::Parser<I, A, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + 'a,
     <I as Stream>::Token: AsChar + Clone,
     O: 'a,
+    A: Accumulate<O> + 'a,
     E: ParserError<I> + 'a,
     F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     strip(separated(0.., f, space1))
 }
 
+// Consider changing to Accumulate<O> instead of Vec for the next 2.
 pub fn list<'a, I, O, E, F>(f: F) -> impl winnow::prelude::Parser<I, Vec<O>, E> + 'a
 where
     I: Stream + StreamIsPartial + Compare<&'a str> + Compare<char> + 'a,

@@ -39,6 +39,7 @@ struct Blueprint {
 fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
     input.lines().map(|line| {
         let line = line.replace(|c: char| !c.is_ascii_digit(), " ");
+        let ns: Vec<_> = spaced(u16).read(line.as_str());
         let [
             num,
             ore_bot_ore,
@@ -47,7 +48,7 @@ fn blueprints(input: &str) -> impl Iterator<Item = Blueprint> + '_ {
             obs_bot_clay,
             geode_bot_ore,
             geode_bot_obs,
-        ] = spaced(u16).read(line.as_str()).try_into().unwrap();
+        ] = ns.try_into().unwrap();
         Blueprint {
             num,
             ore_cost: Res::new(ore_bot_ore, 0, 0, 0),
