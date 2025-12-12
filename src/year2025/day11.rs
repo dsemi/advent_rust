@@ -1,12 +1,3 @@
-use cached::proc_macro::cached;
-use std::cmp::max_by_key;
-
-const YOU: usize = id("you");
-const OUT: usize = id("out");
-const SVR: usize = id("svr");
-const DAC: usize = id("dac");
-const FFT: usize = id("fft");
-
 const fn id(i: &str) -> usize {
     let (a, b, c) = (i.as_bytes()[0], i.as_bytes()[1], i.as_bytes()[2]);
     676 * (a as usize - 97) + 26 * (b as usize - 97) + (c as usize - 97)
@@ -20,17 +11,24 @@ fn parse(input: &str) -> Vec<Vec<usize>> {
     graph
 }
 
-#[cached(key = "usize", convert = r#"{ (src << 16) | dst }"#)]
-fn dfs(g: &[Vec<usize>], (src, dst): (usize, usize)) -> usize {
-    if src == dst { 1 } else { g[src].iter().map(|&src| dfs(g, (src, dst))).sum() }
+fn dfs(g: &[Vec<usize>], c: &mut [u64], src: usize, dst: usize) -> u64 {
+    if src == dst {
+        return 1;
+    }
+    if c[src] == u64::MAX {
+        c[src] = g[src].iter().map(|&src| dfs(g, c, src, dst)).sum()
+    }
+    c[src]
 }
 
-pub fn part1(input: &str) -> usize {
-    dfs(&parse(input), (YOU, OUT))
+pub fn part1(input: &str) -> u64 {
+    dfs(&parse(input), &mut vec![u64::MAX; 17576], id("you"), id("out"))
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u64 {
     let g = parse(input);
-    let mid = max_by_key((DAC, FFT), (FFT, DAC), |&x| dfs(&g, x));
-    dfs(&g, (SVR, mid.0)) * dfs(&g, mid) * dfs(&g, (mid.1, OUT))
+    let f = |src, dst| dfs(&g, &mut vec![u64::MAX; 17576], src, dst);
+    let (dac, fft) = (id("dac"), id("fft"));
+    let (paths, (a, b)) = (f(dac, fft), (dac, fft)).max((f(fft, dac), (fft, dac)));
+    f(id("svr"), a) * paths * f(b, id("out"))
 }

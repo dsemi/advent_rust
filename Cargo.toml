@@ -12,7 +12,6 @@ proc-macro = true
 
 [dependencies]
 bit-set = "0.8.0"
-cached = "0.56.0"
 derive_more = { version = "2.0.1", features = ["add", "add_assign", "constructor"] }
 enum-map = "2.7.3"
 genawaiter = "0.99.1"
