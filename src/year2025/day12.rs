@@ -7,7 +7,7 @@ pub fn part1(input: &str) -> usize {
     spaces
         .lines()
         .map(|space| separated_pair(sep2(u16, 'x'), ':', spaced(u16)).read(space))
-        .filter(|((w, h), ns)| w * h >= ns.into_iter().zip(&areas).map(|(n, a)| n * a).sum())
+        .filter(|((w, h), ns)| w * h >= ns.iter().zip(&areas).map(|(n, a)| n * a).sum())
         .count()
 }
 
