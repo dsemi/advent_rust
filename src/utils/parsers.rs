@@ -5,6 +5,9 @@ pub use winnow::prelude::*;
 pub use winnow::stream::*;
 pub use winnow::token::*;
 
+use num::Zero;
+use std::ops::AddAssign;
+
 pub trait Parser<I, O> = winnow::prelude::Parser<I, O, ContextError>;
 
 pub trait ParserExt<I, O> {
@@ -231,6 +234,18 @@ where
     F: winnow::prelude::Parser<I, O, E> + 'a,
 {
     separated(0.., f, "\n")
+}
+
+pub struct Sum<T>(pub T);
+
+impl<T: AddAssign + Zero> Accumulate<T> for Sum<T> {
+    fn initial(_: Option<usize>) -> Self {
+        Self(T::zero())
+    }
+
+    fn accumulate(&mut self, acc: T) {
+        self.0 += acc;
+    }
 }
 
 // https://github.com/winnow-rs/winnow/issues/349
