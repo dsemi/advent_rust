@@ -5,7 +5,7 @@ use advent::Parser;
 
 #[derive(Clone, Copy, Parser)]
 #[parser(dont_parse_name)]
-enum Val {
+pub enum Val {
     Reg(#[parser(impl = reg)] usize),
     Lit(i64),
 }
@@ -15,7 +15,7 @@ fn reg(i: &mut &str) -> Result<usize> {
 }
 
 #[derive(Clone, Parser)]
-enum Instr {
+pub enum Instr {
     Cpy(Val, Val),
     Inc(#[parser(impl = reg)] usize),
     Dec(#[parser(impl = reg)] usize),
@@ -34,42 +34,36 @@ enum Instr {
 pub struct Sim {
     pub regs: [i64; 4],
     line: i64,
-    instrs: Vec<Instr>,
+    pub instrs: Vec<Instr>,
 }
 
 fn optimize(instrs: &mut [Instr]) {
     for i in 0..instrs.len() {
-        if i + 6 <= instrs.len() {
-            match instrs[i..i + 6] {
-                [
-                    Cpy(a, Reg(d)),
-                    Inc(c),
-                    Dec(d2),
-                    Jnz(Reg(d3), Lit(-2)),
-                    Dec(b),
-                    Jnz(Reg(b2), Lit(-5)),
-                ] if d == d2 && d == d3 && b == b2 => {
-                    instrs[i] = Mul(a, b, c, d);
-                    instrs[i + 1] = Nop;
-                    instrs[i + 2] = Nop;
-                    instrs[i + 3] = Nop;
-                    instrs[i + 4] = Nop;
-                    instrs[i + 5] = Nop;
-                    continue;
-                }
-                _ => (),
+        match instrs[i..] {
+            [
+                Cpy(a, Reg(d)),
+                Inc(c),
+                Dec(d2),
+                Jnz(Reg(d3), Lit(-2)),
+                Dec(b),
+                Jnz(Reg(b2), Lit(-5)),
+                ..,
+            ] if d == d2 && d == d3 && b == b2 => {
+                instrs[i] = Mul(a, b, c, d);
+                instrs[i + 1] = Nop;
+                instrs[i + 2] = Nop;
+                instrs[i + 3] = Nop;
+                instrs[i + 4] = Nop;
+                instrs[i + 5] = Nop;
+                continue;
             }
-        }
-        if i + 3 <= instrs.len() {
-            match instrs[i..i + 3] {
-                [Inc(a), Dec(b), Jnz(Reg(b2), Lit(-2))] if b == b2 => {
-                    instrs[i] = Add(a, b);
-                    instrs[i + 1] = Nop;
-                    instrs[i + 2] = Nop;
-                    continue;
-                }
-                _ => (),
+            [Inc(a), Dec(b), Jnz(Reg(b2), Lit(-2)), ..] if b == b2 => {
+                instrs[i] = Add(a, b);
+                instrs[i + 1] = Nop;
+                instrs[i + 2] = Nop;
+                continue;
             }
+            _ => (),
         }
     }
 }
