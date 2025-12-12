@@ -7,6 +7,7 @@ use num::pow::Pow;
 use num::traits::SaturatingAdd;
 use num::{Bounded, FromPrimitive, Num, One, PrimInt, Signed, Zero};
 use smallvec::SmallVec;
+use std::borrow::Borrow;
 use std::cmp::Ordering::*;
 use std::cmp::{Ordering, Reverse, max, min};
 use std::collections::{BinaryHeap, VecDeque};
@@ -15,7 +16,7 @@ use std::hash::Hash;
 use std::iter::Sum;
 use std::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitXor, Deref, Div, Index, IndexMut, Mul,
-    MulAssign, Neg, Rem, Shr, ShrAssign, Sub, SubAssign,
+    MulAssign, Neg, Rem, Shl, Shr, ShrAssign, Sub, SubAssign,
 };
 use streaming_iterator::StreamingIterator;
 
@@ -725,6 +726,16 @@ impl<'a, T> StreamingIterator for Combinations<'a, T> {
     fn get(&self) -> Option<&Self::Item> {
         self.in_progress.then(|| &self.buf[1..])
     }
+}
+
+pub fn unbits<T, I, I2, V>(i: I) -> T
+where
+    I: IntoIterator<Item = V, IntoIter = I2>,
+    I2: Iterator<Item = V>,
+    V: Borrow<usize>,
+    T: BitOr<Output = T> + One + Shl<usize, Output = T> + Zero,
+{
+    i.into_iter().fold(T::zero(), |acc, n| acc | (T::one() << *n.borrow()))
 }
 
 pub fn bits<T>(n: T) -> Bits<T> {

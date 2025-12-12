@@ -14,8 +14,8 @@ fn machine(i: &mut &str) -> Result<Machine> {
     let target = repeat(.., alt(('.'.value(0), '#'.value(1))));
     let target: Vec<_> = delimited('[', target, "] ").parse_next(i)?;
     let target = target.into_iter().rev().fold(0, |acc, n| (acc << 1) | n);
-    let buttons: Vec<_> = spaced(delimited('(', list(u16), ')')).parse_next(i)?;
-    let buttons = buttons.iter().map(|ns| ns.iter().fold(0, |acc, n| acc | (1 << n))).collect();
+    let buttons =
+        spaced(delimited('(', list(usize).map(unbits::<u16, _, _, _>), ')')).parse_next(i)?;
     let joltage = delimited('{', list(u16), '}').parse_next(i)?;
     Ok(Machine { target, buttons, joltage })
 }
