@@ -7,7 +7,7 @@ pub fn part1(input: &str) -> Option<i64> {
     match ssim.instrs[1..] {
         [Cpy(Lit(c), _), Mul(Lit(b), _, _, _), ..] => (0..).find(|i| {
             let v = i + b * c;
-            v == MASK & v.isolate_highest_one() * 2 - 1
+            v == MASK & (v.isolate_highest_one() * 2 - 1)
         }),
         _ => {
             eprintln!("slow path");
