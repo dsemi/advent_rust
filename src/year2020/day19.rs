@@ -1,6 +1,6 @@
 use crate::utils::parsers::*;
 use Rule::*;
-use itertools::Itertools;
+use std::collections::BTreeMap;
 
 enum Rule {
     Single(u8),
@@ -16,20 +16,15 @@ fn parse_rules(s: &str) -> (Vec<Rule>, Vec<&str>) {
                 let (idx, content) = line.split_once(": ").unwrap();
                 (
                     idx.usize(),
-                    if content.starts_with('"') {
-                        Single(content.as_bytes()[1])
-                    } else {
-                        Multi(
-                            content
-                                .split(" | ")
-                                .map(|part| part.split(' ').map(usize::read).collect())
-                                .collect(),
-                        )
-                    },
+                    alt((
+                        delimited('"', any, '"').map(Single),
+                        separated(0.., spaced::<_, _, Vec<usize>, _, _>(usize), '|').map(Multi),
+                    ))
+                    .read(content.as_bytes()),
                 )
             })
-            .sorted_unstable_by_key(|x| x.0)
-            .map(|x| x.1)
+            .collect::<BTreeMap<_, _>>()
+            .into_values()
             .collect(),
         messages.lines().collect(),
     )

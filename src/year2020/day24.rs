@@ -1,6 +1,8 @@
+use crate::utils::C;
 use crate::utils::parsers::*;
-use crate::utils::{C, Grid};
 use hashbrown::{HashMap, HashSet};
+use ndarray::prelude::*;
+use ndarray_conv::{ConvExt, ConvMode, PaddingMode};
 use phf::phf_map;
 
 const DIRS: phf::Map<&str, C<i32>> = phf_map! {
@@ -28,33 +30,17 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    const STEPS: i32 = 100;
     let tiles = flip_tiles(input);
-    let (mut min, mut max) =
+    let (C(r0, c0), C(r1, c1)) =
         tiles.iter().fold((C(i32::MAX, i32::MAX), C(i32::MIN, i32::MIN)), |(min, max), &pos| {
             (min.smol(pos), max.swol(pos))
         });
-    let offset = -min + C(STEPS + 1, STEPS + 1);
-    min += offset;
-    max += offset;
-    let mut grid = Grid::new(max.0 + STEPS + 2, max.1 + STEPS + 2);
-    tiles.iter().for_each(|pos| grid[pos + offset] = true);
-    let mut grid2 = grid.clone();
-    for _ in 0..STEPS {
-        min -= C(1, 1);
-        max += C(1, 1);
-        for r in min.0..=max.0 {
-            for c in min.1..=max.1 {
-                let pos = C(r, c);
-                let adj = DIRS.values().filter(|&d| grid[pos + d]).count();
-                if grid[pos] {
-                    grid2[pos] = adj != 0 && adj <= 2;
-                } else {
-                    grid2[pos] = adj == 2;
-                }
-            }
-        }
-        std::mem::swap(&mut grid, &mut grid2);
+    let kernel: Array2<u8> = array![[0, 1, 1], [1, 7, 1], [1, 1, 0]];
+    let mut grid: Array2<u8> = Array2::zeros(((r1 - r0 + 1) as usize, (c1 - c0 + 1) as usize));
+    tiles.iter().map(|C(r, c)| ((r - r0) as usize, (c - c0) as usize)).for_each(|i| grid[i] = 1);
+    for _ in 0..100 {
+        grid = grid.conv(&kernel, ConvMode::Full, PaddingMode::Zeros).unwrap();
+        grid.mapv_inplace(|v| u8::from(v == 2 || v == 8 || v == 9));
     }
-    grid.into_iter().filter(|&x| x).count()
+    grid.into_iter().filter(|&v| v > 0).count()
 }
