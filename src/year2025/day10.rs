@@ -1,5 +1,6 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
+use good_lp::Expression as Expr;
 use good_lp::*;
 use rayon::prelude::*;
 use streaming_iterator::StreamingIterator;
@@ -17,7 +18,11 @@ fn machine(i: &mut &str) -> Result<Machine> {
     let buttons =
         spaced(delimited('(', list(usize).map(unbits::<u16, _, _, _>), ')')).parse_next(i)?;
     let joltage = delimited('{', list(u16), '}').parse_next(i)?;
-    Ok(Machine { target, buttons, joltage })
+    Ok(Machine {
+        target,
+        buttons,
+        joltage,
+    })
 }
 
 pub fn part1(input: &str) -> Option<usize> {
@@ -39,8 +44,8 @@ pub fn part2(input: &str) -> usize {
                 let max = bits(bs).map(|b| m.joltage[b]).min().unwrap();
                 presses.push(vars.add(variable().integer().bounds(0..=max)));
             }
-            let mut problem = vars.minimise(presses.iter().sum::<Expression>()).using(highs);
-            let mut exps = vec![Expression::with_capacity(m.buttons.len()); m.joltage.len()];
+            let mut problem = vars.minimise(presses.iter().sum::<Expr>()).using(highs);
+            let mut exps = vec![Expr::with_capacity(m.buttons.len()); m.joltage.len()];
             for (&bs, press) in m.buttons.iter().zip(&presses) {
                 bits(bs).for_each(|b| exps[b] += press)
             }
