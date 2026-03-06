@@ -1,6 +1,5 @@
 #![feature(
     binary_heap_into_iter_sorted,
-    bool_to_result,
     custom_inner_attributes,
     isolate_most_least_significant_one,
     proc_macro_hygiene,

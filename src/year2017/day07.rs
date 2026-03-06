@@ -1,6 +1,7 @@
 use crate::utils::parsers::*;
 use crate::utils::*;
 use hashbrown::{HashMap, HashSet};
+use std::cmp::Reverse;
 
 pub fn part1(input: &str) -> &str {
     let inp: Vec<Vec<&str>> =
@@ -34,7 +35,7 @@ fn find_imbalance(m: &HashMap<&str, Node>, curr: &str) -> (i64, bool) {
     }
 
     let mut cts = count.into_iter().collect::<Vec<_>>();
-    cts.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+    cts.sort_unstable_by_key(|x| Reverse(x.1));
     let anomaly = *cts[cts.len() - 1].0;
     let expected = *cts[0].0;
     for (i, v) in wts.into_iter().enumerate() {

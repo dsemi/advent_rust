@@ -49,6 +49,7 @@ winnow = "0.7.14"
 dropping_copy_types = "allow"
 
 [lints.clippy]
+collapsible_match = "allow"
 disallowed_types = "deny"
 filter_map_bool_then = "allow"
 many_single_char_names = "allow"

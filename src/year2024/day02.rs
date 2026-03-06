@@ -5,8 +5,8 @@ use streaming_iterator::StreamingIterator;
 
 fn valid<T: Borrow<i8>>(ns: &[T]) -> bool {
     let sgn = (ns[0].borrow() - ns[1].borrow()).signum();
-    ns.windows(2)
-        .map(|w| w[0].borrow() - w[1].borrow())
+    ns.array_windows()
+        .map(|[a, b]| a.borrow() - b.borrow())
         .all(|d| d.signum() == sgn && (1..=3).contains(&d.abs()))
 }
 

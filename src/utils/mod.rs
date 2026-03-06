@@ -1421,7 +1421,7 @@ impl<const M: i64> AsPrimitive<usize> for Mod<M> {
 
 /// Area of polygon given a list of points.
 pub fn shoelace<T: Copy + Num + Signed + Sum>(pts: &[C<T>]) -> T {
-    pts.windows(2).map(|w| (w[0].1 + w[1].1) * (w[1].0 - w[0].0)).sum::<T>().abs()
+    pts.array_windows().map(|[a, b]| (a.1 + b.1) * (b.0 - a.0)).sum::<T>().abs()
         / (T::one() + T::one())
 }
 

@@ -11,5 +11,5 @@ pub fn part1(input: &str) -> Option<i64> {
 pub fn part2(input: &str) -> Option<i64> {
     let mut ids: Vec<_> = seat_ids(input).collect();
     ids.sort_unstable();
-    ids.windows(2).find_map(|w| (w[0] + 2 == w[1]).then_some(w[0] + 1))
+    ids.array_windows().find_map(|[a, b]| (a + 2 == *b).then_some(a + 1))
 }

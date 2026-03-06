@@ -4,7 +4,7 @@ fn extrapolate(ns: Vec<i64>) -> i64 {
     if ns.iter().all(|&n| n == 0) {
         return 0;
     }
-    ns.last().unwrap() + extrapolate(ns.windows(2).map(|w| w[1] - w[0]).collect())
+    ns.last().unwrap() + extrapolate(ns.array_windows().map(|[a, b]| b - a).collect())
 }
 
 fn solve(input: &str, part2: bool) -> i64 {
